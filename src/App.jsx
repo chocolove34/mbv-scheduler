@@ -11,7 +11,8 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
-const getEnvValue = (key) => {
+// Safety helper dynamically resolves environment variables to bypass static compiler limitations
+const getSafeEnvValue = (key) => {
   try {
     const env = new Function('return import.meta.env')();
     return env[key] || "";
@@ -21,12 +22,12 @@ const getEnvValue = (key) => {
 };
 
 const firebaseConfig = {
-  apiKey: getEnvValue('VITE_FIREBASE_API_KEY'),
-  authDomain: getEnvValue('VITE_FIREBASE_AUTH_DOMAIN'),
-  projectId: getEnvValue('VITE_FIREBASE_PROJECT_ID'),
-  storageBucket: getEnvValue('VITE_FIREBASE_STORAGE_BUCKET'),
-  messagingSenderId: getEnvValue('VITE_FIREBASE_MESSAGING_SENDER_ID'),
-  appId: getEnvValue('VITE_FIREBASE_APP_ID')
+  apiKey: getSafeEnvValue('VITE_FIREBASE_API_KEY'),
+  authDomain: getSafeEnvValue('VITE_FIREBASE_AUTH_DOMAIN'),
+  projectId: getSafeEnvValue('VITE_FIREBASE_PROJECT_ID'),
+  storageBucket: getSafeEnvValue('VITE_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: getSafeEnvValue('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: getSafeEnvValue('VITE_FIREBASE_APP_ID')
 };
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -193,7 +194,7 @@ export default function App() {
         
         // Save it locally as a new project so they don't lose it
         const newProject = {
-          id: id, // Keep the same ID so they can update it
+          id: id, 
           appTitle: data.appTitle || "Imported Project",
           appSubtitle: data.appSubtitle || "",
           projectStartDate: data.projectStartDate || new Date().toISOString().split('T')[0],
@@ -226,7 +227,6 @@ export default function App() {
   };
 
   // 3. AUTO-SAVE TO LOCAL STORAGE
-  // Whenever editor states change, update the projects array and local storage instantly.
   useEffect(() => {
     if (view === 'editor' && activeProjectId) {
       const updatedProjects = projects.map(p => {
@@ -742,7 +742,7 @@ export default function App() {
                         <span className="text-lg pl-2">{r.icon} <span className="text-xs font-bold uppercase ml-1">{r.label}</span></span>
                         <div className="flex items-center bg-white rounded-xl border text-slate-800 overflow-hidden shadow-sm">
                           <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className="px-3 py-1.5 hover:bg-slate-100"><Minus size={14}/></button>
-                          <span className="text-sm font-bold w-6 text-center">{count}</span>
+                          <span className="text-sm font-black w-6 text-center">{count}</span>
                           <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className="px-3 py-1.5 hover:bg-slate-100"><Plus size={14}/></button>
                         </div>
                       </div>
