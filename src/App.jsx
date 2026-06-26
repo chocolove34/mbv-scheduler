@@ -11,24 +11,29 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
-// Safety helper dynamically resolves environment variables to bypass static compiler limitations
-const getSafeEnvValue = (key) => {
-  try {
-    const env = new Function('return import.meta.env')();
-    return env[key] || "";
-  } catch (e) {
-    return "";
-  }
+// Standard static environment variable object template for Vite static replacement at build time.
+// Wrapped in a try-catch statement to safely compile in target es2015 environments.
+let firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
-const firebaseConfig = {
-  apiKey: getSafeEnvValue('VITE_FIREBASE_API_KEY'),
-  authDomain: getSafeEnvValue('VITE_FIREBASE_AUTH_DOMAIN'),
-  projectId: getSafeEnvValue('VITE_FIREBASE_PROJECT_ID'),
-  storageBucket: getSafeEnvValue('VITE_FIREBASE_STORAGE_BUCKET'),
-  messagingSenderId: getSafeEnvValue('VITE_FIREBASE_MESSAGING_SENDER_ID'),
-  appId: getSafeEnvValue('VITE_FIREBASE_APP_ID')
-};
+try {
+  firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
+  };
+} catch (e) {
+  // Silent fallback for legacy environments lacking module runtime environment variables
+}
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
 const app = isFirebaseConfigured ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()) : null;
@@ -742,7 +747,7 @@ export default function App() {
                         <span className="text-lg pl-2">{r.icon} <span className="text-xs font-bold uppercase ml-1">{r.label}</span></span>
                         <div className="flex items-center bg-white rounded-xl border text-slate-800 overflow-hidden shadow-sm">
                           <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className="px-3 py-1.5 hover:bg-slate-100"><Minus size={14}/></button>
-                          <span className="text-sm font-black w-6 text-center">{count}</span>
+                          <span className="text-sm font-bold w-6 text-center">{count}</span>
                           <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className="px-3 py-1.5 hover:bg-slate-100"><Plus size={14}/></button>
                         </div>
                       </div>
