@@ -3,7 +3,7 @@ import {
   CalendarDays, Settings, X, Plus, Trash2, 
   CheckCircle2, Share2, GripVertical, UploadCloud, 
   Users, UserPlus, Hammer, Zap, Minus, BarChart3, Info, Loader2, Printer,
-  LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus
+  LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon
 } from 'lucide-react';
 
 // === CLOUD STORAGE IMPORTS ==================================================
@@ -119,6 +119,11 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading'); // 'loading', 'dashboard', 'editor'
   
+  // Theme Preference State (Persistent)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('mbv_dark_mode') === 'true';
+  });
+
   // Dashboard State (List of all saved projects)
   const [projects, setProjects] = useState([]);
   
@@ -147,6 +152,11 @@ export default function App() {
     setToastMessage(message);
     setTimeout(() => setToastMessage(''), 4000);
   }, []);
+
+  // Save Theme to LocalStorage on Change
+  useEffect(() => {
+    localStorage.setItem('mbv_dark_mode', isDarkMode);
+  }, [isDarkMode]);
 
   // 1. INITIALIZATION & ROUTING
   useEffect(() => {
@@ -398,9 +408,9 @@ export default function App() {
   // ============================================================================
   if (view === 'loading') {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-slate-50 text-slate-500">
+      <div className={`flex flex-col h-screen items-center justify-center transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
         <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
-        <h2 className="font-bold text-lg text-slate-800">Loading Workspace...</h2>
+        <h2 className={`font-bold text-lg ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Loading Workspace...</h2>
       </div>
     );
   }
@@ -410,19 +420,34 @@ export default function App() {
   // ============================================================================
   if (view === 'dashboard') {
     return (
-      <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-800 overflow-y-auto">
-        <header className="bg-white border-b border-slate-200 px-8 py-6 shadow-sm shrink-0">
+      <div className={`flex flex-col h-screen font-sans overflow-y-auto transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
+        
+        {/* Dashboard Header */}
+        <header className={`border-b px-8 py-6 shadow-sm shrink-0 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'}`}>
           <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <h1 className="text-slate-900 font-extrabold text-2xl tracking-tight flex items-center gap-3">
+            <h1 className="font-extrabold text-2xl tracking-tight flex items-center gap-3">
               <div className="bg-blue-600 p-2 rounded-xl shadow-sm text-white"><LayoutDashboard size={24} /></div>
               Schedule Dashboard
             </h1>
-            <button onClick={createNewProject} className="bg-blue-600 hover:bg-blue-500 text-white py-2.5 px-6 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md shadow-blue-500/20">
-              <FilePlus2 size={18}/> Create New Schedule
-            </button>
+            
+            <div className="flex items-center gap-3">
+              {/* Theme Toggle in Dashboard */}
+              <button 
+                onClick={() => setIsDarkMode(!isDarkMode)} 
+                className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-amber-400 border-slate-700' : 'bg-white hover:bg-slate-50 text-slate-500 border-slate-200'}`}
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isSettingsOpen ? <Zap size={18} /> : (isDarkMode ? <Sun size={18} /> : <Moon size={18} />)}
+              </button>
+
+              <button onClick={createNewProject} className="bg-blue-600 hover:bg-blue-500 text-white py-2.5 px-6 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md shadow-blue-500/20">
+                <FilePlus2 size={18}/> Create New Schedule
+              </button>
+            </div>
           </div>
         </header>
 
+        {/* Dashboard Content Panel */}
         <main className="max-w-6xl mx-auto w-full p-8">
           {toastMessage && (
             <div className="mb-6 bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl border border-emerald-200 flex items-center gap-2 font-bold text-sm">
@@ -430,31 +455,37 @@ export default function App() {
             </div>
           )}
 
-          <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Your Projects ({projects.length})</h2>
+          <h2 className={`text-sm font-black uppercase tracking-widest mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Your Projects ({projects.length})</h2>
           
           {projects.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 border-dashed">
+            <div className={`text-center py-20 rounded-3xl border border-dashed transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
               <FolderPlus size={48} className="mx-auto text-slate-300 mb-4" />
-              <h3 className="text-lg font-bold text-slate-600">No schedules found</h3>
+              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>No schedules found</h3>
               <p className="text-slate-400 text-sm mt-1 mb-6">Create your first project to get started.</p>
               <button onClick={createNewProject} className="bg-blue-50 text-blue-600 hover:bg-blue-100 py-2 px-6 rounded-lg text-sm font-bold transition">Create Project</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map(p => (
-                <div key={p.id} onClick={() => loadProjectIntoEditor(p)} className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer group flex flex-col h-full">
+                <div 
+                  key={p.id} 
+                  onClick={() => loadProjectIntoEditor(p)} 
+                  className={`rounded-2xl p-6 hover:shadow-xl transition-all cursor-pointer group flex flex-col h-full border ${
+                    isDarkMode ? 'bg-slate-900 border-slate-850 hover:border-blue-500' : 'bg-white border-slate-200 hover:border-blue-300'
+                  }`}
+                >
                   <div className="flex justify-between items-start mb-4">
-                    <div className="bg-slate-50 text-slate-400 p-2 rounded-lg group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                    <div className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-950 text-slate-500 group-hover:bg-blue-900/30 group-hover:text-blue-400' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500'}`}>
                       <CalendarDays size={20} />
                     </div>
                     <button onClick={(e) => deleteProject(p.id, e)} className="text-slate-300 hover:text-rose-500 transition-colors p-1" title="Delete">
                       <Trash2 size={16}/>
                     </button>
                   </div>
-                  <h3 className="font-black text-lg text-slate-800 leading-tight mb-1 group-hover:text-blue-600 transition-colors">{p.appTitle}</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">{p.docMetadata?.projectName || "Untitled"}</p>
+                  <h3 className={`font-black text-lg leading-tight mb-1 transition-colors ${isDarkMode ? 'text-slate-100 group-hover:text-blue-400' : 'text-slate-800 group-hover:text-blue-600'}`}>{p.appTitle}</h3>
+                  <p className={`text-xs font-bold uppercase tracking-wider mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{p.docMetadata?.projectName || "Untitled"}</p>
                   
-                  <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <div className={`mt-auto pt-4 border-t flex items-center justify-between text-xs font-medium ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-500'}`}>
                     <span className="flex items-center gap-1.5"><Clock size={14}/> {new Date(p.lastModified).toLocaleDateString()}</span>
                     <span className="flex items-center gap-0.5 text-blue-500 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Open <ChevronRight size={14}/></span>
                   </div>
@@ -471,9 +502,9 @@ export default function App() {
   // RENDER: EDITOR VIEW (Main Application)
   // ============================================================================
   return (
-    <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-colors duration-200 ${isDarkMode ? 'bg-slate-950 text-slate-100 dark' : 'bg-slate-50 text-slate-800'}`}>
       
-      {/* Print Styles */}
+      {/* Custom Styles (Includes both Scrollbars and the Soft-Copy Landscape Print Media Queries) */}
       <style dangerouslySetInnerHTML={{__html: `
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -502,20 +533,20 @@ export default function App() {
       )}
 
       {/* TOP NAVIGATION BAR */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-20 shrink-0 print:hidden">
+      <header className={`border-b px-6 py-4 flex items-center justify-between shadow-sm z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center gap-4">
-          <button onClick={() => setView('dashboard')} className="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition flex items-center justify-center" title="Back to Dashboard">
+          <button onClick={() => setView('dashboard')} className={`p-2.5 rounded-xl transition flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title="Back to Dashboard">
             <Home size={18} />
           </button>
           
-          <div className="h-8 w-px bg-slate-200 mx-1"></div>
+          <div className={`h-8 w-px mx-1 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`}></div>
 
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <div className="bg-blue-600 p-1.5 rounded-md shadow-sm shrink-0"><CalendarDays className="text-white" size={16} /></div>
               <input 
                 type="text" value={appTitle} onChange={(e) => setAppTitle(e.target.value)}
-                className="text-slate-900 font-extrabold text-xl leading-tight tracking-tight bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-blue-500 outline-none px-1 py-0.5 -ml-1 w-[320px] transition-colors"
+                className={`font-extrabold text-xl leading-tight tracking-tight bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-blue-500 outline-none px-1 py-0.5 -ml-1 w-[320px] transition-all ${isDarkMode ? 'text-slate-100 focus:text-white' : 'text-slate-900'}`}
                 placeholder="Enter App Title..."
               />
             </div>
@@ -529,16 +560,16 @@ export default function App() {
 
         {/* Global Action Handlers */}
         <div className="flex items-center gap-4">
-          <div className="flex flex-col gap-1 w-48 bg-slate-50 p-2 rounded-xl border border-slate-200 shadow-inner">
+          <div className={`flex flex-col gap-1 w-48 p-2 rounded-xl border shadow-inner transition-colors ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
             <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">
               <span>Overall Progress:</span><span className="text-blue-600">{globalProgress}%</span>
             </div>
-            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
+            <div className={`h-2 w-full rounded-full overflow-hidden shadow-inner ${isDarkMode ? 'bg-slate-850' : 'bg-slate-200'}`}>
               <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${globalProgress}%`}}></div>
             </div>
           </div>
 
-          <div className="flex items-center bg-white border border-slate-200 rounded-xl px-4 py-2 text-slate-700 transition hover:bg-slate-50 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20">
+          <div className={`flex items-center border rounded-xl px-4 py-2 transition shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
             <label className="text-[10px] font-bold text-slate-500 mr-2 uppercase tracking-wider">Start Date:</label>
             <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="text-sm outline-none bg-transparent cursor-pointer font-bold text-blue-700 focus:ring-0" />
           </div>
@@ -551,24 +582,33 @@ export default function App() {
               <Printer size={16}/> Export PDF
             </button>
             
-            <div className="h-6 w-px bg-slate-200 mx-1 self-center"></div>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 self-center"></div>
+
+            {/* Dark Mode Toggler */}
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-amber-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-600'}`} title={isDarkMode ? "Toggle Light Mode" : "Toggle Dark Mode"}>
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
             <button onClick={handleShareToCloud} disabled={isSavingCloud} className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-2 px-4 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md shadow-emerald-500/20 border border-emerald-600">
               {isSavingCloud ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16}/>} Share
             </button>
-            <button onClick={() => setIsSettingsOpen(true)} className="bg-white hover:bg-slate-50 text-slate-600 p-2 rounded-xl transition border border-slate-200 shadow-sm"><Settings size={18}/></button>
+            
+            <button onClick={() => setIsSettingsOpen(true)} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'}`}>
+              <Settings size={18}/>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* CORE WORKSPACE */}
+      {/* MASTER SCROLLABLE WORKSPACE */}
       <div className="flex-grow overflow-auto p-8 relative">
         <div className="max-w-[1600px] mx-auto flex flex-col gap-6 h-full min-w-max pb-12">
             
-            <div id="gantt-export-zone" className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 flex flex-col gap-6 w-full relative">
+            {/* START OF DOM EXPORT ZONE */}
+            <div id="gantt-export-zone" className={`rounded-xl shadow-xl border p-6 flex flex-col gap-6 w-full relative transition-colors duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'}`}>
               
-              {/* Document Header Panel */}
-              <div className="border-b border-slate-300 pb-5 shrink-0 px-2">
+              {/* Corporate Header Section */}
+              <div className={`border-b pb-5 shrink-0 px-2 transition-colors ${isDarkMode ? 'border-slate-800' : 'border-slate-300'}`}>
                 <div className="flex justify-between items-center">
                   <div className="w-[30%] flex justify-start items-center">
                     {logos.left ? <img src={logos.left} className="h-12 object-contain" alt="Left Logo" /> : <CiticoreLogo />}
@@ -576,7 +616,7 @@ export default function App() {
                   <div className="w-[40%] text-center">
                     <input 
                       value={docMetadata.projectName} onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                      className="w-full text-center text-lg font-black tracking-tight text-slate-900 bg-transparent uppercase border-b-2 border-transparent hover:border-slate-200 focus:border-blue-500 outline-none transition-colors"
+                      className={`w-full text-center text-lg font-black tracking-tight bg-transparent uppercase border-b-2 border-transparent hover:border-slate-200 focus:border-blue-500 outline-none transition-colors ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
                       placeholder="ENTER PROJECT NAME..."
                     />
                     <input 
@@ -590,20 +630,35 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-4 gap-4 mt-8 text-[9px] text-slate-400 font-bold uppercase tracking-wider border-t border-slate-200 pt-4">
-                  <div className="flex flex-col gap-1 border-r border-slate-200 pr-4"><span>Document No:</span><input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className="font-mono bg-transparent outline-none hover:border-b hover:border-slate-300 text-slate-700 font-semibold" /></div>
-                  <div className="flex flex-col gap-1 border-r border-slate-200 px-4"><span>Revision:</span><input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className="bg-transparent outline-none hover:border-b hover:border-slate-300 text-slate-700 font-semibold" /></div>
-                  <div className="flex flex-col gap-1 border-r border-slate-200 px-4"><span>Effective Date:</span><input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className="bg-transparent outline-none hover:border-b hover:border-slate-300 text-slate-700 font-semibold" /></div>
-                  <div className="flex flex-col gap-1 pl-4"><span>Base Start Date:</span><span className="text-slate-800 font-bold text-sm">{projectStartDate}</span></div>
+                {/* Document Meta Fields */}
+                <div className={`grid grid-cols-4 gap-4 mt-8 text-[9px] font-bold uppercase tracking-wider border-t pt-4 transition-colors ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-400'}`}>
+                  <div className={`flex flex-col gap-1 border-r pr-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                    <span>Document No:</span>
+                    <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none hover:border-b hover:border-slate-350 font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} />
+                  </div>
+                  <div className={`flex flex-col gap-1 border-r px-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                    <span>Revision:</span>
+                    <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none hover:border-b hover:border-slate-350 font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} />
+                  </div>
+                  <div className={`flex flex-col gap-1 border-r px-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                    <span>Effective Date:</span>
+                    <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none hover:border-b hover:border-slate-350 font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} />
+                  </div>
+                  <div className="flex flex-col gap-1 pl-4">
+                    <span>Base Start Date:</span>
+                    <span className={`${isDarkMode ? 'text-slate-100' : 'text-slate-800'} font-bold text-sm`}>{projectStartDate}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Grid split view */}
-              <div className="flex border border-slate-200/80 rounded-xl overflow-hidden flex-grow min-h-[450px] bg-white shadow-sm">
+              {/* Core Split Editor Container */}
+              <div className={`flex border rounded-xl overflow-hidden flex-grow min-h-[450px] shadow-sm transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/80'}`}>
                 
-                {/* Spreadsheet Component */}
-                <div className="w-[45%] flex flex-col bg-white shrink-0 z-10 border-r border-slate-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] relative">
-                  <div className="h-[48px] bg-slate-50 border-b border-slate-200/80 p-2 font-bold text-[9px] text-slate-500 flex items-center uppercase tracking-widest sticky top-0 z-20">
+                {/* Left Pane - Detailed Spreadsheet */}
+                <div className={`w-[45%] flex flex-col shrink-0 z-10 border-r relative transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]'}`}>
+                  
+                  {/* Spreadsheet Header */}
+                  <div className={`h-[48px] p-2 font-bold text-[9px] flex items-center uppercase tracking-widest sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200/80 text-slate-500'}`}>
                     <span className="w-10 text-center">Ref</span>
                     <span className="flex-grow px-3">Phase / Task Description</span>
                     <span className="w-12 text-center">Days</span>
@@ -611,64 +666,99 @@ export default function App() {
                     <span className="w-8 print:hidden"></span>
                   </div>
 
+                  {/* Spreadsheet Body */}
                   <div className="flex-grow">
                     {activeFlowTasks.map((task, index) => (
-                      <div key={task.id} className={`h-[52px] flex items-center text-[10px] group transition-colors border-b border-slate-100 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                      <div key={task.id} className={`h-[52px] flex items-center text-[10px] group transition-colors border-b ${
+                        isDarkMode 
+                          ? `border-slate-850 ${index % 2 === 0 ? 'bg-slate-900' : 'bg-slate-950/40'}` 
+                          : `border-slate-100 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`
+                      }`}>
+                        
                         <div className="w-10 h-full text-center flex items-center justify-center relative shrink-0">
                           <GripVertical size={12} className="text-slate-300 absolute left-1 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
                           <input value={task.ref} onChange={(e) => updateTask(task.id, 'ref', e.target.value)} className="font-bold text-slate-400 text-center w-full bg-transparent outline-none focus:text-blue-600" />
                         </div>
-                        <div className="flex-grow h-full flex flex-col justify-center px-3 border-l border-slate-100">
+                        
+                        <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
                           <input value={task.desc} onChange={(e) => updateTask(task.id, 'desc', e.target.value)} className="font-bold text-[9px] text-blue-500 uppercase tracking-wider bg-transparent outline-none w-full mb-0.5" placeholder="Phase Name" />
-                          <input value={task.task} onChange={(e) => updateTask(task.id, 'task', e.target.value)} className="font-semibold text-slate-800 text-[12px] bg-transparent outline-none rounded-md w-full leading-tight transition-all p-0.5 -ml-0.5" />
+                          <input value={task.task} onChange={(e) => updateTask(task.id, 'task', e.target.value)} className={`font-semibold text-[12px] bg-transparent outline-none rounded-md w-full leading-tight transition-all p-0.5 -ml-0.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
                         </div>
-                        <div className="w-12 h-full border-l border-slate-100 flex items-center justify-center p-1.5 shrink-0">
-                          <input type="number" min="1" value={task.duration} onChange={(e) => updateTask(task.id, 'duration', parseInt(e.target.value) || 1)} className="w-full text-center bg-slate-50 border border-slate-200 hover:border-blue-400 focus:bg-white focus:border-blue-500 rounded-md py-1.5 text-xs font-bold text-slate-700 outline-none" />
+                        
+                        <div className={`w-12 h-full border-l flex items-center justify-center p-1.5 shrink-0 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                          <input 
+                            type="number" min="1" value={task.duration} 
+                            onChange={(e) => updateTask(task.id, 'duration', parseInt(e.target.value) || 1)} 
+                            className={`w-full text-center border hover:border-blue-400 focus:bg-white focus:border-blue-500 rounded-md py-1.5 text-xs font-bold outline-none transition-all ${
+                              isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-200 focus:text-slate-800' : 'bg-slate-50 border-slate-200 text-slate-700'
+                            }`} 
+                          />
                         </div>
-                        <div className="w-16 h-full border-l border-slate-100 flex flex-col items-center justify-center px-2 py-1 shrink-0">
+
+                        {/* Visual Progress Bar Column */}
+                        <div className={`w-16 h-full border-l flex flex-col items-center justify-center px-2 py-1 shrink-0 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
                           <div className="flex items-center gap-0.5 w-full justify-between mb-1">
-                            <input type="number" min="0" max="100" value={task.progress || 0} onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} className="w-8 text-left bg-transparent rounded py-0 text-[11px] font-black text-slate-700 outline-none" />
+                            <input 
+                              type="number" min="0" max="100" value={task.progress || 0} 
+                              onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} 
+                              className={`w-8 text-left bg-transparent rounded py-0 text-[11px] font-black outline-none ${isDarkMode ? 'text-slate-100' : 'text-slate-700'}`} 
+                            />
                             <span className="text-[9px] font-bold text-slate-400">%</span>
                           </div>
-                          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`}>
                             <div className="h-full bg-blue-500" style={{width: `${task.progress || 0}%`}}></div>
                           </div>
                         </div>
-                        <div className="w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-100 print:hidden">
+                        
+                        <div className={`w-8 h-full flex items-center justify-center shrink-0 border-l print:hidden ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
                           <button onClick={() => removeTask(task.id)} className="text-slate-300 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={13} /></button>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="h-[80px] p-4 flex flex-col justify-center border-t border-slate-300 bg-white sticky bottom-0 z-20 print:hidden">
-                     <button onClick={addTask} className="text-[11px] font-bold text-blue-600 flex items-center gap-1.5 hover:text-blue-800 transition bg-blue-50 px-4 py-2.5 rounded-xl border border-blue-200 border-dashed w-full justify-center">
+                  {/* Left Pane Sticky Footer */}
+                  <div className={`h-[80px] p-4 flex flex-col justify-center border-t sticky bottom-0 z-20 print:hidden transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                     <button onClick={addTask} className={`text-[11px] font-bold flex items-center gap-1.5 transition px-4 py-2.5 rounded-xl border border-dashed w-full justify-center ${
+                       isDarkMode ? 'bg-slate-950 text-blue-400 hover:text-blue-300 border-blue-900/60' : 'bg-blue-50 text-blue-600 hover:text-blue-800 border-blue-200'
+                     }`}>
                        <Plus size={14} /> Add New Task Row
                      </button>
                   </div>
                 </div>
 
-                {/* Timeline Panel */}
-                <div id="gantt-scroll-area" className="flex-1 flex flex-col bg-slate-50/30 relative overflow-x-auto print:overflow-visible">
-                  <div className="h-[48px] bg-slate-50 border-b border-slate-200/80 flex min-w-max sticky top-0 z-20">
+                {/* Right Pane - Visual Gantt Timeline */}
+                <div id="gantt-scroll-area" className="flex-1 flex flex-col bg-slate-50/30 dark:bg-slate-950/20 relative overflow-x-auto print:overflow-visible">
+                  
+                  {/* Timeline Header Row */}
+                  <div className={`h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
                     {headerDays.map(day => {
                       const dateStr = generateDateHeaderStr(projectStartDate, day);
-                      const isWeekend = new Date(projectStartDate).getTime() + day * 86400000;
-                      const isSatSun = new Date(isWeekend).getDay() === 0 || new Date(isWeekend).getDay() === 6;
+                      const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
+                      const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
                       return (
-                        <div key={day} className={`w-[44px] h-full flex-shrink-0 text-center border-r border-slate-200/60 flex flex-col justify-center ${isSatSun ? 'bg-slate-100/80' : ''}`}>
-                          <span className="text-[10px] font-black text-slate-700 leading-tight">{dateStr.split(' ')[0]}</span>
+                        <div key={day} className={`w-[44px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center transition-colors ${
+                          isDarkMode 
+                            ? `border-slate-850 ${isSatSun ? 'bg-slate-900/40' : ''}` 
+                            : `border-slate-200/60 ${isSatSun ? 'bg-slate-100/80' : ''}`
+                        }`}>
+                          <span className={`text-[10px] font-black leading-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-700'}`}>{dateStr.split(' ')[0]}</span>
                           <span className="text-[8px] font-bold text-slate-400 leading-tight uppercase">{dateStr.split(' ')[1]}</span>
                         </div>
                       )
                     })}
                   </div>
                   
-                  <div className="flex-grow min-w-max relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iMTAwJSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNDQiIHkxPSIwIiB4Mj0iNDQiIHkyPSIxMDAlIiBzdHJva2U9IiNlMmU4ZjAiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]">
+                  {/* Gantt Grid Gridlines (The background pattern) */}
+                  <div className={`flex-grow min-w-max relative transition-all duration-200 ${
+                    isDarkMode 
+                      ? "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iMTAwJSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNDQiIHkxPSIwIiB4Mj0iNDQiIHkyPSIxMDAlIiBzdHJva2U9IiMyYTMyNDEiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]" 
+                      : "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iMTAwJSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNDQiIHkxPSIwIiB4Mj0iNDQiIHkyPSIxMDAlIiBzdHJva2U9IiNlMmU4ZjAiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]"
+                  }`}>
                      {activeFlowTasks.map((task) => {
                         const isHoldPoint = task.task.toLowerCase().includes('hold point') || task.task.toLowerCase().includes('curing');
                         return (
-                          <div key={task.id} className="h-[52px] border-b border-slate-200/50 relative flex items-center">
+                          <div key={task.id} className={`h-[52px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-850' : 'border-slate-200/50'}`}>
                              <div 
                                onClick={() => setActiveTaskModal(task.id)}
                                className={`absolute h-[28px] rounded-md shadow-sm transition-all flex items-center justify-between overflow-hidden text-[10px] font-bold border cursor-pointer hover:ring-4 hover:ring-offset-1 hover:ring-blue-200 print:hover:ring-0
@@ -693,8 +783,10 @@ export default function App() {
                   </div>
                   
                   {/* Daily Load Chart Histogram */}
-                  <div className="h-[80px] border-t border-slate-300 flex min-w-max items-end bg-white relative sticky bottom-0 z-20">
-                    <div className="absolute left-3 top-3 text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 bg-white/90 px-2 py-1 rounded shadow-sm border border-slate-100">
+                  <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-300'}`}>
+                    <div className={`absolute left-3 top-3 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 px-2 py-1 rounded shadow-sm border ${
+                      isDarkMode ? 'bg-slate-950 text-slate-400 border-slate-800' : 'bg-white/90 text-slate-500 border-slate-100'
+                    }`}>
                       <BarChart3 size={12} className="text-blue-500" /> Daily Manpower Load
                     </div>
                     {headerDays.map(day => {
@@ -704,9 +796,9 @@ export default function App() {
                       }, 0);
                       const heightPercentage = maxManpowerVal > 0 ? (dayManpower / maxManpowerVal) * 100 : 0;
                       return (
-                        <div key={`mp-${day}`} className="w-[44px] h-full flex-shrink-0 border-r border-slate-100 flex flex-col justify-end items-center pb-2 relative group">
-                          <div className="w-7 bg-indigo-200 rounded-t-md transition-all flex items-end justify-center group-hover:bg-indigo-400" style={{ height: `${heightPercentage * 0.65}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} ></div>
-                          <span className="text-[10px] font-black text-slate-600 mt-1.5">{dayManpower > 0 ? dayManpower : '-'}</span>
+                        <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2 relative group ${isDarkMode ? 'border-slate-850' : 'border-slate-100'}`}>
+                          <div className={`w-7 rounded-t-md transition-all flex items-end justify-center ${isDarkMode ? 'bg-indigo-950 group-hover:bg-indigo-900' : 'bg-indigo-200 group-hover:bg-indigo-400'}`} style={{ height: `${heightPercentage * 0.65}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} ></div>
+                          <span className={`text-[10px] font-black mt-1.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
                         </div>
                       );
                     })}
@@ -729,33 +821,35 @@ export default function App() {
         if (!currentTaskEditing) return null;
         return (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[85vh]">
-              <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-200 ${
+              isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'
+            }`}>
+              <div className={`p-6 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50'}`}>
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 flex items-center gap-3"><UserPlus size={20}/> Assign Shift Crew</h3>
+                  <h3 className={`text-xl font-black flex items-center gap-3 ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}><UserPlus size={20}/> Assign Shift Crew</h3>
                   <p className="text-sm text-slate-500 font-semibold mt-1"><span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded-md mr-2">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
                 </div>
-                <button onClick={() => setActiveTaskModal(null)} className="text-slate-400 hover:text-rose-500 bg-white p-1.5 rounded-lg border shadow-sm"><X size={18} /></button>
+                <button onClick={() => setActiveTaskModal(null)} className={`p-1.5 rounded-lg border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white text-slate-400'}`}><X size={18} /></button>
               </div>
               
-              <div className="p-8 overflow-y-auto flex-grow bg-white space-y-6">
+              <div className="p-8 overflow-y-auto flex-grow space-y-6">
                 <div className="flex flex-wrap gap-4">
                   {WORKER_ROLES.map(r => {
                     const count = parseInt(currentTaskEditing[r.key]) || 0;
                     return (
-                      <div key={r.key} className={`flex items-center gap-3 border rounded-2xl p-2 ${count > 0 ? r.bg : 'bg-slate-50 text-slate-400'}`}>
+                      <div key={r.key} className={`flex items-center gap-3 border rounded-2xl p-2 ${count > 0 ? r.bg : (isDarkMode ? 'bg-slate-950/30 border-slate-800 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400')}`}>
                         <span className="text-lg pl-2">{r.icon} <span className="text-xs font-bold uppercase ml-1">{r.label}</span></span>
-                        <div className="flex items-center bg-white rounded-xl border text-slate-800 overflow-hidden shadow-sm">
-                          <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className="px-3 py-1.5 hover:bg-slate-100"><Minus size={14}/></button>
-                          <span className="text-sm font-bold w-6 text-center">{count}</span>
-                          <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className="px-3 py-1.5 hover:bg-slate-100"><Plus size={14}/></button>
+                        <div className={`flex items-center rounded-xl border text-slate-800 overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-750' : 'bg-white border-slate-200'}`}>
+                          <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-3 py-1.5 transition ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100'}`}><Minus size={14}/></button>
+                          <span className={`text-sm font-bold w-6 text-center ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{count}</span>
+                          <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-3 py-1.5 transition ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100'}`}><Plus size={14}/></button>
                         </div>
                       </div>
                     )
                   })}
                 </div>
 
-                <div className="space-y-6 pt-4 border-t border-slate-100">
+                <div className={`space-y-6 pt-4 border-t ${isDarkMode ? 'border-slate-850' : 'border-slate-100'}`}>
                   {WORKER_ROLES.filter(r => (currentTaskEditing[r.key] || 0) > 0).map(r => {
                     const inputs = [];
                     for(let i=0; i<parseInt(currentTaskEditing[r.key]); i++) {
@@ -764,7 +858,9 @@ export default function App() {
                           key={i} type="text" value={currentTaskEditing.assigned?.[r.key]?.[i] || ''}
                           onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
                           placeholder={`Enter name for ${r.fullName} #${i+1}...`}
-                          className="px-4 py-3 bg-slate-50 border rounded-xl text-sm font-semibold text-slate-800 w-full focus:ring-2 focus:ring-blue-500/50 outline-none"
+                          className={`px-4 py-3 border rounded-xl text-sm font-semibold w-full focus:ring-2 focus:ring-blue-500/50 outline-none ${
+                            isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-200 focus:bg-slate-900' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'
+                          }`}
                         />
                       );
                     }
@@ -777,7 +873,7 @@ export default function App() {
                   })}
                 </div>
               </div>
-              <div className="p-6 bg-slate-50 border-t flex justify-end">
+              <div className={`p-6 border-t flex justify-end ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50'}`}>
                 <button onClick={() => setActiveTaskModal(null)} className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl shadow-md">Done Assigning</button>
               </div>
             </div>
@@ -788,31 +884,31 @@ export default function App() {
       {/* SETTINGS MODAL */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-            <div className="p-5 border-b bg-slate-50 flex justify-between items-center">
+          <div className={`rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50'}`}>
               <span className="font-bold flex items-center gap-2"><Settings size={18}/> Custom Branding</span>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 border p-1 rounded-md bg-white shadow-sm"><X size={14} /></button>
+              <button onClick={() => setIsSettingsOpen(false)} className={`p-1 rounded-md border shadow-sm ${isDarkMode ? 'bg-slate-850 border-slate-800 text-slate-400' : 'bg-white text-slate-400'}`}><X size={14} /></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">Left Header Logo</label>
-                <label className="cursor-pointer bg-slate-50 border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 hover:bg-slate-100 transition">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase">Left Header Logo</label>
+                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-800 hover:bg-slate-850' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
                   {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <UploadCloud size={20} className="text-blue-400"/>}
                   <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Upload Image</span>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('left', e)} className="hidden" />
                 </label>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">Right Header Logo</label>
-                <label className="cursor-pointer bg-slate-50 border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 hover:bg-slate-100 transition">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase">Right Header Logo</label>
+                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-800 hover:bg-slate-850' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
                   {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <UploadCloud size={20} className="text-blue-400"/>}
                   <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Upload Image</span>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('right', e)} className="hidden" />
                 </label>
               </div>
             </div>
-            <div className="p-5 bg-slate-50 border-t flex justify-end">
-              <button onClick={() => setIsSettingsOpen(false)} className="px-6 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800">Done</button>
+            <div className={`p-5 border-t flex justify-end ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50'}`}>
+              <button onClick={() => setIsSettingsOpen(false)} className={`px-6 py-2 text-sm font-bold rounded-xl transition ${isDarkMode ? 'bg-slate-800 hover:bg-slate-750 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}>Done</button>
             </div>
           </div>
         </div>
