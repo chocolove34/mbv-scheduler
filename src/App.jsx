@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   CalendarDays, Settings, X, Plus, Trash2, 
   CheckCircle2, Share2, GripVertical, UploadCloud, 
   Users, UserPlus, Hammer, Zap, Minus, BarChart3, Info, Loader2, Printer,
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
-  ShieldAlert, CloudRain, ListTodo, ClipboardCheck, ArrowUpDown, Smartphone, Monitor, ChevronDown, ChevronUp
+  ShieldAlert, CloudRain, ListTodo, ClipboardCheck, ArrowUpDown, Smartphone, Monitor, ChevronDown, ChevronUp, Folder
 } from 'lucide-react';
 
 // === CLOUD STORAGE IMPORTS ==================================================
@@ -92,31 +92,18 @@ const generateDateHeaderStr = (startDateStr, dayOffset) => {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const copyToClipboard = (text) => {
-  if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text);
-  } else {
-      let textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try { document.execCommand('copy'); } catch (err) {}
-      textArea.remove();
-  }
-};
-
 export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading'); // 'loading', 'editor'
   
   // Responsive displays
-  const [mobileDisplayTab, setMobileDisplayTab] = useState('gantt'); 
+  const [mobileDisplayTab, setMobileDisplayTab] = useState('tasks'); 
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
+
+  // Project select popover state (Replaces natively broken dropdown highlighted in image_65bf21.png)
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   // Onboarding guide
   const [showTour, setShowTour] = useState(() => {
@@ -172,6 +159,17 @@ export default function App() {
   const showToast = useCallback((message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(''), 4000);
+  }, []);
+
+  // Close custom dropdown when clicking outside to ensure premium interface UX
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProjectDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -610,6 +608,14 @@ export default function App() {
         }
       `}} />
 
+      {/* Floating active feedback toast container */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-slate-900 border border-emerald-500/20 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 z-50 animate-bounce duration-500">
+          <CheckCircle2 className="text-emerald-400 w-5 h-5 shrink-0" />
+          <span className="text-xs font-bold">{toastMessage}</span>
+        </div>
+      )}
+
       {/* Dynamic Alerts Modal container */}
       {customPrompt && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -708,47 +714,90 @@ export default function App() {
       )}
 
       {/* RESPONSIVE HEADER BAR */}
+      {}
       <header className={`border-b px-4 py-3 flex items-center justify-between shadow-sm z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-900/60' : 'bg-white border-slate-100'}`}>
         <div className="flex items-center gap-2 min-w-0 flex-1 mr-3">
           <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0">
             <LayoutDashboard size={16} />
           </div>
           
-          {/* MULTI-PROJECT SWITCHER DROPDOWN WITH DIRECT DELETION ACTION */}
-          <div className="flex flex-col min-w-0 max-w-[200px] sm:max-w-[320px]">
-            <div className="flex items-center gap-1.5">
-              <select
-                value={activeProjectId}
-                onChange={(e) => {
-                  if (e.target.value === 'create-new-prompt-action') {
-                    setShowCreateProjectModal(true);
-                  } else if (e.target.value.startsWith('delete-action-')) {
-                    const targetId = e.target.value.replace('delete-action-', '');
-                    handleDeleteProject(targetId);
-                  } else {
-                    handleSwitchProject(e.target.value);
-                  }
-                }}
-                className={`font-black text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-500 focus:border-blue-500 outline-none cursor-pointer pr-1 truncate ${
-                  isDarkMode ? 'text-slate-100' : 'text-slate-800'
+          {/* BEAUTIFUL CUSTOM PROJECT SWITCHER (Replaces the broken native list dropdown from image_65bf21.png) */}
+          <div className="flex flex-col min-w-0" ref={dropdownRef}>
+            <div className="relative">
+              <button
+                onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black select-none ${
+                  isDarkMode 
+                    ? 'bg-[#0f172a] hover:bg-[#1e293b] text-slate-100 border-slate-800/80' 
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-850 border-slate-200'
                 }`}
-                style={{ WebkitAppearance: 'none', appearance: 'none', background: 'transparent' }}
               >
-                {projectList.map((proj) => (
-                  <optgroup key={proj.id} label={proj.title} className={isDarkMode ? 'bg-[#131c2e]' : 'bg-white'}>
-                    <option value={proj.id}>📁 Load Schedule</option>
-                    {proj.id !== 'master-schedule' && (
-                      <option value={`delete-action-${proj.id}`}>❌ Delete Project</option>
-                    )}
-                  </optgroup>
-                ))}
-                <option value="create-new-prompt-action" className="text-blue-500 font-black bg-blue-500/10">
-                  ➕ + Create New Site Project...
-                </option>
-              </select>
-              <ChevronDown size={14} className="text-slate-500 pointer-events-none shrink-0" />
+                <Folder size={14} className="text-blue-500 shrink-0" />
+                <span className="truncate max-w-[140px] sm:max-w-[280px]">
+                  {projectList.find(p => p.id === activeProjectId)?.title || 'Loading active project...'}
+                </span>
+                <ChevronDown size={14} className="text-slate-500 shrink-0" />
+              </button>
+
+              {/* High-fidelity dropdown panel */}
+              {isProjectDropdownOpen && (
+                <div className={`absolute left-0 mt-2 w-80 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
+                  isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-200' : 'bg-white border-slate-250 text-slate-800'
+                }`}>
+                  <div className="px-3 py-2 text-[9px] font-black tracking-widest text-slate-500 border-b border-slate-800/40 uppercase mb-2">
+                    SITE SCHEDULES DIRECTORY
+                  </div>
+                  <div className="max-h-64 overflow-y-auto space-y-1 pr-1">
+                    {projectList.map((proj) => (
+                      <div 
+                        key={proj.id}
+                        onClick={() => {
+                          handleSwitchProject(proj.id);
+                          setIsProjectDropdownOpen(false);
+                          showToast(`Switched active workspace to "${proj.title}"`);
+                        }}
+                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                          activeProjectId === proj.id 
+                            ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' 
+                            : (isDarkMode ? 'hover:bg-slate-800/60 text-slate-300' : 'hover:bg-slate-50 text-slate-700')
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Folder size={12} className={activeProjectId === proj.id ? 'text-blue-400' : 'text-slate-400'} />
+                          <span className="truncate">{proj.title}</span>
+                        </div>
+                        {proj.id !== 'master-schedule' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProject(proj.id);
+                              setIsProjectDropdownOpen(false);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0"
+                            title="Delete project"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="border-t border-slate-800/40 mt-2 pt-2">
+                    <button 
+                      onClick={() => {
+                        setShowCreateProjectModal(true);
+                        setIsProjectDropdownOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-xs font-black uppercase tracking-wider"
+                    >
+                      <Plus size={14} /> Create New Project
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <span className="text-blue-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest truncate mt-0.5">
+            <span className="text-blue-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest truncate mt-1 pl-1">
               {appSubtitle}
             </span>
           </div>
@@ -932,6 +981,7 @@ export default function App() {
               )}
 
               {/* 1. MOBILE FIELD CARDS LAYOUT */}
+              {}
               {(!isMobileViewport || mobileDisplayTab === 'tasks' || mobileDisplayTab === 'qa') && (
                 <div className="block lg:hidden space-y-3">
                   {filteredTasks.map((task) => {
@@ -944,7 +994,7 @@ export default function App() {
                       <div 
                         key={task.id}
                         onClick={() => setActiveTaskModal(task.id)}
-                        className={`p-3.5 rounded-xl border transition-all flex flex-col gap-2.5 relative cursor-pointer ${
+                        className={`p-4 rounded-2xl border transition-all flex flex-col gap-3.5 relative cursor-pointer active:scale-[0.99] duration-150 ${
                           isHold 
                             ? 'bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/45 shadow-lg' 
                             : isApproved 
@@ -965,10 +1015,10 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Progress completion meter */}
-                        <div className="flex items-center gap-4">
+                        {/* Interactive dynamic controls to allow on-the-go adjustments on mobile */}
+                        <div className="flex items-center gap-4 bg-slate-50/50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/40">
                           <div className="flex-grow">
-                            <div className="flex justify-between text-[8px] font-bold text-slate-500 mb-0.5">
+                            <div className="flex justify-between text-[8px] font-bold text-slate-500 mb-1">
                               <span>PROGRESS:</span>
                               <span>{task.progress}%</span>
                             </div>
@@ -978,9 +1028,36 @@ export default function App() {
                             </div>
                           </div>
                           
-                          <div className="shrink-0 text-right">
-                            <span className="text-[8px] font-black text-slate-500 block">DAYS</span>
-                            <span className="text-xs font-black text-slate-700 dark:text-slate-200">{task.adjustedDuration}d</span>
+                          {/* TOUCH TARGET INTUITIVE DAY CONTROLLER */}
+                          <div className="shrink-0 flex flex-col items-center border-l border-slate-200 dark:border-slate-800/60 pl-3">
+                            <span className="text-[8px] font-black text-slate-500 mb-1">BASE DAYS</span>
+                            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-slate-850 shadow-sm">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateTask(task.id, 'duration', Math.max(1, (task.duration || 1) - 1));
+                                  showToast(`Adjusted ${task.ref} duration to ${Math.max(1, (task.duration || 1) - 1)} base days`);
+                                }}
+                                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 active:scale-95 transition-all"
+                                title="Decrease duration"
+                              >
+                                <Minus size={12} />
+                              </button>
+                              <span className="text-xs font-black min-w-[16px] text-center text-blue-600 dark:text-blue-400">
+                                {task.duration}
+                              </span>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateTask(task.id, 'duration', (task.duration || 1) + 1);
+                                  showToast(`Adjusted ${task.ref} duration to ${(task.duration || 1) + 1} base days`);
+                                }}
+                                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 active:scale-95 transition-all"
+                                title="Increase duration"
+                              >
+                                <Plus size={12} />
+                              </button>
+                            </div>
                           </div>
                         </div>
 
@@ -996,7 +1073,7 @@ export default function App() {
 
                         <button 
                           onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
-                          className="absolute right-3 top-3 text-slate-400 hover:text-rose-500 p-1 transition-colors"
+                          className="absolute right-3 top-3 text-slate-400 hover:text-rose-500 p-1.5 hover:bg-rose-500/10 rounded-lg transition-all"
                         >
                           <Trash2 size={12}/>
                         </button>
@@ -1105,7 +1182,7 @@ export default function App() {
                     {/* Table bottom panel footer */}
                     <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden">
                        <button onClick={addTask} className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2 rounded-xl border border-dashed w-full justify-center ${
-                         isDarkMode ? 'bg-slate-950/60 text-blue-450 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
+                         isDarkMode ? 'bg-slate-955/60 text-blue-450 hover:text-blue-300 border-blue-900/40' : 'bg-blue-55 text-blue-600 border-blue-200'
                        }`}>
                          <Plus size={12} /> Add Task
                        </button>
@@ -1170,7 +1247,7 @@ export default function App() {
                                    <div className="flex gap-1.5 items-center">
                                      <span className={`flex items-center gap-0.5 text-[8px] border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
                                        isDarkMode 
-                                         ? 'bg-slate-900 border-slate-800 text-slate-300' 
+                                         ? 'bg-slate-900 border-slate-805 text-slate-300' 
                                          : 'bg-white border-slate-200 text-slate-600'
                                      }`}>
                                        <UserPlus size={9}/> Crew
@@ -1233,6 +1310,7 @@ export default function App() {
       </div>
 
       {/* CORE INSPECTION CHECKLIST GATE MODAL */}
+      {}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -1252,6 +1330,47 @@ export default function App() {
               
               <div className="p-4 sm:p-6 overflow-y-auto flex-grow space-y-5">
                 
+                {/* DYNAMIC BASE DAYS EDITABLE TARGETS FOR MOBILE (Solves Mobile adjustment limitations) */}
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2.5">Task Duration Base Days (Mobile Friendly)</h4>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => {
+                        updateTask(currentTaskEditing.id, 'duration', Math.max(1, (currentTaskEditing.duration || 1) - 1));
+                        showToast(`Decreased duration to ${Math.max(1, (currentTaskEditing.duration || 1) - 1)} base days`);
+                      }}
+                      className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm transition active:scale-95"
+                    >
+                      <Minus size={16} />
+                    </button>
+                    
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={currentTaskEditing.duration || 1} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 1;
+                        updateTask(currentTaskEditing.id, 'duration', val);
+                      }}
+                      className="w-24 text-center font-black text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 text-blue-600 dark:text-blue-400 shadow-sm outline-none"
+                    />
+                    
+                    <button 
+                      onClick={() => {
+                        updateTask(currentTaskEditing.id, 'duration', (currentTaskEditing.duration || 1) + 1);
+                        showToast(`Increased duration to ${(currentTaskEditing.duration || 1) + 1} base days`);
+                      }}
+                      className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm transition active:scale-95"
+                    >
+                      <Plus size={16} />
+                    </button>
+                    
+                    <div className="text-xs font-bold text-slate-400 ml-2">
+                      Base Days (Delay adjust: {currentTaskEditing.adjustedDuration}d)
+                    </div>
+                  </div>
+                </div>
+
                 {/* Progress Slider Preset Buttons */}
                 <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Progress Tracker</h4>
