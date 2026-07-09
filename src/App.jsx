@@ -4,13 +4,13 @@ import {
   CheckCircle2, Share2, GripVertical, UploadCloud, 
   Users, UserPlus, Hammer, Zap, Minus, BarChart3, Info, Loader2, Printer,
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
-  ShieldAlert, CloudRain, ListTodo, ClipboardCheck, ArrowUpDown, Smartphone, Monitor
+  ShieldAlert, CloudRain, ListTodo, ClipboardCheck, ArrowUpDown, Smartphone, Monitor, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 // === CLOUD STORAGE IMPORTS ==================================================
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 // Safely configure Firebase fallback
 let firebaseConfig = {
@@ -46,7 +46,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 // ============================================================================
 
 const CiticoreLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-8 w-auto">
     <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#EAB308" />
     <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#F1C40F" />
     <text x="50" y="24" fontFamily="Inter, Arial, sans-serif" fontWeight="900" fontSize="15" fill="#3b82f6">CITICORE</text>
@@ -55,7 +55,7 @@ const CiticoreLogo = () => (
 );
 
 const MbvLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-8 w-auto">
     <rect x="10" y="5" width="35" height="35" rx="8" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5" />
     <path d="M27 10 L19 23 L26 23 L23 33 L32 19 L25 19 Z" fill="#EAB308" />
     <text x="55" y="24" fontFamily="Inter, Arial, sans-serif" fontWeight="900" fontSize="14" fill="#3b82f6">MBV ELECTRIC</text>
@@ -109,60 +109,68 @@ const copyToClipboard = (text) => {
   }
 };
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
+// ============================================================================
+// MAIN APPLICATION
+// ============================================================================
 
-// ============================================================================
-// MAIN REVOLUTIONIZED APPLICATION
-// ============================================================================
 export default function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('loading'); // 'loading', 'dashboard', 'editor'
+  const [view, setView] = useState('loading'); // 'loading', 'editor'
   
-  // Responsive display mode configuration (mobile/gantt)
-  const [mobileDisplayTab, setMobileDisplayTab] = useState('tasks'); // 'tasks', 'gantt', 'qa'
+  // Responsive displays
+  const [mobileDisplayTab, setMobileDisplayTab] = useState('gantt'); 
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
-  // Friendly onboarding tour state for non-tech-savvy site crews
+  // Onboarding guide
   const [showTour, setShowTour] = useState(() => {
     return localStorage.getItem('mbv_seen_tour') !== 'true';
   });
   const [tourStep, setTourStep] = useState(1);
 
-  // Dark Theme Preference State (Persistent)
+  // Dynamic eye-comfort dark mode
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('mbv_dark_mode') !== 'false'; // Default to true (dark theme)
+    return localStorage.getItem('mbv_dark_mode') !== 'false';
   });
 
-  // Active Weather Scenario State
-  const [weatherFactor, setWeatherFactor] = useState('sunny'); // 'sunny', 'heavy_rain', 'typhoon'
+  // Weather variables
+  const [weatherFactor, setWeatherFactor] = useState('sunny');
 
-  // Dashboard State (List of all saved projects)
-  const [projects, setProjects] = useState([]);
-  
-  // Active Editor State
-  const [activeProjectId, setActiveProjectId] = useState(null);
+  // MULTI-PROJECT ROUTER & SYNC STATE
+  const [activeProjectId, setActiveProjectId] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const projParam = params.get('project');
+    if (projParam) return projParam;
+    return localStorage.getItem('mbv_active_project_id') || 'master-schedule';
+  });
+
+  const [projectList, setProjectList] = useState([
+    { id: 'master-schedule', title: 'Citicore 100MW Solar Project' }
+  ]);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+
+  // Master Schedule Single Authority State
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [projectStartDate, setProjectStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [appTitle, setAppTitle] = useState("Citicore Field Console");
   const [appSubtitle, setAppSubtitle] = useState("MBV Electric Schedule Architect");
   const [logos, setLogos] = useState({ left: '', right: '' });
   const [docMetadata, setDocMetadata] = useState({
-    projectName: "CITICORE 100MW EXPANSION",
+    projectName: "CITICORE 100MW SOLAR PROJECT",
     location: "Pagbilao, Quezon Site Office",
     docNo: "DOC-CIT-MBV-901",
-    revision: "02",
+    revision: "01",
     date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
   });
 
-  // UI States
+  // UI status metrics
   const [toastMessage, setToastMessage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTaskModal, setActiveTaskModal] = useState(null);
   const [isSavingCloud, setIsSavingCloud] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTabFilter, setActiveTabFilter] = useState('all'); // 'all', 'hold', 'approved'
-
-  // Standard modal custom prompt states to replace raw window.confirm
+  const [activeTabFilter, setActiveTabFilter] = useState('all');
   const [customPrompt, setCustomPrompt] = useState(null);
 
   const showToast = useCallback((message) => {
@@ -170,7 +178,6 @@ export default function App() {
     setTimeout(() => setToastMessage(''), 4000);
   }, []);
 
-  // Window size monitoring for dynamic mobile styling
   useEffect(() => {
     const handleResize = () => {
       setIsMobileViewport(window.innerWidth < 1024);
@@ -180,192 +187,220 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Save Theme to LocalStorage on Change
   useEffect(() => {
     localStorage.setItem('mbv_dark_mode', isDarkMode);
   }, [isDarkMode]);
 
+  // Persist Active Project preference to device local storage
   useEffect(() => {
-    const savedProjects = localStorage.getItem('mbv_projects');
-    let loadedProjects = savedProjects ? JSON.parse(savedProjects) : [];
-    setProjects(loadedProjects);
+    localStorage.setItem('mbv_active_project_id', activeProjectId);
+  }, [activeProjectId]);
 
-    if (auth) {
-      const initAuth = async () => {
-        try {
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-        } catch (err) {
-          console.error("Authentication check failure: ", err);
-        }
-      };
-      initAuth();
-      onAuthStateChanged(auth, setUser);
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedId = urlParams.get('id');
-
-    if (sharedId) {
-      if (db) {
-        fetchSharedProject(sharedId, loadedProjects);
-      } else {
-        showToast("Database is offline. Redirecting back to dashboard.");
-        setView('dashboard');
-      }
-    } else {
-      setView('dashboard');
-    }
-  }, []);
-
-  const fetchSharedProject = async (id, currentProjects) => {
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', id);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        
-        const newProject = {
-          id: id, 
-          appTitle: data.appTitle || "Imported Project",
-          appSubtitle: data.appSubtitle || "",
-          projectStartDate: data.projectStartDate || new Date().toISOString().split('T')[0],
-          docMetadata: data.docMetadata || {},
-          tasks: data.tasks || INITIAL_TASKS,
-          logos: data.logos || { left: '', right: '' },
-          lastModified: new Date().toISOString()
-        };
-
-        const updatedProjects = [newProject, ...currentProjects.filter(p => p.id !== id)];
-        setProjects(updatedProjects);
-        localStorage.setItem('mbv_projects', JSON.stringify(updatedProjects));
-        
-        const url = new URL(window.location.href);
-        url.searchParams.delete('id');
-        window.history.replaceState({}, document.title, url.toString());
-
-        loadProjectIntoEditor(newProject);
-        showToast("Shared schedule loaded into workspace successfully!");
-      } else {
-        showToast("Shared project link is invalid or expired.");
-        setView('dashboard');
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Error establishing network download.");
-      setView('dashboard');
-    }
-  };
-
+  // Listen to Auth State, Active Project List, and Current Active Schedule Document
   useEffect(() => {
-    if (view === 'editor' && activeProjectId) {
-      const updatedProjects = projects.map(p => {
-        if (p.id === activeProjectId) {
-          return {
-            ...p,
-            appTitle,
-            appSubtitle,
-            projectStartDate,
-            docMetadata,
-            tasks,
-            logos,
-            lastModified: new Date().toISOString()
-          };
-        }
-        return p;
-      });
-      setProjects(updatedProjects);
-      localStorage.setItem('mbv_projects', JSON.stringify(updatedProjects));
+    if (!auth) {
+      setView('editor');
+      return;
     }
-  }, [tasks, docMetadata, projectStartDate, appTitle, appSubtitle, logos, activeProjectId, view]);
 
-  // Project managers, QA, & PM Action flows
-  const createNewProject = () => {
-    const newProject = {
-      id: generateId(),
-      appTitle: "Citicore 100MW Console",
-      appSubtitle: "Site Operations Schedule Blueprint",
-      projectStartDate: new Date().toISOString().split('T')[0],
-      docMetadata: {
-        projectName: "NEW EXPANSION GRID",
-        location: "Quezon Substation Hub",
-        docNo: "DOC-CIT-MBV-901",
-        revision: "01",
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
-      },
-      tasks: INITIAL_TASKS,
-      logos: { left: '', right: '' },
-      lastModified: new Date().toISOString()
+    const initAuthAndSync = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error("Auth initialization issue:", err);
+      }
     };
 
-    const updatedProjects = [newProject, ...projects];
-    setProjects(updatedProjects);
-    localStorage.setItem('mbv_projects', JSON.stringify(updatedProjects));
-    loadProjectIntoEditor(newProject);
-  };
+    initAuthAndSync();
+    
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser && db) {
+        // 1. Subscribe to the Global Project Index Document
+        const indexDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'project-list-index');
+        const unsubscribeIndex = onSnapshot(indexDocRef, (indexSnap) => {
+          if (indexSnap.exists()) {
+            const indexData = indexSnap.data();
+            if (indexData.projects && indexData.projects.length > 0) {
+              setProjectList(indexData.projects);
+            }
+          } else {
+            // Write default project list index if empty
+            setDoc(indexDocRef, {
+              projects: [{ id: 'master-schedule', title: 'Citicore 100MW Solar Project' }]
+            }).catch(e => console.error("Error setting index:", e));
+          }
+        });
 
-  const loadProjectIntoEditor = (project) => {
-    setActiveProjectId(project.id);
-    setAppTitle(project.appTitle);
-    setAppSubtitle(project.appSubtitle);
-    setProjectStartDate(project.projectStartDate);
-    setDocMetadata(project.docMetadata);
-    setTasks(project.tasks);
-    setLogos(project.logos || { left: '', right: '' });
-    setView('editor');
-  };
+        // 2. Subscribe directly to the Active "Mother Link" Project Document ID
+        const activeDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
+        const unsubscribeActiveProject = onSnapshot(activeDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setAppTitle(data.appTitle || "Citicore Field Console");
+            setAppSubtitle(data.appSubtitle || "MBV Electric Schedule Architect");
+            setProjectStartDate(data.projectStartDate || new Date().toISOString().split('T')[0]);
+            setDocMetadata(data.docMetadata || {});
+            setTasks(data.tasks || INITIAL_TASKS);
+            setLogos(data.logos || { left: '', right: '' });
+          } else {
+            // First time setup for a new Mother Link Document
+            const defaultDocTitle = projectList.find(p => p.id === activeProjectId)?.title || "Citicore Field Console";
+            setDoc(activeDocRef, {
+              appTitle: defaultDocTitle,
+              appSubtitle: "MBV Electric Schedule Architect",
+              projectStartDate: new Date().toISOString().split('T')[0],
+              docMetadata: {
+                projectName: defaultDocTitle.toUpperCase(),
+                location: "Pagbilao, Quezon Site Hub",
+                docNo: "DOC-CIT-MBV-901",
+                revision: "01",
+                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+              },
+              tasks: INITIAL_TASKS,
+              logos: { left: '', right: '' },
+              updatedAt: new Date().toISOString()
+            }).catch(e => console.error("Could not write initial master schedule:", e));
+          }
+          setView('editor');
+        }, (err) => {
+          console.error("Active schedule sync failed:", err);
+          setView('editor');
+        });
 
-  const triggerPromptDelete = (id, e) => {
-    e.stopPropagation();
-    setCustomPrompt({
-      title: "Delete Project Schedule?",
-      message: "Are you sure you want to permanently clear this workspace model? This cannot be undone.",
-      onConfirm: () => {
-        const updatedProjects = projects.filter(p => p.id !== id);
-        setProjects(updatedProjects);
-        localStorage.setItem('mbv_projects', JSON.stringify(updatedProjects));
-        showToast("Project deleted from localized storage.");
-        setCustomPrompt(null);
-      },
-      onCancel: () => setCustomPrompt(null)
+        return () => {
+          unsubscribeIndex();
+          unsubscribeActiveProject();
+        };
+      } else {
+        setView('editor');
+      }
     });
-  };
+
+    return () => unsubscribeAuth();
+  }, [activeProjectId]);
 
   const handleShareToCloud = async () => {
     if (!isFirebaseConfigured || !db) {
-      showToast("Online sharing database not linked. Working in local sandbox.");
+      showToast("Firebase not configured. Operating in offline sandbox.");
       return;
     }
     
     setIsSavingCloud(true);
     try {
+      // Write to the active target "Mother Link" document in Firestore
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
       await setDoc(docRef, {
         tasks, docMetadata, projectStartDate, appTitle, appSubtitle, logos,
         updatedAt: new Date().toISOString()
       });
       
-      const url = new URL(window.location.href);
-      url.searchParams.set('id', activeProjectId);
-      copyToClipboard(url.toString());
-      
-      showToast("Cloud-Sync success! Dynamic sharing link copied to clipboard.");
+      showToast("Mother Link Updated! Everyone on this project site is now synchronized.");
     } catch (err) {
       console.error(err);
-      showToast("Network transmission error occurred.");
+      showToast("Network sync failed. Check connection.");
     } finally {
       setIsSavingCloud(false);
     }
   };
 
-  // Weather condition dynamic duration delay adjustment factor
+  // Creates a brand new, clean site project under its own "Mother Link"
+  const handleCreateNewProject = async (e) => {
+    e.preventDefault();
+    if (!newProjectName.trim()) return;
+
+    const cleanId = newProjectName.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-');
+
+    if (projectList.some(p => p.id === cleanId)) {
+      showToast("A project with a similar name already exists.");
+      return;
+    }
+
+    const updatedList = [...projectList, { id: cleanId, title: newProjectName }];
+    
+    try {
+      // 1. Update the index document on cloud
+      const indexDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'project-list-index');
+      await setDoc(indexDocRef, { projects: updatedList });
+
+      // 2. Initialize the schedule document for the new project
+      const activeDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', cleanId);
+      await setDoc(activeDocRef, {
+        appTitle: newProjectName,
+        appSubtitle: "MBV Electric Schedule Architect",
+        projectStartDate: new Date().toISOString().split('T')[0],
+        docMetadata: {
+          projectName: newProjectName.toUpperCase(),
+          location: "Pagbilao, Quezon Site Hub",
+          docNo: "DOC-CIT-MBV-901",
+          revision: "01",
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+        },
+        tasks: INITIAL_TASKS,
+        logos: { left: '', right: '' },
+        updatedAt: new Date().toISOString()
+      });
+
+      // 3. Update active project state and navigation
+      setProjectList(updatedList);
+      setShowCreateProjectModal(false);
+      setNewProjectName('');
+      handleSwitchProject(cleanId);
+      showToast(`Created new project schedule: "${newProjectName}"`);
+    } catch (err) {
+      console.error("Error creating project:", err);
+      showToast("Failed to create new project.");
+    }
+  };
+
+  // Switches the browser and listeners to a different project Mother Link
+  const handleSwitchProject = (id) => {
+    setActiveProjectId(id);
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('project', id);
+    window.history.pushState({}, '', newUrl.toString());
+  };
+
+  // Safe Deletion using Custom Prompt UI (No window.confirm)
+  const handleDeleteProject = (id, e) => {
+    if (e) e.stopPropagation();
+    if (id === 'master-schedule') {
+      showToast("The Master Schedule cannot be deleted.");
+      return;
+    }
+
+    setCustomPrompt({
+      title: "Remove Global Project?",
+      message: `Are you sure you want to permanently erase the "${projectList.find(p => p.id === id)?.title}" schedule from the cloud network? This cannot be undone.`,
+      onConfirm: async () => {
+        const updatedList = projectList.filter(p => p.id !== id);
+        try {
+          const indexDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'project-list-index');
+          await setDoc(indexDocRef, { projects: updatedList });
+          setProjectList(updatedList);
+          showToast("Project directory updated.");
+          if (activeProjectId === id) {
+            handleSwitchProject('master-schedule');
+          }
+        } catch (err) {
+          showToast("Failed to update global project directory.");
+        }
+        setCustomPrompt(null);
+      },
+      onCancel: () => setCustomPrompt(null)
+    });
+  };
+
+  // Weather delay factor multiplier
   const fetchWeatherDelayMultiplier = () => {
-    if (weatherFactor === 'heavy_rain') return 1.5; // +50% delay
-    if (weatherFactor === 'typhoon') return 2.0;    // +100% delay
+    if (weatherFactor === 'heavy_rain') return 1.5;
+    if (weatherFactor === 'typhoon') return 2.0;
     return 1.0;
   };
 
@@ -392,7 +427,6 @@ export default function App() {
   const activeFlowTasks = flowSchedule();
   const totalDays = activeFlowTasks.reduce((acc, curr) => acc + curr.adjustedDuration, 0) || 1;
   const headerDays = Array.from({ length: totalDays + 3 }, (_, i) => i);
-  const globalProgress = Math.round(activeFlowTasks.reduce((sum, t) => sum + (t.progress || 0), 0) / (activeFlowTasks.length || 1));
 
   const maxManpowerVal = Math.max(
     ...headerDays.map(day => 
@@ -435,30 +469,28 @@ export default function App() {
       qaStatus: 'PENDING', 
       checklist: {} 
     }]);
-    showToast("New schedule row inserted.");
+    showToast("New schedule row added.");
   };
 
   const triggerTaskRemove = (id) => {
     setCustomPrompt({
       title: "Remove Task Row?",
-      message: "This will immediately eliminate this task card and all of its custom crew names. Proceed?",
+      message: "Are you sure you want to remove this task? This will immediately slide downstream schedules.",
       onConfirm: () => {
         setTasks(tasks.filter(t => t.id !== id));
-        showToast("Task row deleted.");
+        showToast("Task removed.");
         setCustomPrompt(null);
       },
       onCancel: () => setCustomPrompt(null)
     });
   };
 
-  // Checkbox state toggles for QA checkpoints
   const toggleChecklistItem = (taskId, checklistName) => {
     setTasks(tasks.map(t => {
       if (t.id === taskId) {
         const list = { ...(t.checklist || {}) };
         list[checklistName] = !list[checklistName];
         
-        // Auto-approve status if checklist items are 100% checked
         const listValues = Object.values(list);
         let updatedStatus = t.qaStatus;
         if (listValues.length > 0 && listValues.every(val => val === true)) {
@@ -473,7 +505,6 @@ export default function App() {
     }));
   };
 
-  // Add customized checks dynamically to task models
   const addChecklistItem = (taskId, text) => {
     if (!text.trim()) return;
     setTasks(tasks.map(t => {
@@ -501,7 +532,6 @@ export default function App() {
     }
   };
 
-  // Filter tasks in workspaces based on search matching
   const filteredTasks = activeFlowTasks.filter(t => {
     const query = searchQuery.toLowerCase();
     const matchesSearch = t.task.toLowerCase().includes(query) || t.desc.toLowerCase().includes(query) || t.ref.includes(query);
@@ -518,118 +548,19 @@ export default function App() {
   };
 
   // ============================================================================
-  // RENDER: LOADING VIEW
+  // RENDER: LOADING STATE
   // ============================================================================
   if (view === 'loading') {
     return (
       <div className={`flex flex-col h-screen items-center justify-center transition-all ${isDarkMode ? 'bg-[#0b0f19] text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
         <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
-        <h2 className="font-bold text-md">Opening Citicore Workspace...</h2>
+        <h2 className="font-bold text-sm">Opening Mother Link Live Schedule...</h2>
       </div>
     );
   }
 
   // ============================================================================
-  // RENDER: DASHBOARD VIEW
-  // ============================================================================
-  if (view === 'dashboard') {
-    return (
-      <div className={`flex flex-col h-screen font-sans overflow-y-auto transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
-        
-        {/* Customized Alert Modal */}
-        {customPrompt && (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className={`rounded-2xl p-6 max-w-sm w-full border ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800'} shadow-2xl`}>
-              <h3 className="font-extrabold text-lg mb-2">{customPrompt.title}</h3>
-              <p className="text-sm text-slate-400 mb-6">{customPrompt.message}</p>
-              <div className="flex gap-3 justify-end">
-                <button onClick={customPrompt.onCancel} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${isDarkMode ? 'border-slate-800 bg-slate-800 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>Cancel</button>
-                <button onClick={customPrompt.onConfirm} className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-semibold">Delete</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Brand Banner Header */}
-        <header className={`border-b px-6 py-5 shadow-lg shrink-0 transition-all ${isDarkMode ? 'bg-[#131c2e]/60 border-slate-900/60' : 'bg-white border-slate-200'}`}>
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-600 p-2.5 rounded-xl shadow-lg text-white animate-pulse"><LayoutDashboard size={22} /></div>
-              <div>
-                <h1 className="font-black text-2xl tracking-tight leading-none">Citicore Grid Consoles</h1>
-                <span className="text-[10px] uppercase tracking-widest text-blue-500 font-extrabold">Engineering & QA Control</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <button 
-                onClick={() => setIsDarkMode(!isDarkMode)} 
-                className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-amber-400 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'}`}
-                title={isDarkMode ? "Toggle Light Layout" : "Toggle Eye-Comfort Dark Layout"}
-              >
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-
-              <button onClick={createNewProject} className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 text-white py-2.5 px-5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-lg shadow-blue-500/20 border border-blue-500">
-                <FilePlus2 size={16}/> Create New Schedule
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Dashboard Grid Container */}
-        <main className="max-w-6xl mx-auto w-full p-6 md:p-8 flex-grow">
-          <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h2 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Live Workspaces ({projects.length})</h2>
-              <p className="text-slate-400 text-xs mt-1">Select an active Citicore project timeline grid to load parameters and run scheduling forecasts.</p>
-            </div>
-          </div>
-          
-          {projects.length === 0 ? (
-            <div className={`text-center py-16 rounded-3xl border border-dashed transition-colors ${isDarkMode ? 'bg-[#131c2e]/30 border-slate-800' : 'bg-white border-slate-200'}`}>
-              <FolderPlus size={44} className="mx-auto text-slate-400 mb-3 animate-bounce" />
-              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-600'}`}>No localized schedules recorded</h3>
-              <p className="text-slate-500 text-xs mt-1 mb-6 max-w-sm mx-auto">Create a brand new timeline blueprint to initialize site coordinates, curing holds, and crane mobilizations.</p>
-              <button onClick={createNewProject} className="bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 py-2.5 px-6 rounded-xl text-xs font-extrabold uppercase tracking-widest transition">Initialize Sandbox Project</button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map(p => (
-                <div 
-                  key={p.id} 
-                  onClick={() => loadProjectIntoEditor(p)} 
-                  className={`rounded-2xl p-5 hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full border ${
-                    isDarkMode ? 'bg-[#131c2e]/80 border-slate-800/40 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-300'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`p-2.5 rounded-xl transition-colors ${isDarkMode ? 'bg-[#0b0f19] text-slate-500 group-hover:bg-blue-500/10 group-hover:text-blue-400' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600'}`}>
-                      <CalendarDays size={18} />
-                    </div>
-                    <button onClick={(e) => triggerPromptDelete(p.id, e)} className="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Delete Schedule">
-                      <Trash2 size={16}/>
-                    </button>
-                  </div>
-                  
-                  <h3 className={`font-black text-lg leading-snug mb-1 group-hover:text-blue-500 transition-colors ${isDarkMode ? 'text-slate-100' : 'text-slate-850'}`}>{p.appTitle}</h3>
-                  <p className={`text-[10px] font-black uppercase tracking-wider mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{p.docMetadata?.projectName || "UNTITLED GRID"}</p>
-                  
-                  <div className={`mt-auto pt-4 border-t flex items-center justify-between text-[11px] font-semibold ${isDarkMode ? 'border-slate-800/40 text-slate-500' : 'border-slate-100 text-slate-400'}`}>
-                    <span className="flex items-center gap-1.5"><Clock size={13}/> {new Date(p.lastModified).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-0.5 text-blue-500 font-bold opacity-0 group-hover:opacity-100 transition-all">Launch Console <ChevronRight size={12}/></span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
-    );
-  }
-
-  // ============================================================================
-  // RENDER: EDITOR VIEW (Main Application)
+  // RENDER: COMPACT MASTER EDITOR
   // ============================================================================
   return (
     <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
@@ -663,7 +594,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ONBOARDING INTERACTIVE TOUR (Designed specifically for non-tech users) */}
+      {/* ONBOARDING QUICK TOUR */}
       {showTour && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-6 md:p-8 flex flex-col transition-all ${
@@ -717,115 +648,182 @@ export default function App() {
         </div>
       )}
 
-      {/* TOP DESKTOP AND TABLET NAVIGATION BAR */}
-      <header className={`border-b px-4 py-3 flex items-center justify-between shadow-md z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]/90 border-slate-900/60' : 'bg-white border-slate-200'}`}>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setView('dashboard')} className={`p-2.5 rounded-xl transition flex items-center justify-center ${isDarkMode ? 'bg-[#0b0f19] text-slate-300 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title="Dashboard Directory">
-            <Home size={16} />
-          </button>
-          
-          <div className="h-6 w-px bg-slate-800 hidden md:block"></div>
-
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
+      {/* MULTI-PROJECT CREATION MODAL */}
+      {showCreateProjectModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <form onSubmit={handleCreateNewProject} className={`rounded-2xl p-6 max-w-md w-full border ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-850'} shadow-2xl`}>
+            <h3 className="font-black text-lg mb-2 flex items-center gap-2"><Plus className="text-blue-500" size={20}/> Create New Site Project</h3>
+            <p className="text-xs text-slate-400 mb-4">Initialize a completely separate, standalone Mother Link schedule for a new contract or location.</p>
+            
+            <div className="mb-4">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">Project Name / Site Tag</label>
               <input 
-                type="text" value={appTitle} onChange={(e) => setAppTitle(e.target.value)}
-                className={`font-black text-sm md:text-base leading-none bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none w-[180px] md:w-[260px] transition-all ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}
-                placeholder="Field Console Label"
+                type="text" 
+                required 
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                placeholder="e.g., Quezon Substation Hub"
+                className={`w-full px-3 py-2 rounded-xl text-sm font-semibold outline-none border transition-all ${
+                  isDarkMode ? 'bg-[#0b0f19] border-slate-800 text-slate-200 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-500'
+                }`}
               />
             </div>
-            <input 
-              type="text" value={appSubtitle} onChange={(e) => setAppSubtitle(e.target.value)}
-              className="text-blue-500 text-[9px] font-black uppercase tracking-widest bg-transparent border-b border-transparent hover:border-blue-900 focus:border-blue-500 outline-none w-[180px] md:w-[260px] mt-0.5"
-              placeholder="Division Name"
-            />
+
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={() => setShowCreateProjectModal(false)} className={`px-4 py-2 rounded-lg text-xs font-semibold border ${isDarkMode ? 'border-slate-850 text-slate-400 hover:bg-slate-800' : 'border-slate-200 text-slate-600'}`}>Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold">Create & Load Link</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* RESPONSIVE HEADER BAR (Hides labels & uses icons on small screens to prevent squishing) */}
+      <header className={`border-b px-4 py-3 flex items-center justify-between shadow-md z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]/90 border-slate-900/60' : 'bg-white border-slate-200'}`}>
+        <div className="flex items-center gap-2 min-w-0 flex-1 mr-3">
+          <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0">
+            <LayoutDashboard size={16} />
+          </div>
+          
+          {/* MULTI-PROJECT SWITCHER DROPDOWN WITH DIRECT DELETION ACTION */}
+          <div className="flex flex-col min-w-0 max-w-[200px] sm:max-w-[320px]">
+            <div className="flex items-center gap-1.5">
+              <select
+                value={activeProjectId}
+                onChange={(e) => {
+                  if (e.target.value === 'create-new-prompt-action') {
+                    setShowCreateProjectModal(true);
+                  } else if (e.target.value.startsWith('delete-action-')) {
+                    const targetId = e.target.value.replace('delete-action-', '');
+                    handleDeleteProject(targetId);
+                  } else {
+                    handleSwitchProject(e.target.value);
+                  }
+                }}
+                className={`font-black text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-500 focus:border-blue-500 outline-none cursor-pointer pr-1 truncate ${
+                  isDarkMode ? 'text-slate-100' : 'text-slate-800'
+                }`}
+                style={{ WebkitAppearance: 'none', appearance: 'none', background: 'transparent' }}
+              >
+                {projectList.map((proj) => (
+                  <optgroup key={proj.id} label={proj.title} className={isDarkMode ? 'bg-[#131c2e]' : 'bg-white'}>
+                    <option value={proj.id}>📁 Load Schedule</option>
+                    {proj.id !== 'master-schedule' && (
+                      <option value={`delete-action-${proj.id}`}>❌ Delete Project</option>
+                    )}
+                  </optgroup>
+                ))}
+                <option value="create-new-prompt-action" className="text-blue-500 font-black bg-blue-500/10">
+                  ➕ + Create New Site Project...
+                </option>
+              </select>
+              <ChevronDown size={14} className="text-slate-500 pointer-events-none shrink-0" />
+            </div>
+            <span className="text-blue-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest truncate mt-0.5">
+              {appSubtitle}
+            </span>
           </div>
         </div>
 
-        {/* Global Toolbar Handlers */}
-        <div className="flex items-center gap-2 md:gap-3">
-          {/* Weather Simulation Card Tool */}
-          <div className={`hidden lg:flex items-center gap-2 border rounded-xl px-3 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/60 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1"><CloudRain size={12}/> Weather:</span>
+        {/* Action Controls Header Segment */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <button 
+            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+            className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1 ${
+              isDarkMode ? 'bg-[#0b0f19] hover:bg-slate-800 text-slate-300 border-slate-800/40' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'
+            }`}
+            title="Toggle Project Specifications Panel"
+          >
+            {isMetadataCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            <span className="hidden md:inline">Specs</span>
+          </button>
+
+          {/* Compact Weather Control Selector */}
+          <div className={`hidden sm:flex items-center gap-1 border rounded-xl px-2 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/60 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
             <select 
               value={weatherFactor} 
               onChange={(e) => {
                 setWeatherFactor(e.target.value);
-                showToast(`Weather updated to ${e.target.value.replace('_', ' ').toUpperCase()}. Cascading safety delays adjusted!`);
+                showToast(`Weather updated to ${e.target.value.replace('_', ' ').toUpperCase()}. Delays adjusted.`);
               }} 
-              className="text-xs font-bold bg-transparent outline-none border-none text-blue-400 cursor-pointer"
+              className="text-[10px] font-bold bg-transparent outline-none border-none text-blue-400 cursor-pointer"
             >
-              <option value="sunny">☀️ Sunny (1.0x)</option>
-              <option value="heavy_rain">🌧️ Light Rain (1.5x Buffer)</option>
-              <option value="typhoon">🌀 Typhoon Hold (2.0x Hard Delay)</option>
+              <option value="sunny">☀️ Sunny</option>
+              <option value="heavy_rain">🌧️ Light Rain</option>
+              <option value="typhoon">🌀 Typhoon Hold</option>
             </select>
           </div>
 
-          <div className={`hidden sm:flex items-center border rounded-xl px-3 py-1.5 text-xs ${isDarkMode ? 'bg-[#0b0f19]/60 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 mr-2">Start Date:</span>
-            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="text-xs outline-none bg-transparent cursor-pointer font-bold text-blue-400" />
+          <div className={`hidden lg:flex items-center border rounded-xl px-2.5 py-1.5 text-[10px] ${isDarkMode ? 'bg-[#0b0f19]/60 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
+            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-bold text-blue-400" />
           </div>
 
-          <div className="flex gap-1.5">
-            <button onClick={addTask} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-blue-500/15 border border-blue-600">
-              <Plus size={14}/> Add Task
+          <div className="flex gap-1 sm:gap-2">
+            <button onClick={addTask} className="bg-blue-600 hover:bg-blue-500 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition shadow-lg shadow-blue-500/15">
+              <Plus size={12}/> <span className="hidden sm:inline">Add Task</span>
             </button>
             
-            <button onClick={triggerSystemPrint} className="hidden md:flex bg-slate-850 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider items-center gap-1.5 transition" title="Export High-Fidelity PDF Blueprint">
-              <Printer size={14}/> Export
+            <button onClick={triggerSystemPrint} className="hidden md:flex bg-slate-800 hover:bg-slate-750 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider items-center gap-1 transition">
+              <Printer size={12}/> Export
             </button>
 
-            {/* Dark Mode toggle */}
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-850 border-slate-850 hover:bg-slate-800 text-amber-400' : 'bg-white border-slate-200 hover:bg-slate-100 text-indigo-650'}`} title="Theme Toggle">
-              {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+            {/* Dark Mode selector */}
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-1.5 sm:p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-800 hover:bg-slate-700 text-amber-400' : 'bg-white border-slate-200 hover:bg-slate-100 text-indigo-650'}`}>
+              {isDarkMode ? <Sun size={12} /> : <Moon size={12} />}
             </button>
 
-            <button onClick={handleShareToCloud} disabled={isSavingCloud} className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition">
-              {isSavingCloud ? <Loader2 size={13} className="animate-spin" /> : <Share2 size={13}/>} Sync
+            {/* Sync to Global "Mother Link" Document Button */}
+            <button 
+              onClick={handleShareToCloud} 
+              disabled={isSavingCloud} 
+              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition"
+              title="Save changes back to the shared mother link"
+            >
+              {isSavingCloud ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12}/>} 
+              <span>SYNC</span>
             </button>
             
-            <button onClick={() => setIsSettingsOpen(true)} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-800/40 hover:bg-slate-800 text-slate-300' : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-600'}`}>
-              <Settings size={15}/>
+            <button onClick={() => setIsSettingsOpen(true)} className={`p-1.5 sm:p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-800/40 hover:bg-slate-800 text-slate-300' : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-600'}`}>
+              <Settings size={12}/>
             </button>
           </div>
         </div>
       </header>
 
-      {/* MOBILE SCROLL CONVERSION HEADER (Active tab control bar on narrow screen widths) */}
+      {/* MOBILE DISPLAY VIEWPORT SWITCHER CONTROL BAR */}
       <div className="lg:hidden shrink-0 border-b flex bg-slate-900/40 border-slate-800/40 print:hidden justify-around items-center h-12">
         <button 
           onClick={() => setMobileDisplayTab('tasks')}
-          className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 h-full border-b-2 px-3 ${mobileDisplayTab === 'tasks' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
+          className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 h-full border-b-2 px-3 ${mobileDisplayTab === 'tasks' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
         >
-          <Smartphone size={14}/> Site Cards
+          <Smartphone size={12}/> Site Cards
         </button>
         <button 
           onClick={() => setMobileDisplayTab('gantt')}
-          className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 h-full border-b-2 px-3 ${mobileDisplayTab === 'gantt' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
+          className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 h-full border-b-2 px-3 ${mobileDisplayTab === 'gantt' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
         >
-          <Monitor size={14}/> Timeline Gantt
+          <Monitor size={12}/> Timeline Gantt
         </button>
         <button 
           onClick={() => setMobileDisplayTab('qa')}
-          className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 h-full border-b-2 px-3 ${mobileDisplayTab === 'qa' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
+          className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 h-full border-b-2 px-3 ${mobileDisplayTab === 'qa' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
         >
-          <ClipboardCheck size={14}/> QA Holds
+          <ClipboardCheck size={12}/> QA Holds
         </button>
       </div>
 
-      {/* MASTER SCROLLABLE FIELD WORKSPACE */}
-      <div className="flex-grow overflow-y-auto p-4 md:p-6 lg:p-8 relative">
-        <div className="max-w-[1550px] mx-auto flex flex-col gap-6 h-full pb-10">
+      {/* WORKSPACE CONTENT AREA */}
+      <div className="flex-grow overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 relative">
+        <div className="max-w-[1550px] mx-auto flex flex-col gap-4 h-full pb-10">
             
-            {/* SEARCH AND INTEGRATED FILTERS SUB-PANEL */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
-              <div className="relative w-full sm:w-80">
+            {/* SEARCH AND TAB BAR FILTER */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden">
+              <div className="relative w-full sm:w-72">
                 <input 
                   type="text" 
                   placeholder="Filter tasks by name, ref..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl text-xs font-semibold outline-none border transition-all ${
+                  className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold outline-none border transition-all ${
                     isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-200 focus:border-blue-500/50' : 'bg-white border-slate-200 text-slate-800 focus:border-blue-500'
                   }`}
                 />
@@ -834,20 +832,13 @@ export default function App() {
                 )}
               </div>
 
-              {/* Dynamic Information Alert banner to make it feel usable */}
-              <div onClick={() => setShowTour(true)} className={`hidden sm:flex items-center gap-2 text-[11px] font-bold cursor-pointer py-1.5 px-3 rounded-lg border hover:scale-98 transition ${
-                isDarkMode ? 'bg-blue-950/20 border-blue-500/10 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700'
-              }`}>
-                <span>💡 First time here? Learn how to use the Site Console in 60s!</span>
-              </div>
-
-              {/* Status Tabs filters */}
-              <div className="flex gap-2 w-full sm:w-auto">
+              {/* Status selectors tabs */}
+              <div className="flex gap-1.5 w-full sm:w-auto">
                 {['all', 'hold', 'approved'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTabFilter(tab)}
-                    className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ${
+                    className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${
                       activeTabFilter === tab 
                         ? 'bg-blue-600/10 border-blue-500 text-blue-400' 
                         : (isDarkMode ? 'bg-[#131c2e]/30 border-slate-800/40 text-slate-500 hover:text-slate-300' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-600')
@@ -859,110 +850,119 @@ export default function App() {
               </div>
             </div>
 
-            {/* START OF EXPORT PRINT MODULE ZONE */}
-            <div id="gantt-export-zone" className={`rounded-2xl shadow-xl border p-4 md:p-6 flex flex-col gap-5 w-full relative transition-colors duration-200 ${isDarkMode ? 'bg-[#131c2e]/20 border-slate-900/60' : 'bg-white border-slate-200'}`}>
+            {/* MASTER EXPORT COMPARTMENT */}
+            <div id="gantt-export-zone" className={`rounded-xl shadow-xl border p-3 sm:p-5 flex flex-col gap-4 w-full relative transition-colors duration-200 ${isDarkMode ? 'bg-[#131c2e]/20 border-slate-900/60' : 'bg-white border-slate-200'}`}>
               
-              {/* Corporate Head Banner Section */}
-              <div className={`border-b pb-5 shrink-0 transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div className="w-full md:w-[30%] flex justify-start items-center">
-                    {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <CiticoreLogo />}
+              {/* COLLAPSIBLE DOCUMENT SPECIFICATIONS & METADATA SECTION */}
+              {!isMetadataCollapsed && (
+                <div className={`border-b pb-4 shrink-0 transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="w-full md:w-[30%] flex justify-start items-center">
+                      {logos.left ? <img src={logos.left} className="h-8 object-contain" alt="Left" /> : <CiticoreLogo />}
+                    </div>
+                    
+                    <div className="w-full md:w-[40%] text-center">
+                      <input 
+                        value={docMetadata.projectName} onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
+                        className={`w-full text-center text-sm md:text-base font-black tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none transition-all ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
+                        placeholder="ENTER PROJECT SPEC..."
+                      />
+                      <input 
+                        value={docMetadata.location} onChange={(e) => setDocMetadata({...docMetadata, location: e.target.value})}
+                        className="w-full text-center text-[9px] text-slate-500 mt-1 font-bold uppercase tracking-widest bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none"
+                        placeholder="LOCATION DETAILS..."
+                      />
+                    </div>
+                    
+                    <div className="w-full md:w-[30%] flex justify-center md:justify-end items-center">
+                      {logos.right ? <img src={logos.right} className="h-8 object-contain" alt="Right" /> : <MbvLogo />}
+                    </div>
                   </div>
-                  <div className="w-full md:w-[40%] text-center">
-                    <input 
-                      value={docMetadata.projectName} onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                      className={`w-full text-center text-base md:text-lg font-black tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none transition-all ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
-                      placeholder="ENTER PROJECT SPEC..."
-                    />
-                    <input 
-                      value={docMetadata.location} onChange={(e) => setDocMetadata({...docMetadata, location: e.target.value})}
-                      className="w-full text-center text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none"
-                      placeholder="LOCATION DETAILS..."
-                    />
-                  </div>
-                  <div className="w-full md:w-[30%] flex justify-center md:justify-end items-center">
-                    {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <MbvLogo />}
+                  
+                  {/* Metadata field rows */}
+                  <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-[8px] font-black uppercase tracking-wider border-t pt-3 transition-colors ${isDarkMode ? 'border-slate-800/40 text-slate-500' : 'border-slate-105 text-slate-400'}`}>
+                    <div className="flex flex-col gap-0.5 border-r border-slate-800/40">
+                      <span>Document No:</span>
+                      <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 border-r border-slate-800/40 pl-2">
+                      <span>Revision:</span>
+                      <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 border-r border-slate-800/40 pl-2">
+                      <span>Effective Date:</span>
+                      <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 pl-2">
+                      <span>Site Conditions:</span>
+                      <span className="text-blue-400 font-bold tracking-widest">{weatherFactor.toUpperCase()}</span>
+                    </div>
                   </div>
                 </div>
-                
-                {/* Meta Fields table */}
-                <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-[9px] font-black uppercase tracking-wider border-t pt-4 transition-colors ${isDarkMode ? 'border-slate-800/40 text-slate-500' : 'border-slate-100 text-slate-400'}`}>
-                  <div className="flex flex-col gap-1 border-r border-slate-800/40">
-                    <span>Document No:</span>
-                    <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} />
-                  </div>
-                  <div className="flex flex-col gap-1 border-r border-slate-800/40 pl-0 md:pl-4">
-                    <span>Revision:</span>
-                    <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} />
-                  </div>
-                  <div className="flex flex-col gap-1 border-r border-slate-800/40 pl-0 md:pl-4">
-                    <span>Effective Date:</span>
-                    <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} />
-                  </div>
-                  <div className="flex flex-col gap-1 pl-0 md:pl-4">
-                    <span>Site Conditions:</span>
-                    <span className="text-blue-400 font-bold tracking-widest">{weatherFactor.replace('_', ' ').toUpperCase()}</span>
-                  </div>
-                </div>
-              </div>
+              )}
 
-              {/* CORE VIEWPORTS CONTAINER: Switch layout depending on screen size or selected tab */}
-
-              {/* 1. PORTABLE MOBILE CARDS VIEWPORT */}
-              {(!isMobileViewport || mobileDisplayTab === 'tasks') && (
-                <div className="block lg:hidden space-y-4">
+              {/* 1. MOBILE FIELD CARDS LAYOUT (Active on mobile displays under the 'tasks' or 'qa' tab) */}
+              {(!isMobileViewport || mobileDisplayTab === 'tasks' || mobileDisplayTab === 'qa') && (
+                <div className="block lg:hidden space-y-3">
                   {filteredTasks.map((task) => {
                     const isHold = task.qaStatus === 'HOLD';
                     const isApproved = task.qaStatus === 'APPROVED';
+                    
+                    // Filter tasks under 'qa' mobile display tab to only show holds / pending states
+                    if (mobileDisplayTab === 'qa' && !isHold && task.qaStatus !== 'PENDING') return null;
                     
                     return (
                       <div 
                         key={task.id}
                         onClick={() => setActiveTaskModal(task.id)}
-                        className={`p-4 rounded-xl border transition-all flex flex-col gap-3 relative cursor-pointer ${
+                        className={`p-3.5 rounded-xl border transition-all flex flex-col gap-2.5 relative cursor-pointer ${
                           isHold 
-                            ? 'bg-rose-950/20 border-rose-900/40 shadow-lg shadow-rose-900/5' 
+                            ? 'bg-rose-950/20 border-rose-900/40 shadow-lg' 
                             : isApproved 
                               ? 'bg-emerald-950/15 border-emerald-900/30' 
                               : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40' : 'bg-white border-slate-200')
                         }`}
                       >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-wider">{task.desc}</span>
-                            <h4 className={`font-black text-sm mt-0.5 ${isDarkMode ? 'text-slate-100' : 'text-slate-850'}`}>{task.task}</h4>
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[9px] font-black text-blue-500 uppercase tracking-wider">{task.desc}</span>
+                            <h4 className={`font-black text-xs sm:text-sm mt-0.5 truncate ${isDarkMode ? 'text-slate-100' : 'text-slate-850'}`}>
+                              <span className="mr-1.5 text-[10px] px-1 bg-blue-500/10 rounded">{task.ref}</span> {task.task}
+                            </h4>
                           </div>
-                          <span className={`px-2 py-0.5 rounded-md text-[8.5px] font-black uppercase tracking-wider ${
-                            isHold ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : isApproved ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400'
+                          
+                          <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider shrink-0 border ${
+                            isHold ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : isApproved ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700/50'
                           }`}>
                             {task.qaStatus}
                           </span>
                         </div>
 
-                        {/* Checklist completion status meter */}
-                        <div className="flex items-center gap-3">
+                        {/* Progress completion meter */}
+                        <div className="flex items-center gap-4">
                           <div className="flex-grow">
-                            <div className="flex justify-between text-[9px] font-bold text-slate-500 mb-1">
+                            <div className="flex justify-between text-[8px] font-bold text-slate-500 mb-0.5">
                               <span>PROGRESS:</span>
                               <span>{task.progress}%</span>
                             </div>
-                            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-500" style={{ width: `${task.progress}%` }}></div>
+                            
+                            <div className="h-1.5 w-full bg-slate-850 rounded-full overflow-hidden">
+                              <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${task.progress}%` }}></div>
                             </div>
                           </div>
                           
                           <div className="shrink-0 text-right">
-                            <span className="text-[10px] font-black text-slate-400 block">DURATION</span>
-                            <span className="text-xs font-black text-slate-200">{task.adjustedDuration} DAYS</span>
+                            <span className="text-[8px] font-black text-slate-500 block">DAYS</span>
+                            <span className="text-xs font-black text-slate-200">{task.adjustedDuration}d</span>
                           </div>
                         </div>
 
-                        {/* Shift crew visual summary badge */}
-                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/40 text-[10px]">
-                          <span className="text-slate-500 font-extrabold flex items-center gap-1"><Users size={12}/> CREW ({task.totalManpower}):</span>
+                        {/* Mobile card footer - shift labor status */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-800/40 text-[9px]">
+                          <span className="text-slate-500 font-extrabold flex items-center gap-1"><Users size={11}/> CREW ({task.totalManpower}):</span>
                           {WORKER_ROLES.filter(r => (task[r.key] || 0) > 0).map(r => (
-                            <span key={r.key} className="bg-slate-800/80 border border-slate-700/80 px-2 py-0.5 rounded-md font-bold text-slate-300">
-                              {r.icon} {r.label}: {task[r.key]}
+                            <span key={r.key} className="bg-slate-850/80 border border-slate-700/80 px-1.5 py-0.5 rounded font-bold text-slate-300">
+                              {r.icon} {r.label}:{task[r.key]}
                             </span>
                           ))}
                         </div>
@@ -971,7 +971,7 @@ export default function App() {
                           onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
                           className="absolute right-3 top-3 text-slate-500 hover:text-rose-400 p-1 transition-colors"
                         >
-                          <Trash2 size={13}/>
+                          <Trash2 size={12}/>
                         </button>
                       </div>
                     );
@@ -979,23 +979,23 @@ export default function App() {
                 </div>
               )}
 
-              {/* 2. DUAL-SPLIT GANTT TIMELINE ENGINE (Shown on large screen width desktop or focused Gantt tab) */}
-              {(!isMobileViewport || mobileDisplayTab === 'gantt' || mobileDisplayTab === 'qa') && (
-                <div className={`hidden lg:flex border rounded-2xl overflow-hidden min-h-[450px] shadow-lg transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800/60' : 'bg-white border-slate-200'}`}>
+              {/* 2. RESPONSIVE HORIZONTAL TOUCH GANTT (Focused layout display, optimised for mobile horizontal slide) */}
+              {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
+                <div className={`flex border rounded-xl overflow-hidden min-h-[380px] lg:min-h-[450px] shadow-lg transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800/60' : 'bg-white border-slate-200'}`}>
                   
-                  {/* Left Spreadsheet Task Spec Sheet Column */}
-                  <div className={`w-[45%] flex flex-col shrink-0 z-10 border-r relative transition-colors ${isDarkMode ? 'bg-[#131c2e]/90 border-slate-800/60 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200'}`}>
+                  {/* Left spreadsheet columns */}
+                  <div className={`w-[45%] md:w-[35%] lg:w-[45%] flex flex-col shrink-0 z-10 border-r relative transition-colors ${isDarkMode ? 'bg-[#131c2e]/90 border-slate-800/60 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200'}`}>
                     
-                    {/* Header Columns */}
-                    <div className={`h-[48px] p-2 font-black text-[9px] flex items-center uppercase tracking-widest sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950/80 border-slate-800/60 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
-                      <span className="w-10 text-center">Ref</span>
-                      <span className="flex-grow px-3">Phase / Target Specification</span>
-                      <span className="w-12 text-center">Days</span>
-                      <span className="w-16 text-center">Progress</span>
-                      <span className="w-8 print:hidden"></span>
+                    {/* Header values */}
+                    <div className={`h-[48px] p-2 font-black text-[8px] sm:text-[9px] flex items-center uppercase tracking-widest sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950/80 border-slate-800/60 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                      <span className="w-8 sm:w-10 text-center">Ref</span>
+                      <span className="flex-grow px-2 sm:px-3 truncate">Work Description</span>
+                      <span className="w-8 sm:w-12 text-center shrink-0">Days</span>
+                      <span className="w-10 sm:w-16 text-center shrink-0">Progress</span>
+                      <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
                     </div>
 
-                    {/* Task spreadsheet list rows */}
+                    {/* Task rows lists */}
                     <div className="flex-grow">
                       {filteredTasks.map((task, index) => {
                         const isHold = task.qaStatus === 'HOLD';
@@ -1012,70 +1012,70 @@ export default function App() {
                                   : (isDarkMode ? `${index % 2 === 0 ? 'bg-[#131c2e]/40' : 'bg-[#131c2e]/20'} border-slate-800/40` : 'bg-white border-slate-105')
                             }`}
                           >
-                            <div className="w-10 h-full text-center flex items-center justify-center relative shrink-0">
-                              <GripVertical size={11} className="text-slate-600 absolute left-1 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
-                              <input value={task.ref} onChange={(e) => updateTask(task.id, 'ref', e.target.value)} className="font-extrabold text-slate-500 text-center w-full bg-transparent outline-none focus:text-blue-500" />
+                            <div className="w-8 sm:w-10 h-full text-center flex items-center justify-center relative shrink-0">
+                              <GripVertical size={11} className="text-slate-600 absolute left-0 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
+                              <input value={task.ref} onChange={(e) => updateTask(task.id, 'ref', e.target.value)} className="font-extrabold text-slate-500 text-center w-full bg-transparent outline-none focus:text-blue-500 text-[10px]" />
                             </div>
                             
-                            <div className="flex-grow h-full flex flex-col justify-center px-3 border-l border-slate-800/40 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <input value={task.desc} onChange={(e) => updateTask(task.id, 'desc', e.target.value)} className="font-black text-[8.5px] text-blue-500 uppercase tracking-widest bg-transparent outline-none w-24 mb-0.5 shrink-0" />
-                                <span className={`px-1.5 py-0.5 rounded text-[7.5px] font-black uppercase tracking-wider shrink-0 ${
+                            <div className="flex-grow h-full flex flex-col justify-center px-1.5 sm:px-3 border-l border-slate-800/40 min-w-0">
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                <input value={task.desc} onChange={(e) => updateTask(task.id, 'desc', e.target.value)} className="font-black text-[7.5px] sm:text-[8.5px] text-blue-500 uppercase tracking-widest bg-transparent outline-none w-16 sm:w-24 mb-0.5 shrink-0" />
+                                <span className={`px-1 py-0.5 rounded text-[6.5px] sm:text-[7.5px] font-black uppercase tracking-wider shrink-0 ${
                                   isHold ? 'bg-rose-500/10 text-rose-400' : isApproved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-500'
                                 }`}>
                                   {task.qaStatus}
                                 </span>
                               </div>
-                              <input value={task.task} onChange={(e) => updateTask(task.id, 'task', e.target.value)} className={`font-bold text-[12px] bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-850'}`} />
+                              <input value={task.task} onChange={(e) => updateTask(task.id, 'task', e.target.value)} className={`font-bold text-[10px] sm:text-[12px] bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-850'}`} />
                             </div>
                             
-                            <div className="w-12 h-full border-l border-slate-800/40 flex items-center justify-center p-1.5 shrink-0">
+                            <div className="w-8 sm:w-12 h-full border-l border-slate-800/40 flex items-center justify-center p-1 shrink-0">
                               <input 
                                 type="number" min="1" value={task.duration} 
                                 onChange={(e) => updateTask(task.id, 'duration', parseInt(e.target.value) || 1)} 
-                                className={`w-full text-center border rounded-lg py-1 text-xs font-black outline-none transition-all ${
+                                className={`w-full text-center border rounded-lg py-1 text-[10px] sm:text-xs font-black outline-none transition-all ${
                                   isDarkMode ? 'bg-slate-950 border-slate-800/60 text-slate-200 focus:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-700'
                                 }`} 
                               />
                             </div>
 
-                            {/* Progress tracking bars */}
-                            <div className="w-16 h-full border-l border-slate-800/40 flex flex-col items-center justify-center px-2 shrink-0">
-                              <div className="flex items-center gap-0.5 w-full justify-between mb-1.5 font-bold">
+                            {/* Progress update row */}
+                            <div className="w-10 sm:w-16 h-full border-l border-slate-800/40 flex flex-col items-center justify-center px-1 sm:px-2 shrink-0">
+                              <div className="flex items-center gap-0.5 w-full justify-between mb-1 font-bold text-[9px] sm:text-[11px]">
                                 <input 
                                   type="number" min="0" max="100" value={task.progress || 0} 
                                   onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} 
-                                  className={`w-8 text-left bg-transparent rounded text-[11px] font-black outline-none ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} 
+                                  className={`w-6 sm:w-8 text-left bg-transparent rounded outline-none ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} 
                                 />
-                                <span className="text-[9px] text-slate-500">%</span>
+                                <span className="text-[8px] sm:text-[9px] text-slate-500">%</span>
                               </div>
                               <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
                                 <div className="h-full bg-blue-500" style={{width: `${task.progress || 0}%`}}></div>
                               </div>
                             </div>
                             
-                            <div className="w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-800/40 print:hidden">
-                              <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-500 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={13} /></button>
+                            <div className="w-6 sm:w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-800/40 print:hidden">
+                              <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-500 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={12} /></button>
                             </div>
                           </div>
                         );
                       })}
                     </div>
 
-                    {/* Bottom control panel footer */}
-                    <div className="h-[80px] p-4 flex flex-col justify-center border-t border-slate-800/40 sticky bottom-0 z-20 print:hidden">
-                       <button onClick={addTask} className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all px-4 py-2.5 rounded-xl border border-dashed w-full justify-center ${
+                    {/* Table bottom panel footer */}
+                    <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-800/40 sticky bottom-0 z-20 print:hidden">
+                       <button onClick={addTask} className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2 rounded-xl border border-dashed w-full justify-center ${
                          isDarkMode ? 'bg-slate-950/60 text-blue-400 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
                        }`}>
-                         <Plus size={13} /> Add New Task Row
+                         <Plus size={12} /> Add Task
                        </button>
                     </div>
                   </div>
 
-                  {/* Right Column Layout: Custom Sliding Gantt Calendar scale */}
-                  <div id="gantt-scroll-area" className="flex-1 flex flex-col bg-[#0b0f19]/40 relative overflow-x-auto print:overflow-visible">
+                  {/* Horizontal Scroll Timeline Section (Frictionless swipe action container with -webkit touch) */}
+                  <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/40 relative overflow-x-auto print:overflow-visible">
                     
-                    {/* Calendar Scale headers */}
+                    {/* Headers dates timeline */}
                     <div className={`h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
                       {headerDays.map(day => {
                         const dateStr = generateDateHeaderStr(projectStartDate, day);
@@ -1094,7 +1094,7 @@ export default function App() {
                       })}
                     </div>
                     
-                    {/* Dynamic Grid Background mapping calendar widths */}
+                    {/* Dynamic grid mapping */}
                     <div className={`flex-grow min-w-max relative transition-all duration-200 ${
                       isDarkMode 
                         ? "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iMTAwJSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNDQiIHkxPSIwIiB4Mj0iNDQiIHkyPSIxMDAlIiBzdHJva2U9IiMxZTI5M2IiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]" 
@@ -1105,7 +1105,7 @@ export default function App() {
                           const isApproved = task.qaStatus === 'APPROVED';
                           
                           return (
-                            <div key={task.id} className={`h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-100'}`}>
+                            <div key={task.id} className={`h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-105'}`}>
                                <div 
                                  onClick={() => setActiveTaskModal(task.id)}
                                  className={`absolute h-[28px] rounded-lg shadow-lg transition-all flex items-center justify-between overflow-hidden text-[10px] font-bold border cursor-pointer hover:scale-[1.02] hover:ring-2 hover:ring-blue-500/50 print:hover:ring-0
@@ -1118,7 +1118,7 @@ export default function App() {
                                >
                                  <div className={`absolute top-0 left-0 h-full ${isHold ? 'bg-rose-500/20' : isApproved ? 'bg-emerald-500/20' : 'bg-blue-500/20'}`} style={{ width: `${task.progress || 0}%` }} />
                                  <div className="absolute inset-0 flex justify-between items-center px-2 z-10 pointer-events-none">
-                                   <span className="font-extrabold text-[10px]">{task.adjustedDuration}d</span>
+                                   <span className="font-extrabold text-[9px] sm:text-[10px]">{task.adjustedDuration}d</span>
                                    <div className="flex gap-1.5 items-center">
                                      <span className="flex items-center gap-0.5 text-[8px] bg-slate-900/60 border border-slate-800/40 px-1 py-0.5 rounded shadow-sm pointer-events-auto text-slate-300">
                                        <UserPlus size={9}/> Crew
@@ -1132,7 +1132,7 @@ export default function App() {
                        })}
                     </div>
                     
-                    {/* Daily Manpower Load Chart Histogram */}
+                    {/* Daily workforce load chart */}
                     <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-800/40' : 'bg-white border-slate-300'}`}>
                       <div className={`absolute left-3 top-3 text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1.5 px-2 py-1 rounded shadow-md border ${
                         isDarkMode ? 'bg-slate-900 text-slate-400 border-slate-800/40' : 'bg-white/95 text-slate-500 border-slate-105'
@@ -1159,16 +1159,16 @@ export default function App() {
                 </div>
               )}
 
-              {/* Visual summaries of metrics */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-bold print:hidden">
-                 <span className="flex items-center gap-1.5"><Info size={13}/> Secure local-sync storage initialized. Weather buffer factors verified.</span>
-                 <span>Expected Citicore Turn-On Phase: <strong className="text-blue-500 text-sm ml-1">{totalDays} Days</strong></span>
+              {/* Status footer information */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 font-bold print:hidden">
+                 <span className="flex items-center gap-1"><Info size={12}/> Secure global Mother Link database synchronized.</span>
+                 <span>Turn-On Target: <strong className="text-blue-500 text-sm ml-1">{totalDays} Days</strong></span>
               </div>
             </div>
           </div>
       </div>
 
-      {/* DETAILED DIALOG MODAL (Integrated checklist, QA Hold point clearances, and Quick Presets) */}
+      {/* CORE INSPECTION CHECKLIST GATE MODAL */}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -1180,31 +1180,28 @@ export default function App() {
               {/* Header */}
               <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800/40 bg-slate-950/40' : 'border-slate-100 bg-slate-50'}`}>
                 <div>
-                  <h3 className="text-lg font-black flex items-center gap-2"><ClipboardCheck size={20} className="text-blue-500" /> Site Field Inspector Card</h3>
-                  <p className="text-xs text-slate-400 font-bold mt-1"><span className="text-blue-400 bg-blue-500/10 border border-blue-500/10 px-2 py-0.5 rounded mr-2">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
+                  <h3 className="text-sm sm:text-base font-black flex items-center gap-2"><ClipboardCheck size={18} className="text-blue-500" /> Site Field Inspector Card</h3>
+                  <p className="text-[11px] text-slate-400 font-bold mt-1"><span className="text-blue-400 bg-blue-500/10 border border-blue-500/10 px-1.5 py-0.5 rounded mr-1.5">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
                 </div>
-                <button onClick={() => setActiveTaskModal(null)} className={`p-2 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-750 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400'}`}><X size={16} /></button>
+                <button onClick={() => setActiveTaskModal(null)} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-750 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400'}`}><X size={14} /></button>
               </div>
               
-              <div className="p-6 md:p-8 overflow-y-auto flex-grow space-y-6">
+              <div className="p-4 sm:p-6 overflow-y-auto flex-grow space-y-5">
                 
-                {/* 1. PROGRESS ADJUSTER WITH NON-TECH PRESETS */}
-                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Site Work Progress</h4>
-                  
-                  {/* Slider Control */}
-                  <div className="flex items-center gap-4 mb-4">
+                {/* Progress Slider Preset Buttons */}
+                <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Progress Tracker</h4>
+                  <div className="flex items-center gap-3 mb-3">
                     <input 
                       type="range" min="0" max="100" step="10" 
                       value={currentTaskEditing.progress || 0}
                       onChange={(e) => updateTask(currentTaskEditing.id, 'progress', parseInt(e.target.value))}
                       className="flex-grow accent-blue-500 cursor-pointer"
                     />
-                    <span className="font-mono font-black text-sm text-blue-400 w-12 text-right">{currentTaskEditing.progress || 0}%</span>
+                    <span className="font-mono font-black text-xs text-blue-400 w-10 text-right">{currentTaskEditing.progress || 0}%</span>
                   </div>
 
-                  {/* Tactile Fast-Action Presets (Eliminates typing on mobile!) */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { label: "Not Started", value: 0 },
                       { label: "Active Work", value: 50 },
@@ -1215,7 +1212,6 @@ export default function App() {
                         onClick={() => {
                           updateTask(currentTaskEditing.id, 'progress', preset.value);
                           if (preset.value === 100) {
-                            // Finish checklist if finished is tapped
                             const list = { ...(currentTaskEditing.checklist || {}) };
                             Object.keys(list).forEach(k => list[k] = true);
                             updateTask(currentTaskEditing.id, 'checklist', list);
@@ -1223,10 +1219,10 @@ export default function App() {
                           }
                           showToast(`Progress set to ${preset.label} (${preset.value}%)`);
                         }}
-                        className={`py-2 px-1 rounded-xl text-center text-[10px] font-black uppercase tracking-wider border transition-all ${
+                        className={`py-1.5 px-1 rounded-xl text-center text-[9px] font-black uppercase tracking-wider border transition-all ${
                           currentTaskEditing.progress === preset.value
                             ? 'bg-blue-600/20 border-blue-500 text-blue-400'
-                            : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-400 hover:text-slate-350' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100')
+                            : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-400 hover:text-slate-355' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100')
                         }`}
                       >
                         {preset.label}
@@ -1235,14 +1231,14 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* 2. QA STATUS CARDS FOR THE SITE LEADS */}
-                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">QA/QC Hold Point Level</h4>
-                  <div className="grid grid-cols-3 gap-3">
+                {/* Hold status levels */}
+                <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">QA/QC Hold Point Level</h4>
+                  <div className="grid grid-cols-3 gap-2">
                     {[
-                      { status: 'PENDING', label: "Active Site Work", color: "border-blue-500/20 text-blue-400 bg-blue-500/5 hover:bg-blue-500/10" },
-                      { status: 'HOLD', label: "🔴 QA Block / Hold", color: "border-rose-500/20 text-rose-400 bg-rose-500/5 hover:bg-rose-500/10" },
-                      { status: 'APPROVED', label: "🟢 Done / Cleared", color: "border-emerald-500/20 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10" }
+                      { status: 'PENDING', label: "Active", color: "border-blue-500/20 text-blue-400 bg-blue-500/5" },
+                      { status: 'HOLD', label: "🔴 Hold", color: "border-rose-500/20 text-rose-400 bg-rose-500/5" },
+                      { status: 'APPROVED', label: "🟢 Cleared", color: "border-emerald-500/20 text-emerald-400 bg-emerald-500/5" }
                     ].map((item) => {
                       const isSelected = currentTaskEditing.qaStatus === item.status;
                       return (
@@ -1252,35 +1248,35 @@ export default function App() {
                             updateTask(currentTaskEditing.id, 'qaStatus', item.status);
                             showToast(`Status updated to ${item.status}`);
                           }}
-                          className={`p-3 rounded-xl border text-center transition-all flex flex-col justify-center items-center gap-1 ${
+                          className={`p-2 rounded-xl border text-center transition-all flex flex-col justify-center items-center gap-0.5 ${
                             isSelected 
-                              ? (item.status === 'HOLD' ? 'border-rose-500 bg-rose-500/15 text-rose-300 shadow-md shadow-rose-950/10' : item.status === 'APPROVED' ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300 shadow-md shadow-emerald-950/10' : 'border-blue-500 bg-blue-500/15 text-blue-300 shadow-md shadow-blue-950/10')
+                              ? (item.status === 'HOLD' ? 'border-rose-500 bg-rose-500/15 text-rose-300' : item.status === 'APPROVED' ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300' : 'border-blue-500 bg-blue-500/15 text-blue-300')
                               : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-400' : 'bg-white border-slate-200 text-slate-600')
                           }`}
                         >
-                          <span className="font-black text-[10px] uppercase tracking-wider">{item.status}</span>
-                          <span className="text-[8px] opacity-80">{item.label}</span>
+                          <span className="font-black text-[9px] uppercase tracking-wider">{item.status}</span>
+                          <span className="text-[7.5px] opacity-75">{item.label}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* INSPECTOR SIGN-OFF CHECKLIST (Essential for QA validation) */}
-                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><ListTodo size={14} className="text-blue-500"/> Engineering Sign-Off Steps</h4>
+                {/* Dynamic checking list */}
+                <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo size={12} className="text-blue-500"/> Engineering Sign-Off Steps</h4>
                   
                   {Object.keys(currentTaskEditing.checklist || {}).length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">No checklist parameters set for this task class.</p>
+                    <p className="text-[10px] text-slate-500 italic">No checklist parameters set for this task class.</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {Object.entries(currentTaskEditing.checklist).map(([name, completed]) => (
                         <label 
                           key={name}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-2 rounded-xl border text-[11px] cursor-pointer transition-all ${
                             completed 
                               ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300' 
-                              : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 hover:bg-slate-800 text-slate-300' : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700')
+                              : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 hover:bg-slate-800 text-slate-300' : 'bg-white border-slate-105 hover:bg-slate-50 text-slate-700')
                           }`}
                         >
                           <span className="font-bold">{name}</span>
@@ -1288,18 +1284,17 @@ export default function App() {
                             type="checkbox" 
                             checked={completed} 
                             onChange={() => toggleChecklistItem(currentTaskEditing.id, name)}
-                            className="rounded border-slate-800 text-emerald-600 focus:ring-emerald-500 h-4 w-4 shrink-0 bg-slate-950"
+                            className="rounded border-slate-850 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 shrink-0 bg-slate-950"
                           />
                         </label>
                       ))}
                     </div>
                   )}
 
-                  {/* Add checks custom builder input */}
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-3 flex gap-1.5">
                     <input 
                       type="text" 
-                      placeholder="Add custom inspector checks (e.g. slump check)" 
+                      placeholder="Add custom inspector checks" 
                       id="new-check-input"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1307,7 +1302,7 @@ export default function App() {
                           e.target.value = '';
                         }
                       }}
-                      className={`flex-grow px-3 py-2 rounded-xl text-xs font-semibold border outline-none ${
+                      className={`flex-grow px-3 py-1.5 rounded-xl text-[11px] font-semibold border outline-none ${
                         isDarkMode ? 'bg-slate-900 border-slate-800/40 text-slate-200 focus:border-blue-500/40' : 'bg-white border-slate-200 text-slate-800 focus:border-blue-500'
                       }`}
                     />
@@ -1319,26 +1314,26 @@ export default function App() {
                           input.value = '';
                         }
                       }}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 rounded-xl"
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] px-3 rounded-xl"
                     >
                       Add
                     </button>
                   </div>
                 </div>
 
-                {/* CREW MANNING ASSIGNMENTS */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Labor Crew Requirements</h4>
-                  <div className="flex flex-wrap gap-3">
+                {/* Manpower values adjustment */}
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Labor Crew Requirements</h4>
+                  <div className="flex flex-wrap gap-2">
                     {WORKER_ROLES.map(r => {
                       const count = parseInt(currentTaskEditing[r.key]) || 0;
                       return (
-                        <div key={r.key} className={`flex items-center gap-3 border rounded-2xl p-2.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#0b0f19] border-slate-800/40 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400')}`}>
-                          <span className="text-base pl-1">{r.icon} <span className="text-[10px] font-black uppercase ml-1">{r.label}</span></span>
-                          <div className={`flex items-center rounded-xl border text-slate-800 overflow-hidden shadow-md ${isDarkMode ? 'bg-[#131c2e] border-slate-800/40' : 'bg-white border-slate-200'}`}>
-                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-2.5 py-1 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Minus size={12}/></button>
-                            <span className={`text-xs font-black w-5 text-center ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{count}</span>
-                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-2.5 py-1 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Plus size={12}/></button>
+                        <div key={r.key} className={`flex items-center gap-2 border rounded-xl p-1.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#0b0f19] border-slate-800/40 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400')}`}>
+                          <span className="text-xs pl-0.5">{r.icon} <span className="text-[9px] font-black uppercase ml-0.5">{r.label}</span></span>
+                          <div className={`flex items-center rounded-lg border text-slate-800 overflow-hidden shadow ${isDarkMode ? 'bg-[#131c2e] border-slate-800/40' : 'bg-white border-slate-200'}`}>
+                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Minus size={10}/></button>
+                            <span className={`text-[10px] font-black w-4 text-center ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{count}</span>
+                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Plus size={10}/></button>
                           </div>
                         </div>
                       )
@@ -1346,8 +1341,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* NAMES LOG BOOK */}
-                <div className={`space-y-4 pt-4 border-t ${isDarkMode ? 'border-slate-800/40' : 'border-slate-105'}`}>
+                {/* Worker names logging */}
+                <div className={`space-y-3 pt-3 border-t ${isDarkMode ? 'border-slate-800/40' : 'border-slate-105'}`}>
                   {WORKER_ROLES.filter(r => (currentTaskEditing[r.key] || 0) > 0).map(r => {
                     const inputs = [];
                     for(let i=0; i<parseInt(currentTaskEditing[r.key]); i++) {
@@ -1356,16 +1351,16 @@ export default function App() {
                           key={i} type="text" value={currentTaskEditing.assigned?.[r.key]?.[i] || ''}
                           onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
                           placeholder={`Enter name for ${r.fullName} #${i+1}...`}
-                          className={`px-3 py-2.5 border rounded-xl text-xs font-semibold w-full focus:ring-2 focus:ring-blue-500/45 outline-none ${
-                            isDarkMode ? 'bg-[#0b0f19] border-slate-800/40 text-slate-200 focus:bg-slate-900' : 'bg-slate-50 border-slate-250 text-slate-850'
+                          className={`px-3 py-2 border rounded-xl text-[10px] font-semibold w-full outline-none ${
+                            isDarkMode ? 'bg-[#0b0f19] border-slate-800/40 text-slate-200' : 'bg-slate-50 border-slate-250 text-slate-850'
                           }`}
                         />
                       );
                     }
                     return (
-                      <div key={r.key} className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{r.fullName} Name Log</label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{inputs}</div>
+                      <div key={r.key} className="space-y-1.5">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{r.fullName} Name Log</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{inputs}</div>
                       </div>
                     );
                   })}
@@ -1373,44 +1368,44 @@ export default function App() {
               </div>
               
               <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'bg-slate-950/60 border-slate-800/40' : 'bg-slate-50'}`}>
-                <button onClick={() => setActiveTaskModal(null)} className="px-8 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg border border-blue-500">Close inspector</button>
+                <button onClick={() => setActiveTaskModal(null)} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl">Close Inspector</button>
               </div>
             </div>
           </div>
         );
       })()}
 
-      {/* CUSTOM BRANDING SETTINGS PANEL */}
+      {/* BRANDING CONFIG MODAL */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-955/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#131c2e] text-slate-100' : 'bg-white text-slate-850'}`}>
             <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50'}`}>
-              <span className="font-extrabold text-sm flex items-center gap-2"><Settings size={18}/> Console Brand Config</span>
-              <button onClick={() => setIsSettingsOpen(false)} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-850 border-slate-800/40 text-slate-400' : 'bg-white text-slate-400'}`}><X size={14} /></button>
+              <span className="font-extrabold text-xs flex items-center gap-2"><Settings size={14}/> Console Brand Config</span>
+              <button onClick={() => setIsSettingsOpen(false)} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-850 border-slate-800/40 text-slate-400' : 'bg-white text-slate-400'}`}><X size={12} /></button>
             </div>
             
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">Citicore Logo Image File</label>
-                <label className={`cursor-pointer border border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-2 transition-all ${isDarkMode ? 'bg-[#0b0f19]/45 border-slate-800/40 hover:bg-slate-850' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
-                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <UploadCloud size={24} className="text-blue-500"/>}
-                  <span className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest">Select Image</span>
+                <label className="block text-[9px] font-black text-slate-400 mb-1.5 uppercase tracking-wider">Citicore Logo Image File</label>
+                <label className={`cursor-pointer border border-dashed rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all ${isDarkMode ? 'bg-[#0b0f19]/45 border-slate-800/40 hover:bg-slate-850' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
+                  {logos.left ? <img src={logos.left} className="h-8 object-contain" alt="Left" /> : <UploadCloud size={20} className="text-blue-500"/>}
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Image</span>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('left', e)} className="hidden" />
                 </label>
               </div>
               
               <div>
-                <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-wider">MBV Logo Image File</label>
-                <label className={`cursor-pointer border border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-2 transition-all ${isDarkMode ? 'bg-[#0b0f19]/45 border-slate-800/40 hover:bg-slate-850' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
-                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <UploadCloud size={24} className="text-blue-500"/>}
-                  <span className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest">Select Image</span>
+                <label className="block text-[9px] font-black text-slate-400 mb-1.5 uppercase tracking-wider">MBV Logo Image File</label>
+                <label className={`cursor-pointer border border-dashed rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 transition-all ${isDarkMode ? 'bg-[#0b0f19]/45 border-slate-800/40 hover:bg-slate-850' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
+                  {logos.right ? <img src={logos.right} className="h-8 object-contain" alt="Right" /> : <UploadCloud size={20} className="text-blue-500"/>}
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Image</span>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('right', e)} className="hidden" />
                 </label>
               </div>
             </div>
             
             <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-800/40' : 'bg-slate-50'}`}>
-              <button onClick={() => setIsSettingsOpen(false)} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-xl">Save Settings</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl">Save Settings</button>
             </div>
           </div>
         </div>
