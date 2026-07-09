@@ -109,10 +109,6 @@ const copyToClipboard = (text) => {
   }
 };
 
-// ============================================================================
-// MAIN APPLICATION
-// ============================================================================
-
 export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading'); // 'loading', 'editor'
@@ -325,11 +321,9 @@ export default function App() {
     const updatedList = [...projectList, { id: cleanId, title: newProjectName }];
     
     try {
-      // 1. Update the index document on cloud
       const indexDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'project-list-index');
       await setDoc(indexDocRef, { projects: updatedList });
 
-      // 2. Initialize the schedule document for the new project
       const activeDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', cleanId);
       await setDoc(activeDocRef, {
         appTitle: newProjectName,
@@ -347,7 +341,6 @@ export default function App() {
         updatedAt: new Date().toISOString()
       });
 
-      // 3. Update active project state and navigation
       setProjectList(updatedList);
       setShowCreateProjectModal(false);
       setNewProjectName('');
@@ -359,7 +352,6 @@ export default function App() {
     }
   };
 
-  // Switches the browser and listeners to a different project Mother Link
   const handleSwitchProject = (id) => {
     setActiveProjectId(id);
     const newUrl = new URL(window.location.href);
@@ -367,7 +359,6 @@ export default function App() {
     window.history.pushState({}, '', newUrl.toString());
   };
 
-  // Safe Deletion using Custom Prompt UI (No window.confirm)
   const handleDeleteProject = (id, e) => {
     if (e) e.stopPropagation();
     if (id === 'master-schedule') {
@@ -397,7 +388,6 @@ export default function App() {
     });
   };
 
-  // Weather delay factor multiplier
   const fetchWeatherDelayMultiplier = () => {
     if (weatherFactor === 'heavy_rain') return 1.5;
     if (weatherFactor === 'typhoon') return 2.0;
@@ -491,6 +481,7 @@ export default function App() {
         const list = { ...(t.checklist || {}) };
         list[checklistName] = !list[checklistName];
         
+        // Auto QA change based on checklists cleared
         const listValues = Object.values(list);
         let updatedStatus = t.qaStatus;
         if (listValues.length > 0 && listValues.every(val => val === true)) {
@@ -547,6 +538,31 @@ export default function App() {
     setShowTour(false);
   };
 
+  const getRowBgColor = (task, index) => {
+    const isHold = task.qaStatus === 'HOLD';
+    const isApproved = task.qaStatus === 'APPROVED';
+    
+    if (isDarkMode) {
+      if (isHold) return 'bg-rose-950/15 border-rose-900/30 hover:bg-rose-950/25';
+      if (isApproved) return 'bg-emerald-950/15 border-emerald-900/30 hover:bg-emerald-950/25';
+      return index % 2 === 0 ? 'bg-[#131c2e]/40 border-slate-800/40 hover:bg-slate-800/20' : 'bg-[#131c2e]/20 border-slate-800/40 hover:bg-slate-800/20';
+    } else {
+      if (isHold) return 'bg-rose-50/70 border-rose-100 hover:bg-rose-100/60';
+      if (isApproved) return 'bg-emerald-50/70 border-emerald-100 hover:bg-emerald-100/60';
+      return index % 2 === 0 ? 'bg-white border-slate-100 hover:bg-slate-50/60' : 'bg-slate-50/40 border-slate-100 hover:bg-slate-50/60';
+    }
+  };
+
+  const getBadgeStyle = (status) => {
+    if (status === 'APPROVED') {
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20';
+    }
+    if (status === 'HOLD') {
+      return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20';
+    }
+    return 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50';
+  };
+
   // ============================================================================
   // RENDER: LOADING STATE
   // ============================================================================
@@ -565,18 +581,32 @@ export default function App() {
   return (
     <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
       
-      {/* Scrollbar & Styling overrides without high-contrast borders */}
+      {/* Dynamic styling overrides for grid harmony (Light & Dark matching grids) */}
       <style dangerouslySetInnerHTML={{__html: `
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#1e293b' : '#cbd5e1'}; border-radius: 6px; }
         ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
         
+        .gantt-grid-light {
+          background-image: 
+            linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+            linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+          background-size: 44px 100%, 100% 54px;
+        }
+        
+        .gantt-grid-dark {
+          background-image: 
+            linear-gradient(to right, #1e293b 1px, transparent 1px),
+            linear-gradient(to bottom, #1e293b 1px, transparent 1px);
+          background-size: 44px 100%, 100% 54px;
+        }
+
         @media print {
           @page { size: A4 landscape; margin: 8mm; }
           body { background-color: #ffffff !important; color: #000000 !important; }
           header, button, .print\\:hidden { display: none !important; }
-          #gantt-export-zone { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; }
+          #gantt-export-zone { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
         }
       `}} />
 
@@ -587,7 +617,7 @@ export default function App() {
             <h3 className="font-extrabold text-lg mb-2">{customPrompt.title}</h3>
             <p className="text-sm text-slate-400 mb-6">{customPrompt.message}</p>
             <div className="flex gap-3 justify-end">
-              <button onClick={customPrompt.onCancel} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${isDarkMode ? 'border-slate-800 bg-slate-800 text-slate-350' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>Cancel</button>
+              <button onClick={customPrompt.onCancel} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${isDarkMode ? 'border-slate-800 bg-slate-800 text-slate-355' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>Cancel</button>
               <button onClick={customPrompt.onConfirm} className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-semibold">Confirm Action</button>
             </div>
           </div>
@@ -596,7 +626,7 @@ export default function App() {
 
       {/* ONBOARDING QUICK TOUR */}
       {showTour && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-955/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-6 md:p-8 flex flex-col transition-all ${
             isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
           }`}>
@@ -677,8 +707,8 @@ export default function App() {
         </div>
       )}
 
-      {/* RESPONSIVE HEADER BAR (Hides labels & uses icons on small screens to prevent squishing) */}
-      <header className={`border-b px-4 py-3 flex items-center justify-between shadow-md z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]/90 border-slate-900/60' : 'bg-white border-slate-200'}`}>
+      {/* RESPONSIVE HEADER BAR */}
+      <header className={`border-b px-4 py-3 flex items-center justify-between shadow-sm z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-900/60' : 'bg-white border-slate-100'}`}>
         <div className="flex items-center gap-2 min-w-0 flex-1 mr-3">
           <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0">
             <LayoutDashboard size={16} />
@@ -734,7 +764,7 @@ export default function App() {
             title="Toggle Project Specifications Panel"
           >
             {isMetadataCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-            <span className="hidden md:inline">Specs</span>
+            <span className="hidden md:inline font-bold">Specs</span>
           </button>
 
           {/* Compact Weather Control Selector */}
@@ -745,7 +775,7 @@ export default function App() {
                 setWeatherFactor(e.target.value);
                 showToast(`Weather updated to ${e.target.value.replace('_', ' ').toUpperCase()}. Delays adjusted.`);
               }} 
-              className="text-[10px] font-bold bg-transparent outline-none border-none text-blue-400 cursor-pointer"
+              className="text-[10px] font-bold bg-transparent outline-none border-none text-blue-500 cursor-pointer"
             >
               <option value="sunny">☀️ Sunny</option>
               <option value="heavy_rain">🌧️ Light Rain</option>
@@ -754,7 +784,7 @@ export default function App() {
           </div>
 
           <div className={`hidden lg:flex items-center border rounded-xl px-2.5 py-1.5 text-[10px] ${isDarkMode ? 'bg-[#0b0f19]/60 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
-            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-bold text-blue-400" />
+            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-bold text-blue-500" />
           </div>
 
           <div className="flex gap-1 sm:gap-2">
@@ -775,7 +805,7 @@ export default function App() {
             <button 
               onClick={handleShareToCloud} 
               disabled={isSavingCloud} 
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition"
+              className="bg-emerald-600 hover:bg-emerald-505 disabled:opacity-50 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition"
               title="Save changes back to the shared mother link"
             >
               {isSavingCloud ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12}/>} 
@@ -790,7 +820,7 @@ export default function App() {
       </header>
 
       {/* MOBILE DISPLAY VIEWPORT SWITCHER CONTROL BAR */}
-      <div className="lg:hidden shrink-0 border-b flex bg-slate-900/40 border-slate-800/40 print:hidden justify-around items-center h-12">
+      <div className="lg:hidden shrink-0 border-b flex bg-[#131c2e] border-slate-800/40 print:hidden justify-around items-center h-12">
         <button 
           onClick={() => setMobileDisplayTab('tasks')}
           className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 h-full border-b-2 px-3 ${mobileDisplayTab === 'tasks' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'}`}
@@ -824,11 +854,11 @@ export default function App() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold outline-none border transition-all ${
-                    isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-200 focus:border-blue-500/50' : 'bg-white border-slate-200 text-slate-800 focus:border-blue-500'
+                    isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-200 focus:border-blue-500/50' : 'bg-white border-slate-250 text-slate-800 focus:border-blue-500'
                   }`}
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs">Clear</button>
+                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-355 text-xs">Clear</button>
                 )}
               </div>
 
@@ -838,10 +868,10 @@ export default function App() {
                   <button
                     key={tab}
                     onClick={() => setActiveTabFilter(tab)}
-                    className={`flex-1 sm:flex-initial px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${
+                    className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
                       activeTabFilter === tab 
-                        ? 'bg-blue-600/10 border-blue-500 text-blue-400' 
-                        : (isDarkMode ? 'bg-[#131c2e]/30 border-slate-800/40 text-slate-500 hover:text-slate-300' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-600')
+                        ? 'bg-blue-600/10 border-blue-500 text-blue-500 dark:text-blue-400' 
+                        : (isDarkMode ? 'bg-[#131c2e]/30 border-slate-800/40 text-slate-500 hover:text-slate-300' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-850')
                     }`}
                   >
                     {tab}
@@ -851,11 +881,11 @@ export default function App() {
             </div>
 
             {/* MASTER EXPORT COMPARTMENT */}
-            <div id="gantt-export-zone" className={`rounded-xl shadow-xl border p-3 sm:p-5 flex flex-col gap-4 w-full relative transition-colors duration-200 ${isDarkMode ? 'bg-[#131c2e]/20 border-slate-900/60' : 'bg-white border-slate-200'}`}>
+            <div id="gantt-export-zone" className={`rounded-2xl shadow-xl border p-3 sm:p-5 flex flex-col gap-4 w-full relative transition-colors duration-200 ${isDarkMode ? 'bg-[#131c2e]/20 border-slate-900/65' : 'bg-white border-slate-200'}`}>
               
               {/* COLLAPSIBLE DOCUMENT SPECIFICATIONS & METADATA SECTION */}
               {!isMetadataCollapsed && (
-                <div className={`border-b pb-4 shrink-0 transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                <div className={`border-b pb-4 shrink-0 transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-150'}`}>
                   <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="w-full md:w-[30%] flex justify-start items-center">
                       {logos.left ? <img src={logos.left} className="h-8 object-contain" alt="Left" /> : <CiticoreLogo />}
@@ -864,12 +894,12 @@ export default function App() {
                     <div className="w-full md:w-[40%] text-center">
                       <input 
                         value={docMetadata.projectName} onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                        className={`w-full text-center text-sm md:text-base font-black tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none transition-all ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
+                        className={`w-full text-center text-sm md:text-base font-black tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-300 focus:border-blue-500 outline-none transition-all ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
                         placeholder="ENTER PROJECT SPEC..."
                       />
                       <input 
                         value={docMetadata.location} onChange={(e) => setDocMetadata({...docMetadata, location: e.target.value})}
-                        className="w-full text-center text-[9px] text-slate-500 mt-1 font-bold uppercase tracking-widest bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 outline-none"
+                        className="w-full text-center text-[9px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 outline-none"
                         placeholder="LOCATION DETAILS..."
                       />
                     </div>
@@ -895,20 +925,19 @@ export default function App() {
                     </div>
                     <div className="flex flex-col gap-0.5 pl-2">
                       <span>Site Conditions:</span>
-                      <span className="text-blue-400 font-bold tracking-widest">{weatherFactor.toUpperCase()}</span>
+                      <span className="text-blue-500 font-bold tracking-widest">{weatherFactor.toUpperCase()}</span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* 1. MOBILE FIELD CARDS LAYOUT (Active on mobile displays under the 'tasks' or 'qa' tab) */}
+              {/* 1. MOBILE FIELD CARDS LAYOUT */}
               {(!isMobileViewport || mobileDisplayTab === 'tasks' || mobileDisplayTab === 'qa') && (
                 <div className="block lg:hidden space-y-3">
                   {filteredTasks.map((task) => {
                     const isHold = task.qaStatus === 'HOLD';
                     const isApproved = task.qaStatus === 'APPROVED';
                     
-                    // Filter tasks under 'qa' mobile display tab to only show holds / pending states
                     if (mobileDisplayTab === 'qa' && !isHold && task.qaStatus !== 'PENDING') return null;
                     
                     return (
@@ -917,9 +946,9 @@ export default function App() {
                         onClick={() => setActiveTaskModal(task.id)}
                         className={`p-3.5 rounded-xl border transition-all flex flex-col gap-2.5 relative cursor-pointer ${
                           isHold 
-                            ? 'bg-rose-950/20 border-rose-900/40 shadow-lg' 
+                            ? 'bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/45 shadow-lg' 
                             : isApproved 
-                              ? 'bg-emerald-950/15 border-emerald-900/30' 
+                              ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/45' 
                               : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40' : 'bg-white border-slate-200')
                         }`}
                       >
@@ -927,13 +956,11 @@ export default function App() {
                           <div className="min-w-0 flex-1">
                             <span className="text-[9px] font-black text-blue-500 uppercase tracking-wider">{task.desc}</span>
                             <h4 className={`font-black text-xs sm:text-sm mt-0.5 truncate ${isDarkMode ? 'text-slate-100' : 'text-slate-850'}`}>
-                              <span className="mr-1.5 text-[10px] px-1 bg-blue-500/10 rounded">{task.ref}</span> {task.task}
+                              <span className="mr-1.5 text-[10px] px-1 bg-blue-500/10 text-blue-500 rounded">{task.ref}</span> {task.task}
                             </h4>
                           </div>
                           
-                          <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider shrink-0 border ${
-                            isHold ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : isApproved ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700/50'
-                          }`}>
+                          <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider shrink-0 border ${getBadgeStyle(task.qaStatus)}`}>
                             {task.qaStatus}
                           </span>
                         </div>
@@ -946,22 +973,22 @@ export default function App() {
                               <span>{task.progress}%</span>
                             </div>
                             
-                            <div className="h-1.5 w-full bg-slate-850 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                               <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${task.progress}%` }}></div>
                             </div>
                           </div>
                           
                           <div className="shrink-0 text-right">
                             <span className="text-[8px] font-black text-slate-500 block">DAYS</span>
-                            <span className="text-xs font-black text-slate-200">{task.adjustedDuration}d</span>
+                            <span className="text-xs font-black text-slate-700 dark:text-slate-200">{task.adjustedDuration}d</span>
                           </div>
                         </div>
 
-                        {/* Mobile card footer - shift labor status */}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-800/40 text-[9px]">
+                        {/* Mobile card footer */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/40 text-[9px]">
                           <span className="text-slate-500 font-extrabold flex items-center gap-1"><Users size={11}/> CREW ({task.totalManpower}):</span>
                           {WORKER_ROLES.filter(r => (task[r.key] || 0) > 0).map(r => (
-                            <span key={r.key} className="bg-slate-850/80 border border-slate-700/80 px-1.5 py-0.5 rounded font-bold text-slate-300">
+                            <span key={r.key} className="bg-slate-100 dark:bg-slate-850/80 border border-slate-200 dark:border-slate-700/80 px-1.5 py-0.5 rounded font-bold text-slate-600 dark:text-slate-300">
                               {r.icon} {r.label}:{task[r.key]}
                             </span>
                           ))}
@@ -969,7 +996,7 @@ export default function App() {
 
                         <button 
                           onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
-                          className="absolute right-3 top-3 text-slate-500 hover:text-rose-400 p-1 transition-colors"
+                          className="absolute right-3 top-3 text-slate-400 hover:text-rose-500 p-1 transition-colors"
                         >
                           <Trash2 size={12}/>
                         </button>
@@ -979,15 +1006,21 @@ export default function App() {
                 </div>
               )}
 
-              {/* 2. RESPONSIVE HORIZONTAL TOUCH GANTT (Focused layout display, optimised for mobile horizontal slide) */}
+              {/* 2. RESPONSIVE HORIZONTAL GANTT */}
               {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
-                <div className={`flex border rounded-xl overflow-hidden min-h-[380px] lg:min-h-[450px] shadow-lg transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800/60' : 'bg-white border-slate-200'}`}>
+                <div className={`flex border rounded-2xl overflow-hidden min-h-[380px] lg:min-h-[450px] shadow-lg transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800/60' : 'bg-slate-50/50 border-slate-200'}`}>
                   
-                  {/* Left spreadsheet columns */}
-                  <div className={`w-[45%] md:w-[35%] lg:w-[45%] flex flex-col shrink-0 z-10 border-r relative transition-colors ${isDarkMode ? 'bg-[#131c2e]/90 border-slate-800/60 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200'}`}>
+                  {/* Left spreadsheet columns - HIDDEN ON MOBILE SCREEN SIZES */}
+                  <div className={`hidden lg:flex w-[45%] md:w-[35%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-colors ${
+                    isDarkMode 
+                      ? 'bg-[#131c2e] border-slate-800/60 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' 
+                      : 'bg-white border-slate-150 shadow-[2px_0_5px_-2px_rgba(226,232,240,0.8)]'
+                  }`}>
                     
                     {/* Header values */}
-                    <div className={`h-[48px] p-2 font-black text-[8px] sm:text-[9px] flex items-center uppercase tracking-widest sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950/80 border-slate-800/60 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                    <div className={`h-[48px] p-2 font-black text-[8px] sm:text-[9.5px] flex items-center uppercase tracking-widest sticky top-0 z-25 border-b transition-colors ${
+                      isDarkMode ? 'bg-slate-900 border-slate-800/60 text-slate-400' : 'bg-slate-100 text-slate-600 border-slate-200'
+                    }`}>
                       <span className="w-8 sm:w-10 text-center">Ref</span>
                       <span className="flex-grow px-2 sm:px-3 truncate">Work Description</span>
                       <span className="w-8 sm:w-12 text-center shrink-0">Days</span>
@@ -995,67 +1028,74 @@ export default function App() {
                       <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
                     </div>
 
-                    {/* Task rows lists */}
+                    {/* Task rows lists with complete legibility upgrade */}
                     <div className="flex-grow">
                       {filteredTasks.map((task, index) => {
-                        const isHold = task.qaStatus === 'HOLD';
-                        const isApproved = task.qaStatus === 'APPROVED';
-                        
                         return (
                           <div 
                             key={task.id} 
-                            className={`h-[54px] flex items-center text-[10px] group transition-all border-b ${
-                              isHold 
-                                ? 'bg-[#1f1618] border-rose-950/50' 
-                                : isApproved 
-                                  ? 'bg-[#121b18] border-emerald-950/50'
-                                  : (isDarkMode ? `${index % 2 === 0 ? 'bg-[#131c2e]/40' : 'bg-[#131c2e]/20'} border-slate-800/40` : 'bg-white border-slate-105')
-                            }`}
+                            className={`h-[54px] flex items-center text-[10px] group transition-all border-b ${getRowBgColor(task, index)}`}
                           >
                             <div className="w-8 sm:w-10 h-full text-center flex items-center justify-center relative shrink-0">
-                              <GripVertical size={11} className="text-slate-600 absolute left-0 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
-                              <input value={task.ref} onChange={(e) => updateTask(task.id, 'ref', e.target.value)} className="font-extrabold text-slate-500 text-center w-full bg-transparent outline-none focus:text-blue-500 text-[10px]" />
+                              <GripVertical size={11} className="text-slate-400 dark:text-slate-600 absolute left-0 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
+                              <input 
+                                value={task.ref} 
+                                onChange={(e) => updateTask(task.id, 'ref', e.target.value)} 
+                                className={`font-mono font-black text-center w-full bg-transparent outline-none focus:text-blue-500 text-[10px] ${
+                                  isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                                }`} 
+                              />
                             </div>
                             
-                            <div className="flex-grow h-full flex flex-col justify-center px-1.5 sm:px-3 border-l border-slate-800/40 min-w-0">
+                            <div className="flex-grow h-full flex flex-col justify-center px-1.5 sm:px-3 border-l border-slate-100 dark:border-slate-800/40 min-w-0">
                               <div className="flex items-center gap-1 sm:gap-2">
-                                <input value={task.desc} onChange={(e) => updateTask(task.id, 'desc', e.target.value)} className="font-black text-[7.5px] sm:text-[8.5px] text-blue-500 uppercase tracking-widest bg-transparent outline-none w-16 sm:w-24 mb-0.5 shrink-0" />
-                                <span className={`px-1 py-0.5 rounded text-[6.5px] sm:text-[7.5px] font-black uppercase tracking-wider shrink-0 ${
-                                  isHold ? 'bg-rose-500/10 text-rose-400' : isApproved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-500'
-                                }`}>
+                                <span className="font-black text-[7.5px] sm:text-[8.5px] text-blue-500 uppercase tracking-widest bg-transparent outline-none shrink-0">
+                                  {task.desc}
+                                </span>
+                                <span className={`px-1 py-0.5 rounded text-[6.5px] sm:text-[7.5px] font-black uppercase tracking-wider shrink-0 border ${getBadgeStyle(task.qaStatus)}`}>
                                   {task.qaStatus}
                                 </span>
                               </div>
-                              <input value={task.task} onChange={(e) => updateTask(task.id, 'task', e.target.value)} className={`font-bold text-[10px] sm:text-[12px] bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-850'}`} />
+                              <input 
+                                value={task.task} 
+                                onChange={(e) => updateTask(task.id, 'task', e.target.value)} 
+                                className={`font-bold text-[10px] sm:text-[12px] bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${
+                                  isDarkMode ? 'text-slate-100' : 'text-slate-850'
+                                }`} 
+                              />
                             </div>
                             
-                            <div className="w-8 sm:w-12 h-full border-l border-slate-800/40 flex items-center justify-center p-1 shrink-0">
+                            <div className="w-8 sm:w-12 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
                               <input 
                                 type="number" min="1" value={task.duration} 
                                 onChange={(e) => updateTask(task.id, 'duration', parseInt(e.target.value) || 1)} 
                                 className={`w-full text-center border rounded-lg py-1 text-[10px] sm:text-xs font-black outline-none transition-all ${
-                                  isDarkMode ? 'bg-slate-950 border-slate-800/60 text-slate-200 focus:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-700'
+                                  isDarkMode 
+                                    ? 'bg-slate-950/80 border-slate-800/85 text-slate-200 focus:border-blue-500' 
+                                    : 'bg-white border-slate-200 text-slate-800 focus:border-blue-500'
                                 }`} 
                               />
                             </div>
 
-                            {/* Progress update row */}
-                            <div className="w-10 sm:w-16 h-full border-l border-slate-800/40 flex flex-col items-center justify-center px-1 sm:px-2 shrink-0">
+                            {/* Progress update input area */}
+                            <div className="w-10 sm:w-16 h-full border-l border-slate-100 dark:border-slate-800/40 flex flex-col items-center justify-center px-1 sm:px-2 shrink-0">
                               <div className="flex items-center gap-0.5 w-full justify-between mb-1 font-bold text-[9px] sm:text-[11px]">
                                 <input 
                                   type="number" min="0" max="100" value={task.progress || 0} 
                                   onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} 
-                                  className={`w-6 sm:w-8 text-left bg-transparent rounded outline-none ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} 
+                                  className={`w-6 sm:w-8 text-left bg-transparent rounded outline-none font-mono font-bold ${
+                                    isDarkMode ? 'text-slate-200' : 'text-slate-800'
+                                  }`} 
                                 />
-                                <span className="text-[8px] sm:text-[9px] text-slate-500">%</span>
+                                <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold">%</span>
                               </div>
-                              <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                              <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div className="h-full bg-blue-500" style={{width: `${task.progress || 0}%`}}></div>
                               </div>
                             </div>
                             
-                            <div className="w-6 sm:w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-800/40 print:hidden">
-                              <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-500 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={12} /></button>
+                            <div className="w-6 sm:w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-100 dark:border-slate-800/40 print:hidden">
+                              <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={12} /></button>
                             </div>
                           </div>
                         );
@@ -1063,20 +1103,22 @@ export default function App() {
                     </div>
 
                     {/* Table bottom panel footer */}
-                    <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-800/40 sticky bottom-0 z-20 print:hidden">
+                    <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden">
                        <button onClick={addTask} className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2 rounded-xl border border-dashed w-full justify-center ${
-                         isDarkMode ? 'bg-slate-950/60 text-blue-400 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
+                         isDarkMode ? 'bg-slate-950/60 text-blue-450 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
                        }`}>
                          <Plus size={12} /> Add Task
                        </button>
                     </div>
                   </div>
 
-                  {/* Horizontal Scroll Timeline Section (Frictionless swipe action container with -webkit touch) */}
-                  <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/40 relative overflow-x-auto print:overflow-visible">
+                  {/* Horizontal Scroll Timeline Section */}
+                  <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-grow flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible">
                     
                     {/* Headers dates timeline */}
-                    <div className={`h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${isDarkMode ? 'bg-slate-950 border-slate-800/40' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className={`h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
+                      isDarkMode ? 'bg-slate-900 border-slate-800/40' : 'bg-slate-100 border-slate-200'
+                    }`}>
                       {headerDays.map(day => {
                         const dateStr = generateDateHeaderStr(projectStartDate, day);
                         const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
@@ -1084,46 +1126,62 @@ export default function App() {
                         return (
                           <div key={day} className={`w-[44px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center transition-colors ${
                             isDarkMode 
-                              ? `border-slate-800/40 ${isSatSun ? 'bg-slate-900/10' : ''}` 
-                              : `border-slate-200/50 ${isSatSun ? 'bg-slate-100/60' : ''}`
+                              ? `border-slate-800/40 ${isSatSun ? 'bg-slate-900/40' : ''}` 
+                              : `border-slate-200/60 ${isSatSun ? 'bg-slate-200/45' : ''}`
                           }`}>
-                            <span className={`text-[10px] font-black leading-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-700'}`}>{dateStr.split(' ')[0]}</span>
-                            <span className="text-[8px] font-bold text-slate-500 leading-tight uppercase">{dateStr.split(' ')[1]}</span>
+                            <span className={`text-[10px] font-black leading-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-800'}`}>{dateStr.split(' ')[0]}</span>
+                            <span className="text-[8px] font-bold text-slate-400 leading-tight uppercase">{dateStr.split(' ')[1]}</span>
                           </div>
                         )
                       })}
                     </div>
                     
-                    {/* Dynamic grid mapping */}
+                    {/* Dynamic grid mapping - responsive background classes */}
                     <div className={`flex-grow min-w-max relative transition-all duration-200 ${
-                      isDarkMode 
-                        ? "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iMTAwJSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNDQiIHkxPSIwIiB4Mj0iNDQiIHkyPSIxMDAlIiBzdHJva2U9IiMxZTI5M2IiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]" 
-                        : "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iMTAwJSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48bGluZSB4MT0iNDQiIHkxPSIwIiB4Mj0iNDQiIHkyPSIxMDAlIiBzdHJva2U9IiNlMmU4ZjAiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]"
+                      isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
                     }`}>
                        {filteredTasks.map((task) => {
                           const isHold = task.qaStatus === 'HOLD';
                           const isApproved = task.qaStatus === 'APPROVED';
                           
                           return (
-                            <div key={task.id} className={`h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-105'}`}>
+                            <div key={task.id} className={`h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/40' : 'border-slate-100'}`}>
                                <div 
                                  onClick={() => setActiveTaskModal(task.id)}
-                                 className={`absolute h-[28px] rounded-lg shadow-lg transition-all flex items-center justify-between overflow-hidden text-[10px] font-bold border cursor-pointer hover:scale-[1.02] hover:ring-2 hover:ring-blue-500/50 print:hover:ring-0
+                                 className={`absolute h-[28px] rounded-lg shadow-sm transition-all flex items-center justify-between overflow-hidden text-[10px] font-bold border cursor-pointer hover:scale-[1.02] hover:ring-2 hover:ring-blue-500/50 print:hover:ring-0
                                    ${isHold 
-                                     ? 'bg-rose-950/40 text-rose-300 border-rose-500/40' 
+                                     ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-500/40' 
                                      : isApproved 
-                                       ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40' 
-                                       : 'bg-blue-950/40 text-blue-300 border-blue-500/30'}`}
+                                       ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-500/40' 
+                                       : 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-500/30'}`}
                                  style={{ left: `${(task.startDays) * 44 + 2}px`, width: `${(task.adjustedDuration * 44) - 4}px` }}
                                >
-                                 <div className={`absolute top-0 left-0 h-full ${isHold ? 'bg-rose-500/20' : isApproved ? 'bg-emerald-500/20' : 'bg-blue-500/20'}`} style={{ width: `${task.progress || 0}%` }} />
-                                 <div className="absolute inset-0 flex justify-between items-center px-2 z-10 pointer-events-none">
-                                   <span className="font-extrabold text-[9px] sm:text-[10px]">{task.adjustedDuration}d</span>
+                                 <div className={`absolute top-0 left-0 h-full ${
+                                   isHold ? 'bg-rose-500/10 dark:bg-rose-500/20' : isApproved ? 'bg-emerald-500/10 dark:bg-emerald-500/20' : 'bg-blue-500/10 dark:bg-blue-500/20'
+                                 }`} style={{ width: `${task.progress || 0}%` }} />
+                                 
+                                 <div className="absolute inset-0 flex justify-between items-center px-2.5 z-10 pointer-events-none">
+                                   {/* PRO MOBILE UX ENHANCEMENT: Render the title over the bar on small viewports */}
+                                   <span className="font-extrabold text-[9px] sm:text-[10px] truncate max-w-[85%]">
+                                     <span className="opacity-75 mr-1 text-[8.5px] font-black">{task.ref}</span>
+                                     {isMobileViewport ? task.task : `${task.adjustedDuration}d`}
+                                   </span>
+                                   
                                    <div className="flex gap-1.5 items-center">
-                                     <span className="flex items-center gap-0.5 text-[8px] bg-slate-900/60 border border-slate-800/40 px-1 py-0.5 rounded shadow-sm pointer-events-auto text-slate-300">
+                                     <span className={`flex items-center gap-0.5 text-[8px] border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
+                                       isDarkMode 
+                                         ? 'bg-slate-900 border-slate-800 text-slate-300' 
+                                         : 'bg-white border-slate-200 text-slate-600'
+                                     }`}>
                                        <UserPlus size={9}/> Crew
                                      </span>
-                                     {task.totalManpower > 0 && <span className="hidden md:flex items-center gap-1 text-[9px] bg-slate-900/60 px-1.5 py-0.5 rounded text-slate-400"><Users size={9}/> {task.totalManpower}</span>}
+                                     {task.totalManpower > 0 && !isMobileViewport && (
+                                       <span className={`hidden md:flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded ${
+                                         isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-white text-slate-600 border border-slate-200'
+                                       }`}>
+                                         <Users size={9}/> {task.totalManpower}
+                                       </span>
+                                     )}
                                    </div>
                                  </div>
                                </div>
@@ -1133,9 +1191,11 @@ export default function App() {
                     </div>
                     
                     {/* Daily workforce load chart */}
-                    <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-800/40' : 'bg-white border-slate-300'}`}>
+                    <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
+                      isDarkMode ? 'bg-[#0f172a] border-slate-800/40' : 'bg-slate-50 border-slate-200'
+                    }`}>
                       <div className={`absolute left-3 top-3 text-[8.5px] font-black uppercase tracking-widest flex items-center gap-1.5 px-2 py-1 rounded shadow-md border ${
-                        isDarkMode ? 'bg-slate-900 text-slate-400 border-slate-800/40' : 'bg-white/95 text-slate-500 border-slate-105'
+                        isDarkMode ? 'bg-slate-900 text-slate-400 border-slate-800/40' : 'bg-white/95 text-slate-600 border-slate-200'
                       }`}>
                         <BarChart3 size={11} className="text-blue-500" /> Daily Load Histogram
                       </div>
@@ -1147,9 +1207,13 @@ export default function App() {
                         }, 0);
                         const heightPercentage = maxManpowerVal > 0 ? (dayManpower / maxManpowerVal) * 100 : 0;
                         return (
-                          <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2 relative group ${isDarkMode ? 'border-slate-800/40' : 'border-slate-100'}`}>
-                            <div className={`w-6 rounded-t transition-all flex items-end justify-center ${dayManpower > 12 ? 'bg-rose-500/40 group-hover:bg-rose-500/60' : (isDarkMode ? 'bg-[#3b82f6]/20 group-hover:bg-[#3b82f6]/40' : 'bg-indigo-100 group-hover:bg-indigo-300')}`} style={{ height: `${heightPercentage * 0.6}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} ></div>
-                            <span className={`text-[10px] font-black mt-1 ${dayManpower > 12 ? 'text-rose-400 font-bold' : 'text-slate-400'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
+                          <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2 relative group ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                            <div className={`w-6 rounded-t transition-all flex items-end justify-center ${
+                              dayManpower > 12 
+                                ? 'bg-rose-500/40 dark:bg-rose-500/40 group-hover:bg-rose-500/60' 
+                                : (isDarkMode ? 'bg-[#3b82f6]/20 group-hover:bg-[#3b82f6]/40' : 'bg-indigo-300 group-hover:bg-indigo-400')
+                            }`} style={{ height: `${heightPercentage * 0.6}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} ></div>
+                            <span className={`text-[10px] font-black mt-1 ${dayManpower > 12 ? 'text-rose-500 font-bold' : 'text-slate-600'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
                           </div>
                         );
                       })}
@@ -1181,7 +1245,7 @@ export default function App() {
               <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800/40 bg-slate-950/40' : 'border-slate-100 bg-slate-50'}`}>
                 <div>
                   <h3 className="text-sm sm:text-base font-black flex items-center gap-2"><ClipboardCheck size={18} className="text-blue-500" /> Site Field Inspector Card</h3>
-                  <p className="text-[11px] text-slate-400 font-bold mt-1"><span className="text-blue-400 bg-blue-500/10 border border-blue-500/10 px-1.5 py-0.5 rounded mr-1.5">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
+                  <p className="text-[11px] text-slate-400 font-bold mt-1"><span className="text-blue-450 bg-blue-500/10 border border-blue-500/10 px-1.5 py-0.5 rounded mr-1.5">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
                 </div>
                 <button onClick={() => setActiveTaskModal(null)} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-750 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400'}`}><X size={14} /></button>
               </div>
@@ -1198,7 +1262,7 @@ export default function App() {
                       onChange={(e) => updateTask(currentTaskEditing.id, 'progress', parseInt(e.target.value))}
                       className="flex-grow accent-blue-500 cursor-pointer"
                     />
-                    <span className="font-mono font-black text-xs text-blue-400 w-10 text-right">{currentTaskEditing.progress || 0}%</span>
+                    <span className="font-mono font-black text-xs text-blue-550 w-10 text-right">{currentTaskEditing.progress || 0}%</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-1.5">
@@ -1221,7 +1285,7 @@ export default function App() {
                         }}
                         className={`py-1.5 px-1 rounded-xl text-center text-[9px] font-black uppercase tracking-wider border transition-all ${
                           currentTaskEditing.progress === preset.value
-                            ? 'bg-blue-600/20 border-blue-500 text-blue-400'
+                            ? 'bg-blue-600/20 border-blue-500 text-blue-500'
                             : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-400 hover:text-slate-355' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100')
                         }`}
                       >
@@ -1250,7 +1314,7 @@ export default function App() {
                           }}
                           className={`p-2 rounded-xl border text-center transition-all flex flex-col justify-center items-center gap-0.5 ${
                             isSelected 
-                              ? (item.status === 'HOLD' ? 'border-rose-500 bg-rose-500/15 text-rose-300' : item.status === 'APPROVED' ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300' : 'border-blue-500 bg-blue-500/15 text-blue-300')
+                              ? (item.status === 'HOLD' ? 'border-rose-500 bg-rose-500/15 text-rose-500' : item.status === 'APPROVED' ? 'border-emerald-500 bg-emerald-500/15 text-emerald-550' : 'border-blue-500 bg-blue-500/15 text-blue-500')
                               : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 text-slate-400' : 'bg-white border-slate-200 text-slate-600')
                           }`}
                         >
@@ -1275,7 +1339,7 @@ export default function App() {
                           key={name}
                           className={`flex items-center justify-between p-2 rounded-xl border text-[11px] cursor-pointer transition-all ${
                             completed 
-                              ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300' 
+                              ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600 dark:text-emerald-305' 
                               : (isDarkMode ? 'bg-[#131c2e] border-slate-800/40 hover:bg-slate-800 text-slate-300' : 'bg-white border-slate-105 hover:bg-slate-50 text-slate-700')
                           }`}
                         >
@@ -1367,7 +1431,7 @@ export default function App() {
                 </div>
               </div>
               
-              <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'bg-slate-950/60 border-slate-800/40' : 'bg-slate-50'}`}>
+              <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'bg-slate-955/60 border-slate-800/40' : 'bg-slate-50'}`}>
                 <button onClick={() => setActiveTaskModal(null)} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl">Close Inspector</button>
               </div>
             </div>
