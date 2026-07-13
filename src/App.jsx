@@ -1,4 +1,3 @@
-bg-slate-900/40 border-blue-500/30 text-blue-300:MBV Dynamic Scheduler Workspace:App.jsx
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   CalendarDays, Settings, X, Plus, Trash2, 
@@ -32,7 +31,7 @@ try {
     appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
   };
 } catch (e) {
-  // Silent fallback for standalone sandbox environments
+  // Silent fallback for standalone sandbox compiler env
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -61,22 +60,22 @@ const MbvLogo = () => (
 
 const LABOR_PROFILES = {
   civil: [
-    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-900/40 border-blue-500/40 text-blue-200 dark:text-blue-200', icon: '👔' },
-    { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-900/40 border-amber-500/40 text-amber-200 dark:text-amber-200', icon: '📐' },
-    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-900/40 border-emerald-500/40 text-emerald-200 dark:text-emerald-200', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-800 border-slate-700 text-slate-100 dark:text-slate-100', icon: '⛓️' },
-    { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-900/40 border-yellow-500/40 text-yellow-200 dark:text-yellow-200', icon: '🪚' },
-    { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-900/40 border-rose-500/40 text-rose-200 dark:text-rose-200', icon: '🧱' },
-    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-900/40 border-teal-500/40 text-teal-200 dark:text-teal-200', icon: '🧹' }
+    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-900/30 border-blue-500/25 text-blue-300', icon: '👔' },
+    { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-900/30 border-amber-500/25 text-amber-300', icon: '📐' },
+    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-900/30 border-emerald-500/25 text-emerald-300', icon: '🛡️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-800/80 border-slate-700/55 text-slate-200', icon: '⛓️' },
+    { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-900/30 border-yellow-500/25 text-yellow-300', icon: '🪚' },
+    { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-900/30 border-rose-500/25 text-rose-300', icon: '🧱' },
+    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-900/30 border-teal-500/25 text-teal-300', icon: '🧹' }
   ],
   electrical: [
-    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-900/40 border-blue-500/40 text-blue-200 dark:text-blue-200', icon: '👔' },
-    { key: 'ee', label: 'EE', fullName: 'Electrical Engineer', bg: 'bg-purple-900/40 border-purple-500/40 text-purple-200 dark:text-purple-200', icon: '⚡' },
-    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-900/40 border-emerald-500/40 text-emerald-200 dark:text-emerald-200', icon: '🛡️' },
-    { key: 'el', label: 'EL', fullName: 'Electrician', bg: 'bg-indigo-900/40 border-indigo-500/40 text-indigo-200 dark:text-indigo-200', icon: '🔌' },
-    { key: 'lm', label: 'LM', fullName: 'Lineman', bg: 'bg-cyan-900/40 border-cyan-500/40 text-cyan-200 dark:text-cyan-200', icon: '🧗' },
-    { key: 'cs', label: 'CS', fullName: 'Cable Splicer', bg: 'bg-amber-900/40 border-amber-500/40 text-amber-200 dark:text-amber-200', icon: '🪓' },
-    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-900/40 border-teal-500/40 text-teal-200 dark:text-teal-200', icon: '🧹' }
+    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-900/30 border-blue-500/25 text-blue-300', icon: '👔' },
+    { key: 'ee', label: 'EE', fullName: 'Electrical Engineer', bg: 'bg-purple-900/30 border-purple-500/25 text-purple-300', icon: '⚡' },
+    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-900/30 border-emerald-500/25 text-emerald-300', icon: '🛡️' },
+    { key: 'el', label: 'EL', fullName: 'Electrician', bg: 'bg-indigo-900/30 border-indigo-500/25 text-indigo-300', icon: '🔌' },
+    { key: 'lm', label: 'LM', fullName: 'Lineman', bg: 'bg-cyan-900/30 border-cyan-500/25 text-cyan-300', icon: '🧗' },
+    { key: 'cs', label: 'CS', fullName: 'Cable Splicer', bg: 'bg-amber-900/30 border-amber-500/25 text-amber-300', icon: '🪓' },
+    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-900/30 border-teal-500/25 text-teal-300', icon: '🧹' }
   ]
 };
 
@@ -87,7 +86,7 @@ const INITIAL_TASKS = [
   { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false } },
   { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false } },
   { id: 'T6', ref: '3.1', desc: 'Equipment Alignment', task: 'Main Circuit Breaker Structural Alignment', duration: 1, progress: 0, pm: 1, se: 2, ee: 2, so: 1, st: 0, cp: 1, ms: 0, el: 3, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'HOLD', checklist: { 'Plumbness Signed-Off': false, 'Contact Alignment Check': false } },
-  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, text: '', st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false } },
+  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false } },
   { id: 'T8', ref: '4.1', desc: 'Curing Period', task: '5-Day Continuous Pad Concrete Wet Curing (Hold)', duration: 5, progress: 0, pm: 0, se: 0, ee: 0, so: 1, st: 0, cp: 0, ms: 1, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Wet Sack Blanket Placed': false, 'Daily Water Log Checklist': false } },
   { id: 'T9', ref: '5.0', desc: 'Assembly & Splicing', task: 'MV Cable Terminations & Splicing', duration: 3, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 2, cp: 2, ms: 0, el: 4, lm: 2, cs: 3, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Cable Splicing Certified': false, 'High Potential Test Logged': false } },
   { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false } },
@@ -118,19 +117,21 @@ const copyToClipboard = (text) => {
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('loading'); 
+  const [view, setView] = useState('loading'); // 'loading', 'editor'
   
-  // Responsive navigation tabs
+  // Responsive displays
   const [mobileDisplayTab, setMobileDisplayTab] = useState('tasks'); 
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
-  // Active Labor Profile Toggle
+  // Active Labor Profile Toggle (Civil vs Electrical)
   const [laborProfile, setLaborProfile] = useState('electrical');
+
+  // Project select popover state
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Theme Config
+  // Theme & App Configurations
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('mbv_dark_mode') !== 'false';
   });
@@ -141,7 +142,7 @@ export default function App() {
   const [projectStartDate, setProjectStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [appTitle, setAppTitle] = useState("Citicore 100MW Solar Grid");
   const [appSubtitle, setAppSubtitle] = useState("Site Operations & Verification Hub");
-  const [weatherFactor, setWeatherFactor] = useState("sunny");
+  const [weatherFactor, setWeatherFactor] = useState("sunny"); // 'sunny', 'heavy_rain', 'typhoon'
   
   const [logos, setLogos] = useState({ left: '', right: '' });
   const [docMetadata, setDocMetadata] = useState({
@@ -152,7 +153,7 @@ export default function App() {
     date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
   });
 
-  // Overlays & Notifications
+  // Modal & Overlay Triggers
   const [toastMessage, setToastMessage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTaskModal, setActiveTaskModal] = useState(null);
@@ -160,13 +161,14 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
 
+  // Confirmation modally controlled alerts
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
-  // Filtering states
+  // Search/Filter states
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
-  const [filterStatusTag, setFilterStatusTag] = useState('ALL');
+  const [filterStatusTag, setFilterStatusTag] = useState('ALL'); // 'ALL', 'HOLD', 'APPROVED'
 
   const showToast = useCallback((message) => {
     setToastMessage(message);
@@ -218,7 +220,7 @@ export default function App() {
           await signInAnonymously(auth);
         }
       } catch (err) {
-        console.warn("Bypassed default auth framework: ", err);
+        console.warn("Bypassed default auth gateway: ", err);
       }
     };
     initAuth();
@@ -252,7 +254,7 @@ export default function App() {
 
   const fetchSiteSchedule = async (id, fallbackRegistry) => {
     if (!db) {
-      showToast("Cloud config offline. Running local sandbox mode.");
+      showToast("Cloud configuration offline. Running offline sandbox.");
       setView('editor');
       return;
     }
@@ -274,13 +276,13 @@ export default function App() {
           setProjectList(freshList);
           localStorage.setItem('mbv_cloud_registry', JSON.stringify(freshList));
         }
-        showToast(`"${payload.appTitle}" downloaded from Cloud!`);
+        showToast(`"${payload.appTitle}" synced from Cloud!`);
       } else {
-        showToast("Site data not found on cloud. Initializing locally.");
+        showToast("Site schedule not found on cloud. Initializing offline.");
       }
     } catch (e) {
       console.error(e);
-      showToast("Error pulling cloud baseline. Offline mode triggered.");
+      showToast("Error retrieving database. Offline fallback applied.");
     } finally {
       setView('editor');
     }
@@ -288,14 +290,14 @@ export default function App() {
 
   const handleCreateNewProject = () => {
     if (!newProjectName.trim()) {
-      showToast("Please enter a valid project title.");
+      showToast("Please enter a valid project name.");
       return;
     }
 
     const nextId = newProjectName.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const duplicateCheck = projectList.find(p => p.id === nextId);
     if (duplicateCheck) {
-      showToast("A project with this shortcode reference already exists.");
+      showToast("A project with this reference name already exists.");
       return;
     }
 
@@ -314,7 +316,7 @@ export default function App() {
     setTasks(INITIAL_TASKS.map(t => ({...t, progress: 0, qaStatus: 'PENDING', assigned: {}})));
     setDocMetadata({
       projectName: newProjectName.toUpperCase(),
-      location: "Active Infrastructure Phase",
+      location: "Active Construction Zone",
       docNo: "DOC-CIT-MBV-" + Math.floor(100 + Math.random() * 900),
       revision: "01",
       date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
@@ -326,7 +328,7 @@ export default function App() {
 
     setShowCreateProjectModal(false);
     setNewProjectName('');
-    showToast(`"${newProjectName}" deployed!`);
+    showToast(`"${newProjectName}" initialized!`);
   };
 
   const handleSwitchProject = (id) => {
@@ -339,7 +341,7 @@ export default function App() {
     } else {
       setActiveProjectId(id);
       setAppTitle(matchingProject.title);
-      showToast(`Switched locally to: ${matchingProject.title}`);
+      showToast(`Switched offline to: ${matchingProject.title}`);
     }
 
     const url = new URL(window.location.href);
@@ -357,7 +359,7 @@ export default function App() {
     setProjectList(freshRegistry);
     localStorage.setItem('mbv_cloud_registry', JSON.stringify(freshRegistry));
     
-    showToast("Project workspace purged.");
+    showToast("Project deleted successfully.");
     setProjectToDelete(null);
 
     if (activeProjectId === projectToDelete) {
@@ -367,7 +369,7 @@ export default function App() {
 
   const handleShareToCloud = async () => {
     if (!db) {
-      showToast("Database server offline.");
+      showToast("Cloud configuration missing.");
       return;
     }
     setIsSavingCloud(true);
@@ -393,10 +395,10 @@ export default function App() {
       url.searchParams.set('project', activeProjectId);
       copyToClipboard(url.toString());
 
-      showToast("Cloud Master Updated! Share link ready.");
+      showToast("Sync Successful! URL copied to clipboard.");
     } catch (e) {
       console.error(e);
-      showToast("Error updating database core layer.");
+      showToast("Error synchronizing project data to cloud.");
     } finally {
       setIsSavingCloud(false);
     }
@@ -449,6 +451,7 @@ export default function App() {
   const activeFlowTasks = flowSchedule();
   const totalDays = activeFlowTasks.reduce((acc, curr) => acc + curr.adjustedDuration, 0) || 1;
   const headerDays = Array.from({ length: totalDays + 3 }, (_, i) => i);
+
   const activeRoles = LABOR_PROFILES[laborProfile];
 
   const maxManpowerVal = Math.max(
@@ -491,7 +494,7 @@ export default function App() {
       id: `T${Date.now()}`, 
       ref: newRef, 
       desc: 'Electrical Field Work', 
-      task: 'New Wiring / Conduit Installation Line', 
+      task: 'New Wiring / Conduit Installation', 
       duration: 1, 
       progress: 0, 
       pm: 0, se: 0, ee: 0, so: 0, st: 0, cp: 0, ms: 0, el: 1, lm: 0, cs: 0, hl: 1,
@@ -499,12 +502,12 @@ export default function App() {
       qaStatus: 'PENDING', 
       checklist: {} 
     }]);
-    showToast("Added fresh schedule parameters block.");
+    showToast("New schedule row added.");
   };
 
   const triggerTaskRemove = (id) => {
     setTasks(tasks.filter(t => t.id !== id));
-    showToast("Schedule block removed.");
+    showToast("Schedule row removed.");
   };
 
   const toggleChecklistItem = (taskId, itemName) => {
@@ -562,7 +565,7 @@ export default function App() {
       return 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/30 dark:border-emerald-500/40';
     }
     if (status === 'HOLD') {
-      return 'bg-rose-500/15 text-rose-500 dark:text-rose-400 border-rose-500/40 dark:border-rose-500/50 font-bold';
+      return 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/30 dark:border-rose-500/40 animate-pulse font-bold';
     }
     return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 dark:border-blue-500/40';
   };
@@ -571,22 +574,20 @@ export default function App() {
     return (
       <div className="h-screen w-screen bg-[#0b0f19] flex flex-col items-center justify-center gap-4">
         <Loader2 className="animate-spin text-blue-500 h-10 w-10"/>
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Accessing Mother Core Infrastructure...</span>
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Accessing Citicore Mother DB...</span>
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50/60 text-slate-800'}`}>
+    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50/60 text-slate-855'}`}>
       
-      {/* High contrast custom font injection & viewport scroll rules */}
+      {/* High-visibility contrast overrides and custom font adjustments */}
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
         * {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -608,13 +609,6 @@ export default function App() {
           background-size: 44px 100%, 100% 54px;
         }
 
-        /* Prevent system scroll collision in dynamic nested layout viewports */
-        .mobile-scroll-container {
-          height: calc(100vh - 160px);
-          overflow-y: auto !important;
-          -webkit-overflow-scrolling: touch;
-        }
-
         @media print {
           @page { size: A4 landscape; margin: 8mm; }
           body { background-color: #ffffff !important; color: #000000 !important; }
@@ -623,15 +617,15 @@ export default function App() {
         }
       `}} />
 
-      {/* Dynamic Feedback Toast notification banner */}
+      {/* Floating active feedback toast container */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 bg-slate-900/95 text-white border border-slate-750 px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 backdrop-blur-md transition-all print:hidden">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 bg-slate-900/95 text-white border border-slate-750 px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 backdrop-blur-md transition-all animate-bounce print:hidden">
           <CheckCircle2 className="text-emerald-400" size={16}/>
           <span className="text-xs font-semibold uppercase tracking-wider">{toastMessage}</span>
         </div>
       )}
 
-      {/* ACTION CONTROLS HEADER BAR */}
+      {/* RESPONSIVE HEADER BAR */}
       <header className={`border-b px-4 py-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shadow-sm z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center justify-between lg:justify-start gap-3 min-w-0 flex-1">
           <div className="flex items-center gap-2 min-w-0">
@@ -639,7 +633,7 @@ export default function App() {
               <LayoutDashboard size={18}/>
             </div>
             
-            {/* WORKSPACE DROPDOWN SELECTOR */}
+            {/* SWITCHER DROPDOWN */}
             <div className="flex flex-col min-w-0" ref={dropdownRef}>
               <div className="relative">
                 <button
@@ -652,17 +646,18 @@ export default function App() {
                 >
                   <Folder className="text-blue-500 shrink-0" size={14}/>
                   <span className="truncate max-w-[150px] sm:max-w-[280px]">
-                    {projectList.find(p => p.id === activeProjectId)?.title || 'Switch Project Workspace...'}
+                    {projectList.find(p => p.id === activeProjectId)?.title || 'Switch Project...'}
                   </span>
                   <ChevronDown className="text-slate-500 shrink-0" size={14}/>
                 </button>
 
+                {/* Dropdown panel */}
                 {isProjectDropdownOpen && (
                   <div className={`absolute left-0 mt-2 w-80 rounded-2xl shadow-2xl border p-2.5 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
                     isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                   }`}>
                     <div className="px-3 py-2 text-[10px] font-bold tracking-widest text-slate-400 border-b border-slate-850/40 uppercase mb-2">
-                      Master Projects Registry
+                      Site Schedules Directory
                     </div>
                     <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
                       {projectList.map((proj) => (
@@ -671,7 +666,7 @@ export default function App() {
                           onClick={() => {
                             handleSwitchProject(proj.id);
                             setIsProjectDropdownOpen(false);
-                            showToast(`Switched active environment to "${proj.title}"`);
+                            showToast(`Switched active workspace to "${proj.title}"`);
                           }}
                           className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                             activeProjectId === proj.id 
@@ -691,7 +686,7 @@ export default function App() {
                                 setIsProjectDropdownOpen(false);
                               }}
                               className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0"
-                              title="Delete project context"
+                              title="Delete project"
                             >
                               <Trash2 size={13}/>
                             </button>
@@ -708,7 +703,7 @@ export default function App() {
                         }}
                         className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-xs font-bold uppercase tracking-wider"
                       >
-                        <Plus size={14}/> Add New Project Sub-Phase
+                        <Plus size={14}/> Create New Project
                       </button>
                     </div>
                   </div>
@@ -730,21 +725,21 @@ export default function App() {
           </div>
         </div>
 
-        {/* Action Controls Cluster */}
+        {/* Action Controls Segment */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
           
-          {/* Active Field Discipline Switcher */}
+          {/* Crew Switcher */}
           <div className={`flex items-center gap-1 border rounded-xl p-1 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/80 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 text-slate-400 hidden xl:inline">Discipline:</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 text-slate-400 hidden xl:inline">Crew Type:</span>
             <button 
               onClick={() => {
                 setLaborProfile('civil');
-                showToast("Crew template switched to Civil Engineering baseline");
+                showToast("Switched crew structure to Civil Construction");
               }}
               className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
                 laborProfile === 'civil' 
                   ? 'bg-amber-600 text-white shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-200 dark:hover:text-slate-100'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Civil
@@ -752,12 +747,12 @@ export default function App() {
             <button 
               onClick={() => {
                 setLaborProfile('electrical');
-                showToast("Crew template switched to Electrical Grid Operations ⚡");
+                showToast("Switched crew structure to Electrical Power Systems ⚡");
               }}
               className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
                 laborProfile === 'electrical' 
                   ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-200 dark:hover:text-slate-100'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Electrical ⚡
@@ -769,40 +764,42 @@ export default function App() {
             className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1 ${
               isDarkMode ? 'bg-[#0f172a] hover:bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'
             }`}
+            title="Toggle Specs"
           >
             {isMetadataCollapsed ? <ChevronDown size={14}/> : <ChevronUp size={14}/>}
-            <span className="font-semibold text-xs px-0.5">Specifications</span>
+            <span className="font-medium text-xs">Specs</span>
           </button>
 
-          {/* Environmental Multiplier Dropdown */}
+          {/* Weather Selector */}
           <div className={`flex items-center gap-1 border rounded-xl px-2.5 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
             <select 
               value={weatherFactor} 
               onChange={(e) => {
                 setWeatherFactor(e.target.value);
-                showToast(`Weather threshold set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
+                showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
               }} 
               className={`text-xs font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-slate-900 [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
             >
-              <option value="sunny">☀️ Normal Environment</option>
-              <option value="heavy_rain">🌧️ Rain Slowdown (+35%)</option>
-              <option value="typhoon">🌀 Typhoon Suspension (+80%)</option>
+              <option value="sunny">☀️ Sunny</option>
+              <option value="heavy_rain">🌧️ Rain Delay (+35%)</option>
+              <option value="typhoon">🌀 Typhoon Lock (+80%)</option>
             </select>
           </div>
 
           <div className={`hidden lg:flex items-center border rounded-xl px-2.5 py-1.5 text-xs ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-semibold text-blue-500" />
+            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-medium text-blue-500" />
           </div>
 
           <div className="flex gap-2">
             <button onClick={addTask} className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-blue-500/10">
-              <Plus size={14}/> <span>Add Task Row</span>
+              <Plus size={14}/> <span>Add Task</span>
             </button>
             
-            <button onClick={triggerSystemPrint} className="hidden lg:flex bg-slate-800 hover:bg-slate-750 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
-              <Printer size={14}/> Export Sheet
+            <button onClick={triggerSystemPrint} className="hidden lg:flex bg-slate-800 hover:bg-slate-755 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
+              <Printer size={14}/> Export
             </button>
 
+            {/* Dark Mode toggle for desktop */}
             <button onClick={() => setIsDarkMode(!isDarkMode)} className={`hidden lg:block p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 hover:bg-slate-800 text-amber-400' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-600'}`}>
               {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
             </button>
@@ -811,10 +808,10 @@ export default function App() {
               onClick={handleShareToCloud} 
               disabled={isSavingCloud} 
               className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-md"
-              title="Push variations to centralized cloud instance"
+              title="Save changes to cloud"
             >
               {isSavingCloud ? <Loader2 className="animate-spin" size={14}/> : <Share2 size={14}/>} 
-              <span>Sync Cloud</span>
+              <span>SYNC</span>
             </button>
             
             <button onClick={() => setIsSettingsOpen(true)} className={`hidden lg:block p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200' : 'bg-white border-slate-300'}`}>
@@ -824,49 +821,49 @@ export default function App() {
         </div>
       </header>
 
-      {/* MOBILE DISPLAY CONTROL TABS */}
+      {/* MOBILE SWITCHER CONTROLS - Rebalanced weights & borders */}
       {isMobileViewport && (
         <div className={`flex border-b text-xs font-semibold uppercase tracking-wider shrink-0 print:hidden ${
-          isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-250'
+          isDarkMode ? 'bg-[#131c2e] border-slate-850' : 'bg-white border-slate-250'
         }`}>
           <button 
             onClick={() => setMobileDisplayTab('tasks')}
             className={`flex-1 py-3.5 text-center transition-colors font-bold ${
               mobileDisplayTab === 'tasks' 
-                ? 'border-b-2 border-blue-500 text-blue-500 bg-blue-500/5' 
-                : isDarkMode ? 'text-slate-100' : 'text-slate-600'
+                ? 'border-b-2 border-blue-500 text-blue-500' 
+                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
-            📋 Inspection Cards
+            📋 Site Cards
           </button>
           <button 
             onClick={() => setMobileDisplayTab('gantt')}
             className={`flex-1 py-3.5 text-center transition-colors font-bold ${
               mobileDisplayTab === 'gantt' 
-                ? 'border-b-2 border-blue-500 text-blue-500 bg-blue-500/5' 
-                : isDarkMode ? 'text-slate-100' : 'text-slate-600'
+                ? 'border-b-2 border-blue-500 text-blue-500' 
+                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
-            📊 Gantt Timeline
+            📊 Timeline Gantt
           </button>
           <button 
             onClick={() => setMobileDisplayTab('qa')}
             className={`flex-1 py-3.5 text-center transition-colors font-bold ${
               mobileDisplayTab === 'qa' 
-                ? 'border-b-2 border-blue-500 text-blue-500 bg-blue-500/5' 
-                : isDarkMode ? 'text-slate-100' : 'text-slate-600'
+                ? 'border-b-2 border-blue-500 text-blue-500' 
+                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
-            🛡️ QA/QC Status
+            🛡️ QA Holds
           </button>
         </div>
       )}
 
-      {/* CORE WORKSPACE APPLICATION CANVAS */}
+      {/* MAIN CANVAS - Configured as height flex-container to support native inner container scrolling */}
       <main className="flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0">
         <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
-          {/* EXTENDED SPECIFICATIONS INFRASTRUCTURE CARD */}
+          {/* COLLAPSIBLE SPECS CARD */}
           {!isMetadataCollapsed && (
             <div id="gantt-export-zone" className={`rounded-2xl border p-4 sm:p-5 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 ${
               isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
@@ -874,65 +871,66 @@ export default function App() {
               
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="w-full md:w-1/4 flex justify-start items-center">
-                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left Signatory" /> : <CiticoreLogo/>}
+                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <CiticoreLogo/>}
                 </div>
                 
                 <div className="w-full md:w-1/2 text-center flex flex-col">
                   <input 
                     value={docMetadata.projectName} 
                     onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                    className={`text-center font-bold text-sm sm:text-base tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-500 focus:border-blue-500 outline-none w-full transition-colors ${
+                    className={`text-center font-bold text-sm sm:text-base tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-550 focus:border-blue-500 outline-none w-full transition-colors ${
                       isDarkMode ? 'text-white' : 'text-slate-800'
                     }`}
-                    placeholder="Project Title..."
+                    placeholder="Project Name..."
                   />
                   <input 
                     value={docMetadata.location} 
                     onChange={(e) => setDocMetadata({...docMetadata, location: e.target.value})}
                     className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-transparent border-none outline-none mt-1"
-                    placeholder="Location Hub Context..."
+                    placeholder="Location Hub..."
                   />
                 </div>
 
                 <div className="w-full md:w-1/4 flex justify-end items-center">
-                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right Signatory" /> : <MbvLogo/>}
+                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <MbvLogo/>}
                 </div>
               </div>
 
+              {/* Data specifications */}
               <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-bold uppercase tracking-wider border-t pt-4 transition-colors ${
                 isDarkMode ? 'border-slate-800 text-slate-300' : 'border-slate-200 text-slate-600'
               }`}>
                 <div className="flex flex-col gap-1 border-r border-slate-800/40">
-                  <span className="text-slate-400 dark:text-slate-400">Document No Reference:</span>
+                  <span>Document No:</span>
                   <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`} />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-800/40 px-1">
-                  <span className="text-slate-400 dark:text-slate-400">Revision Chain:</span>
+                  <span>Revision:</span>
                   <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`} />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-800/40 px-1">
-                  <span className="text-slate-400 dark:text-slate-400">Effective Log:</span>
+                  <span>Effective Date:</span>
                   <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`} />
                 </div>
                 <div className="flex flex-col gap-1 pl-1">
-                  <span className="text-slate-400 dark:text-slate-400">Project Launch Day:</span>
+                  <span>Base Launch:</span>
                   <span className={`font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{projectStartDate}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* DYNAMIC REGISTRY SEARCH AND PILL SYSTEM BAR */}
+          {/* ACTIVE FILTER / SEARCH TOOLBAR PANEL */}
           <div className={`p-3 rounded-2xl border flex flex-col md:flex-row justify-between items-center gap-3 shrink-0 ${
             isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
           }`}>
             <div className="flex items-center gap-2 w-full md:w-1/2">
               <input 
                 type="text" 
-                placeholder="Search active project rows by task descriptions, tags or code reference..."
+                placeholder="Filter schedule rows by task, phase, reference..."
                 value={filterSearchQuery}
                 onChange={(e) => setFilterSearchQuery(e.target.value)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-semibold border outline-none w-full transition-colors ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-medium border outline-none w-full transition-colors ${
                   isDarkMode 
                     ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-400 focus:border-blue-500' 
                     : 'bg-slate-50 border-slate-250 text-slate-800 placeholder-slate-500 focus:border-blue-500'
@@ -940,6 +938,7 @@ export default function App() {
               />
             </div>
             
+            {/* Status filtering pill buttons */}
             <div className="flex flex-wrap gap-1.5 shrink-0 w-full md:w-auto justify-start md:justify-end">
               {['ALL', 'PENDING', 'HOLD', 'APPROVED'].map((tag) => (
                 <button
@@ -948,7 +947,7 @@ export default function App() {
                   className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border ${
                     filterStatusTag === tag
                       ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                      : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-100 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
+                      : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
                   }`}
                 >
                   {tag}
@@ -957,36 +956,40 @@ export default function App() {
             </div>
           </div>
 
-          {/* VIEWPORT PRESENTATION PANELS */}
+          {/* DUAL WORKSPACE PANEL - Height delegated strictly to prevent scroll freezing */}
           <div className="flex-1 flex flex-col min-h-0 relative">
             
-            {/* 1. MOBILE NATIVE COMPACT SITE CARDS (CONSTRAINED CONTAINER SCROLL) */}
+            {/* 1. MOBILE SITE CARDS VIEW */}
             {(!isMobileViewport || mobileDisplayTab === 'tasks') && isMobileViewport && (
-              <div className="mobile-scroll-container space-y-4 pb-24">
+              <div 
+                className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
                 {filteredTasks.map((task) => (
                   <div 
                     key={task.id}
                     onClick={() => setActiveTaskModal(task.id)}
-                    className={`p-5 rounded-2xl border flex flex-col gap-4 relative shadow-sm cursor-pointer transition-transform hover:scale-[1.002] ${
+                    className={`p-5 rounded-2xl border flex flex-col gap-4 relative shadow-sm cursor-pointer transition-transform hover:scale-[1.005] ${
                       isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-250 text-slate-900'
                     }`}
                   >
-                    {/* Header: Badge Separation Architecture */}
-                    <div className="flex justify-between items-center gap-2 border-b pb-3 border-slate-200/40 dark:border-slate-800/40">
+                    {/* Header Row: Prevent Overlaps */}
+                    <div className="flex justify-between items-center gap-2 border-b pb-3 border-slate-205/40 dark:border-slate-800/40">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="font-mono font-bold text-xs text-blue-500 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">{task.ref}</span>
-                        <span className="font-bold text-[10px] tracking-wider uppercase text-slate-400 dark:text-slate-300 truncate max-w-[150px]">{task.desc}</span>
+                        <span className="font-bold text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{task.desc}</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
+                      <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
                     </div>
 
-                    <h4 className={`text-base font-bold tracking-tight leading-snug ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>{task.task}</h4>
+                    <h4 className={`text-base font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>{task.task}</h4>
                     
+                    {/* Touch friendly duration blocks */}
                     <div className="flex items-center justify-between mt-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-300 mr-2">Duration:</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mr-2">Duration:</span>
                         <div className={`flex items-center rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
                           <button 
                             onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', Math.max(1, task.duration - 1)); }} 
@@ -1004,37 +1007,39 @@ export default function App() {
                         </div>
                       </div>
 
-                      <span className="text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 uppercase tracking-wider">
-                        Inspect Context <ChevronRight size={14}/>
+                      <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 uppercase tracking-wider">
+                        Inspect <ChevronRight size={14}/>
                       </span>
                     </div>
 
+                    {/* Progress tracking bar */}
                     <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-                      <div className="flex justify-between text-xs font-semibold text-slate-400 dark:text-slate-200">
-                        <span>PROGRESS STATUS VALUE</span>
-                        <span className="font-mono font-bold">{task.progress || 0}%</span>
+                      <div className="flex justify-between text-xs font-semibold text-slate-505 dark:text-slate-300">
+                        <span>PROGRESS</span>
+                        <span>{task.progress || 0}%</span>
                       </div>
                       <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full" style={{width: `${task.progress || 0}%`}}></div>
                       </div>
                     </div>
 
+                    {/* Crew parameters */}
                     <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-[11px] font-semibold">
-                      <span className="text-slate-400 dark:text-slate-300 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
+                      <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
                       {activeRoles.filter(r => (parseInt(task[r.key]) || 0) > 0).map(r => (
-                        <span key={r.key} className="bg-slate-150 dark:bg-slate-800 border border-slate-250 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-200">
+                        <span key={r.key} className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-300">
                           {r.icon} {r.label}:{task[r.key]}
                         </span>
                       ))}
                     </div>
 
-                    {/* Isolated Bottom Action Footer - Overlaps Prevented */}
+                    {/* Delete row block moved strictly to bottom footer to eliminate overlaps */}
                     <div className="flex justify-end pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
                       <button 
                         onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
-                        className="text-rose-500 hover:text-rose-600 font-bold text-xs uppercase flex items-center gap-1 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition-all"
+                        className="text-rose-500 hover:text-rose-600 font-bold text-xs uppercase flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition-all"
                       >
-                        <Trash2 size={13}/> Delete Task Parameter
+                        <Trash2 size={13}/> Delete Task
                       </button>
                     </div>
                   </div>
@@ -1042,27 +1047,29 @@ export default function App() {
               </div>
             )}
 
-            {/* 2. DYNAMIC WORKSPACE HORIZONTAL TIMELINE MATRIX */}
+            {/* 2. RESPONSIVE GANTT TIMELINE */}
             {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
               <div className={`flex border rounded-2xl overflow-hidden flex-1 shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-700' : 'bg-slate-50/50 border-slate-250'}`}>
                 
-                {/* Left side static sheet layout */}
+                {/* Left spreadsheet column segment */}
                 <div className={`hidden lg:flex w-[45%] md:w-[35%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-colors ${
                   isDarkMode 
                     ? 'bg-[#131c2e] border-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' 
                     : 'bg-white border-slate-250 shadow-[2px_0_5px_-2px_rgba(226,232,240,0.5)]'
                 }`}>
                   
+                  {/* Calendar columns Scale Header */}
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-bold text-[10px] flex items-center uppercase tracking-wider sticky top-0 z-25 border-b transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600 border-slate-250'
                   }`}>
-                    <span className="w-10 text-center font-bold">Ref Code</span>
-                    <span className="flex-grow px-3 truncate font-bold">Execution Parameter Description</span>
-                    <span className="w-12 text-center shrink-0 font-bold text-slate-400">Days</span>
-                    <span className="w-16 text-center shrink-0 font-bold text-slate-400">Progress</span>
-                    <span className="w-8 print:hidden shrink-0"></span>
+                    <span className="w-8 sm:w-10 text-center font-semibold">Ref</span>
+                    <span className="flex-grow px-2 sm:px-3 truncate font-semibold">Work Description</span>
+                    <span className="w-8 sm:w-12 text-center shrink-0 font-semibold text-slate-400">Days</span>
+                    <span className="w-10 sm:w-16 text-center shrink-0 font-semibold text-slate-400">Progress</span>
+                    <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
                   </div>
 
+                  {/* Synchronized row heights */}
                   <div className="flex-1 overflow-y-auto min-h-0">
                     {filteredTasks.map((task, index) => {
                       return (
@@ -1070,7 +1077,7 @@ export default function App() {
                           key={task.id} 
                           className={`h-[54px] min-h-[54px] max-h-[54px] flex items-center text-xs group transition-all border-b ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-10 h-full text-center flex items-center justify-center relative shrink-0">
+                          <div className="w-8 sm:w-10 h-full text-center flex items-center justify-center relative shrink-0">
                             <GripVertical className="text-slate-500 absolute left-0 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" size={12}/>
                             <input 
                               value={task.ref} 
@@ -1081,9 +1088,9 @@ export default function App() {
                             />
                           </div>
                           
-                          <div className="flex-grow h-full flex flex-col justify-center px-3 border-l border-slate-100 dark:border-slate-800/40 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-[9px] text-blue-500 dark:text-blue-400 uppercase tracking-wider shrink-0">
+                          <div className="flex-grow h-full flex flex-col justify-center px-1.5 sm:px-3 border-l border-slate-100 dark:border-slate-800/40 min-w-0">
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <span className="font-bold text-[9px] text-blue-500 dark:text-blue-400 uppercase tracking-wider bg-transparent outline-none shrink-0">
                                 {task.desc}
                               </span>
                               <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider shrink-0 border ${getBadgeStyle(task.qaStatus)}`}>
@@ -1093,13 +1100,13 @@ export default function App() {
                             <input 
                               value={task.task} 
                               onChange={(e) => updateTask(task.id, 'task', e.target.value)} 
-                              className={`font-bold text-xs sm:text-sm bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${
+                              className={`font-semibold text-xs sm:text-sm bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${
                                 isDarkMode ? 'text-white' : 'text-slate-800'
                               }`} 
                             />
                           </div>
                           
-                          <div className="w-12 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
+                          <div className="w-8 sm:w-12 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
                             <input 
                               type="number" min="1" value={task.duration} 
                               onChange={(e) => updateTask(task.id, 'duration', parseInt(e.target.value) || 1)} 
@@ -1111,13 +1118,14 @@ export default function App() {
                             />
                           </div>
 
-                          <div className="w-16 h-full border-l border-slate-100 dark:border-slate-800/40 flex flex-col items-center justify-center px-2 shrink-0">
+                          {/* Progress slider inputs */}
+                          <div className="w-10 sm:w-16 h-full border-l border-slate-100 dark:border-slate-800/40 flex flex-col items-center justify-center px-1 sm:px-2 shrink-0">
                             <div className="flex items-center gap-0.5 w-full justify-between mb-1 font-bold text-xs">
                               <input 
                                 type="number" min="0" max="100" value={task.progress || 0} 
                                 onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} 
-                                className={`w-8 text-left bg-transparent rounded outline-none font-mono font-bold ${
-                                  isDarkMode ? 'text-white' : 'text-slate-800'
+                                className={`w-6 sm:w-8 text-left bg-transparent rounded outline-none font-mono font-bold ${
+                                  isDarkMode ? 'text-white' : 'text-slate-850'
                                 }`} 
                               />
                               <span className="text-[9px] text-slate-400 font-semibold">%</span>
@@ -1127,26 +1135,27 @@ export default function App() {
                             </div>
                           </div>
                           
-                          <div className="w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-100 dark:border-slate-800/40 print:hidden">
-                            <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Purge parameter from list"><Trash2 size={14}/></button>
+                          <div className="w-6 sm:w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-100 dark:border-slate-800/40 print:hidden">
+                            <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={14}/></button>
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  <div className="h-[80px] p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden">
+                  <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden">
                      <button onClick={addTask} className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed w-full justify-center ${
                        isDarkMode ? 'bg-[#131c2e] text-blue-400 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
                      }`}>
-                       <Plus size={14}/> Add New Parameter Line
+                       <Plus size={14}/> Add Task Row
                      </button>
                   </div>
                 </div>
 
-                {/* Right side dynamic scale scroll viewport container */}
-                <div id="gantt-scroll-area" className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-thin">
+                {/* Gantt Calendar View */}
+                <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-thin">
                   
+                  {/* Header Scale Dates */}
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-100 border-slate-250'
                   }`}>
@@ -1160,13 +1169,14 @@ export default function App() {
                             ? `border-slate-800/60 ${isSatSun ? 'bg-slate-900/40' : ''}` 
                             : `border-slate-200/60 ${isSatSun ? 'bg-slate-200/50' : ''}`
                         }`}>
-                          <span className={`text-[10px] font-bold leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{dateStr.split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-400 leading-tight uppercase tracking-wide">{dateStr.split(' ')[1]}</span>
+                          <span className={`text-[10px] font-bold leading-tight ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dateStr.split(' ')[0]}</span>
+                          <span className="text-[8px] font-semibold text-slate-400 leading-tight uppercase">{dateStr.split(' ')[1]}</span>
                         </div>
                       )
                     })}
                   </div>
                   
+                  {/* Grid Timeline Map */}
                   <div className={`flex-1 min-w-max relative transition-all duration-200 ${
                     isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
                   }`}>
@@ -1193,20 +1203,20 @@ export default function App() {
                                <div className="absolute inset-0 flex justify-between items-center px-2.5 z-10 pointer-events-none">
                                  <span className="font-bold text-[10px] sm:text-[11px] truncate max-w-[85%]">
                                    <span className="opacity-75 mr-1 text-[9px] font-semibold">{task.ref}</span>
-                                   {isMobileViewport ? task.task : `${task.adjustedDuration} Days`}
+                                   {isMobileViewport ? task.task : `${task.adjustedDuration}d`}
                                  </span>
                                  
                                  <div className="flex gap-1.5 items-center">
                                    <span className={`flex items-center gap-0.5 text-[8.5px] font-bold border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
                                      isDarkMode 
-                                       ? 'bg-slate-900 border-slate-700 text-slate-100' 
-                                       : 'bg-white border-slate-200 text-slate-800'
+                                       ? 'bg-slate-900 border-slate-700 text-slate-300' 
+                                       : 'bg-white border-slate-200 text-slate-700'
                                    }`}>
                                      <UserPlus size={10}/> Crew
                                    </span>
                                    {task.totalManpower > 0 && !isMobileViewport && (
                                      <span className={`hidden md:flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${
-                                       isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-700 border border-slate-300'
+                                       isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-700 border border-slate-300'
                                      }`}>
                                        <Users size={10}/> {task.totalManpower}
                                      </span>
@@ -1219,14 +1229,14 @@ export default function App() {
                      })}
                   </div>
                   
-                  {/* Dynamic Crew Loading Histogram Footer Component */}
+                  {/* Daily Load Workforce Chart */}
                   <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-slate-300'
                   }`}>
                     <div className={`absolute left-3 top-3 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2 py-1 rounded shadow border ${
-                      isDarkMode ? 'bg-[#0b0f19] text-slate-200 border-slate-700' : 'bg-slate-50 text-slate-700 border-slate-300'
+                      isDarkMode ? 'bg-[#0b0f19] text-slate-300 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-300'
                     }`}>
-                      <BarChart3 className="text-blue-500" size={12}/> Manpower Curve Distribution Profile
+                      <BarChart3 className="text-blue-500" size={12}/> Crew Loading Profile
                     </div>
                     {headerDays.map(day => {
                       const dayManpower = activeFlowTasks.reduce((sum, task) => {
@@ -1246,7 +1256,7 @@ export default function App() {
                             }`} 
                             style={{ height: `${heightPercentage * 0.6}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} 
                           />
-                          <span className={`text-[9.5px] font-mono font-bold mt-1 ${isDarkMode ? 'text-slate-100' : 'text-slate-700'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
+                          <span className={`text-[9.5px] font-mono font-bold mt-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
                         </div>
                       );
                     })}
@@ -1256,14 +1266,17 @@ export default function App() {
               </div>
             )}
 
-            {/* 3. SAFETY CO-SIGN FLAGS REGISTER (CONSTRAINED CONTAINER SCROLL) */}
+            {/* 3. SAFETY CO-SIGN FLAGS REGISTER */}
             {isMobileViewport && mobileDisplayTab === 'qa' && (
-              <div className="mobile-scroll-container space-y-4 pb-24">
+              <div 
+                className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
                 <div className={`p-5 rounded-2xl border text-center ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'}`}>
                   <ShieldCheck className="mx-auto text-emerald-500 mb-3" size={32}/>
                   <h4 className="text-sm font-bold uppercase tracking-wider">QA/QC Hold Point Inspection Register</h4>
-                  <p className="text-xs text-slate-400 dark:text-slate-200 mt-2 leading-relaxed font-normal">
-                    Select any project parameter block below to evaluate the engineering checklist gate structure and authorize approval.
+                  <p className="text-xs text-slate-500 dark:text-slate-300 mt-2 leading-relaxed font-normal">
+                    Tap any site card below to inspect parameters, check checklist gates, and co-sign approvals.
                   </p>
                 </div>
                 {activeFlowTasks.map(task => (
@@ -1275,7 +1288,7 @@ export default function App() {
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="font-mono text-xs text-blue-500 dark:text-blue-400 font-bold shrink-0">{task.ref}</span>
+                      <span className="font-mono text-xs text-slate-400 dark:text-blue-400 font-bold shrink-0">{task.ref}</span>
                       <span className="text-sm font-bold truncate text-slate-900 dark:text-slate-100">{task.task}</span>
                     </div>
                     <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
@@ -1288,18 +1301,19 @@ export default function App() {
 
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 dark:text-slate-300 font-semibold tracking-wide shrink-0 border-t pt-4 border-slate-800/40">
-             <span className="flex items-center gap-1.5"><Info size={14}/> Mother link connection secure. System running in localized sandbox frame instance.</span>
+          {/* PROJECT METRICS FOOTER OVERVIEW */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-505 dark:text-slate-400 font-semibold tracking-wide shrink-0 border-t pt-4 border-slate-800/40">
+             <span className="flex items-center gap-1.5"><Info size={14}/> Citicore Master cloud mother database linked.</span>
              <span className="flex items-center gap-3">
-               <span>Global Completed Metrics: <strong className="text-blue-500 font-bold">{overallGlobalProgress}%</strong></span>
-               <span>Total Buffer Span: <strong className="text-blue-500 font-bold">{totalDays} Days</strong></span>
+               <span>Global Completed: <strong className="text-blue-500 font-bold">{overallGlobalProgress}%</strong></span>
+               <span>Total Site Buffer: <strong className="text-blue-500 font-bold">{totalDays} Days</strong></span>
              </span>
           </div>
 
         </div>
       </main>
 
-      {/* FIELD QUALITY INSPECTOR CHECKLIST CONTROL MODAL */}
+      {/* CORE INSPECTION CHECKLIST GATE MODAL */}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -1308,10 +1322,10 @@ export default function App() {
             <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[90vh] transition-all duration-300 ${
               isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
             }`}>
-              
+              {/* Header */}
               <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold flex items-center gap-2"><ClipboardCheck className="text-blue-500" size={18}/> Field QC Sign-off Registry</h3>
+                  <h3 className="text-sm sm:text-base font-bold flex items-center gap-2"><ClipboardCheck className="text-blue-500" size={18}/> Site Field Inspector Card</h3>
                   <p className="text-[11px] text-slate-400 font-bold mt-1"><span className="text-blue-500 bg-blue-500/15 border border-blue-500/20 px-1.5 py-0.5 rounded mr-1.5">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
                 </div>
                 <button onClick={() => setActiveTaskModal(null)} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400 border-slate-300'}`}><X size={14}/></button>
@@ -1319,22 +1333,23 @@ export default function App() {
               
               <div className="p-4 sm:p-6 overflow-y-auto flex-grow space-y-5 scrollbar-thin">
                 
+                {/* Duration modifiers */}
                 <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Duration Allocation Metrics</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Configure Base Days & Percent Complete</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-slate-300">DURATION SCALE (DAYS)</span>
+                      <span className="text-[9px] font-semibold text-slate-500">DURATION (BASE DAYS)</span>
                       <div className="flex items-center gap-1.5 mt-1">
                         <button 
                           onClick={() => updateTask(currentTaskEditing.id, 'duration', Math.max(1, currentTaskEditing.duration - 1))}
-                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
+                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}
                         >
                           -
                         </button>
                         <span className="font-mono text-xs font-bold text-blue-500 px-2">{currentTaskEditing.duration} Days</span>
                         <button 
                           onClick={() => updateTask(currentTaskEditing.id, 'duration', currentTaskEditing.duration + 1)}
-                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
+                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}
                         >
                           +
                         </button>
@@ -1342,49 +1357,51 @@ export default function App() {
                     </div>
                     
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-slate-300">COMPLETION VALUE RANGE (%)</span>
+                      <span className="text-[9px] font-semibold text-slate-500">PERCENT COMPLETE (%)</span>
                       <input 
                         type="range" min="0" max="100" 
                         value={currentTaskEditing.progress || 0}
                         onChange={(e) => updateTask(currentTaskEditing.id, 'progress', parseInt(e.target.value) || 0)}
-                        className="mt-3.5 w-full cursor-pointer accent-blue-500 text-blue-500 bg-slate-300 dark:bg-slate-800"
+                        className="mt-3.5 w-full cursor-pointer accent-blue-500 text-blue-500 bg-slate-350 dark:bg-slate-800"
                       />
                     </div>
                   </div>
                 </div>
 
+                {/* Co-Sign inspection levels */}
                 <div className="space-y-2">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Authorized Inspection Threshold</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Co-Sign Inspector Status</h4>
                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {[
-                      { status: 'PENDING', label: 'In Progress', desc: 'Discipline construction running', border: 'border-blue-500/30 text-blue-400', bg: 'bg-blue-500/10' },
-                      { status: 'HOLD', label: 'QC HOLD POINT', desc: 'Prerequisite verification required', border: 'border-rose-500/30 text-rose-400', bg: 'bg-rose-500/10' },
-                      { status: 'APPROVED', label: 'RELEASE SIGNED', desc: 'Site engineer stamp finalized', border: 'border-emerald-500/30 text-emerald-400', bg: 'bg-emerald-500/10' }
+                      { status: 'PENDING', label: 'Active Work', desc: 'Work under development', border: 'border-blue-500/30 text-blue-400', bg: 'bg-blue-500/10' },
+                      { status: 'HOLD', label: 'QA HOLD', desc: 'Hold point blocks progress', border: 'border-rose-500/30 text-rose-400', bg: 'bg-rose-500/10' },
+                      { status: 'APPROVED', label: 'APPROVED', desc: 'Inspection clearance signed', border: 'border-emerald-500/30 text-emerald-400', bg: 'bg-emerald-500/10' }
                     ].map((card) => (
                       <div
                         key={card.status}
                         onClick={() => {
                           updateTask(currentTaskEditing.id, 'qaStatus', card.status);
-                          showToast(`Discipline status matrix updated to ${card.status}`);
+                          showToast(`Task status updated to ${card.status}`);
                         }}
                         className={`p-2.5 sm:p-3 rounded-2xl border text-center cursor-pointer transition-all ${
                           currentTaskEditing.qaStatus === card.status
                             ? `ring-2 ring-blue-500 ${card.border} ${card.bg}`
-                            : (isDarkMode ? 'border-slate-800 bg-slate-900 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-600')
+                            : (isDarkMode ? 'border-slate-800 bg-slate-900 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')
                         }`}
                       >
                         <span className="block font-bold text-[9px] sm:text-[11px] uppercase tracking-wide">{card.label}</span>
-                        <span className="block text-[7.5px] sm:text-[8.5px] opacity-75 mt-0.5 leading-none font-medium">{card.desc}</span>
+                        <span className="block text-[7.5px] sm:text-[8.5px] opacity-75 mt-0.5 leading-none font-normal">{card.desc}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
+                {/* Checklist gates */}
                 <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo className="text-blue-500" size={12}/> Engineering Sign-off Parameters</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo className="text-blue-500" size={12}/> Engineering Sign-Off Steps</h4>
                   
                   {Object.keys(currentTaskEditing.checklist || {}).length === 0 ? (
-                    <p className="text-xs text-slate-500 italic font-medium">No custom verification steps initialized.</p>
+                    <p className="text-xs text-slate-505 italic font-normal">No checklist parameters set for this task class.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {Object.entries(currentTaskEditing.checklist).map(([name, completed]) => (
@@ -1396,7 +1413,7 @@ export default function App() {
                               : (isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800 text-slate-200' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-800')
                           }`}
                         >
-                          <span className="font-bold">{name}</span>
+                          <span className="font-semibold">{name}</span>
                           <input 
                             type="checkbox" 
                             checked={completed} 
@@ -1411,7 +1428,7 @@ export default function App() {
                   <div className="mt-3 flex gap-1.5">
                     <input 
                       type="text" 
-                      placeholder="Add custom engineering checklist parameter..." 
+                      placeholder="Add custom inspector checks" 
                       id="new-check-input"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1419,7 +1436,7 @@ export default function App() {
                           e.target.value = '';
                         }
                       }}
-                      className={`flex-grow px-3 py-2 rounded-xl text-xs font-bold border outline-none ${
+                      className={`flex-grow px-3 py-2 rounded-xl text-xs font-semibold border outline-none ${
                         isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-800'
                       }`}
                     />
@@ -1431,26 +1448,27 @@ export default function App() {
                           input.value = '';
                         }
                       }}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 rounded-xl"
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 rounded-xl"
                     >
-                      Deploy
+                      Add
                     </button>
                   </div>
                 </div>
 
+                {/* Dynamic Manpower adjustments */}
                 <div className="space-y-3">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Field Labor Allocation ({laborProfile.toUpperCase()})</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Labor Crew Requirements ({laborProfile.toUpperCase()} Pool)</h4>
                   <div className="flex flex-wrap gap-2">
                     {activeRoles.map(r => {
                       const countVal = parseInt(currentTaskEditing[r.key]);
                       const count = isNaN(countVal) ? 0 : countVal;
                       return (
-                        <div key={r.key} className={`flex items-center gap-2 border rounded-xl p-1.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-300 text-slate-500')}`}>
+                        <div key={r.key} className={`flex items-center gap-2 border rounded-xl p-1.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-400')}`}>
                           <span className="text-xs pl-0.5">{r.icon} <span className="text-[9px] font-bold uppercase ml-0.5">{r.label}</span></span>
                           <div className={`flex items-center rounded-lg border text-slate-800 overflow-hidden shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
-                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-200' : 'hover:bg-slate-100'}`}><Minus size={10}/></button>
+                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Minus size={10}/></button>
                             <span className={`text-[10px] font-bold w-4 text-center ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{count}</span>
-                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-200' : 'hover:bg-slate-100'}`}><Plus size={10}/></button>
+                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Plus size={10}/></button>
                           </div>
                         </div>
                       )
@@ -1458,6 +1476,7 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Worker names logging */}
                 <div className={`space-y-3 pt-3 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                   {activeRoles.filter(r => (parseInt(currentTaskEditing[r.key]) || 0) > 0).map(r => {
                     const inputs = [];
@@ -1468,16 +1487,16 @@ export default function App() {
                         <input 
                           key={i} type="text" value={currentTaskEditing.assigned?.[r.key]?.[i] || ''}
                           onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
-                          placeholder={`Signatory reference name for ${r.fullName} #${i+1}...`}
-                          className={`px-3 py-2 border rounded-xl text-xs font-bold w-full outline-none ${
-                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-800 placeholder-slate-400'
+                          placeholder={`Enter name for ${r.fullName} #${i+1}...`}
+                          className={`px-3 py-2 border rounded-xl text-xs font-semibold w-full outline-none ${
+                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-850 placeholder-slate-400'
                           }`}
                         />
                       );
                     }
                     return (
                       <div key={r.key} className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{r.fullName} Identity Logs</label>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{r.fullName} Name Log</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{inputs}</div>
                       </div>
                     );
@@ -1486,128 +1505,128 @@ export default function App() {
               </div>
               
               <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                <button onClick={() => setActiveTaskModal(null)} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm">Save & Collapse</button>
+                <button onClick={() => setActiveTaskModal(null)} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm">Close Inspector</button>
               </div>
             </div>
           </div>
         );
       })()}
 
-      {/* CONTRACTUAL BRANDING SETTINGS CONFIG MODAL */}
+      {/* BRANDING CONFIG MODAL */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#131c2e] text-slate-100' : 'bg-white text-slate-800'}`}>
             <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <span className="font-bold flex items-center gap-2"><Settings size={18}/> Custom Workspace Infrastructure Branding</span>
+              <span className="font-bold flex items-center gap-2"><Settings size={18}/> Custom Site Branding</span>
               <button onClick={() => setIsSettingsOpen(false)} className={`p-1 rounded-md border shadow-sm ${isDarkMode ? 'bg-slate-850 border-slate-700 text-slate-400' : 'bg-white text-slate-400 border-slate-300'}`}><X size={14}/></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Contractor Signatory Asset (Left)</label>
-                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-700 hover:bg-slate-800' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'}`}>
-                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left asset" /> : <UploadCloud className="text-blue-400" size={20}/>}
-                  <span className="text-xs font-bold text-slate-400 mt-1 uppercase">Upload Image Asset</span>
+                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase">Left Contractor Logo</label>
+                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-700 hover:bg-slate-850' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'}`}>
+                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <UploadCloud className="text-blue-400" size={20}/>}
+                  <span className="text-xs font-semibold text-slate-400 mt-1 uppercase">Upload Left Image</span>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('left', e)} className="hidden" />
                 </label>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Owner Signatory Asset (Right)</label>
-                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-700 hover:bg-slate-800' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'}`}>
-                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right asset" /> : <UploadCloud className="text-blue-400" size={20}/>}
-                  <span className="text-xs font-bold text-slate-400 mt-1 uppercase">Upload Image Asset</span>
+                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase">Right Owner Logo</label>
+                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-700 hover:bg-slate-850' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'}`}>
+                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <UploadCloud className="text-blue-400" size={20}/>}
+                  <span className="text-xs font-semibold text-slate-400 mt-1 uppercase">Upload Right Image</span>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('right', e)} className="hidden" />
                 </label>
               </div>
             </div>
             <div className={`p-5 border-t flex justify-end ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <button onClick={() => setIsSettingsOpen(false)} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-sm">Save Parameters</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-sm">Done</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* NEW DISCIPLINE LAYER INCEPTION MODAL */}
+      {/* CREATE NEW PROJECT MODAL */}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
             <div className="p-6">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-2">Deploy Standalone Sub-Phase</h3>
-              <p className="text-xs text-slate-400 mb-4 font-medium">Initializes an isolated operational context sequence in the master dropdown.</p>
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-2">Create New Site Project</h3>
+              <p className="text-xs text-slate-400 mb-4 font-normal">Initializes a standalone database Mother Link for your specific sub-phase or substation.</p>
               <input 
                 type="text"
-                placeholder="e.g. Substation Phase 4B Mesh Alignment"
+                placeholder="e.g. Pagbilao Phase 3B Splicing"
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
-                className={`w-full px-4 py-3 rounded-xl border text-xs font-bold outline-none mb-4 ${
+                className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none mb-4 ${
                   isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-800'
                 }`}
               />
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-400 font-bold text-xs uppercase">Cancel</button>
-                <button onClick={handleCreateNewProject} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl">Deploy Sequence</button>
+                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase">Cancel</button>
+                <button onClick={handleCreateNewProject} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl">Create Project</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* CONTEXT DELETION SANITY MODAL */}
+      {/* CONFIRMATION OVERLAYS */}
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
             <div className="p-6">
               <div className="flex items-center gap-3 text-rose-500 mb-3">
                 <AlertTriangle size={24}/>
-                <h3 className="text-sm font-bold uppercase tracking-wider">Purge Context Environment</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider">Confirm Delete Project</h3>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed mb-6 font-medium">
-                Are you certain you want to permanently clear out workspace instance reference <span className="font-mono font-bold text-slate-200 bg-slate-900 px-1.5 py-0.5 rounded">{projectToDelete}</span>? 
+              <p className="text-xs text-slate-400 leading-relaxed mb-6 font-normal">
+                Are you sure you want to permanently delete project reference <span className="font-mono font-semibold text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded">{projectToDelete}</span>? This action is local and cannot be undone.
               </p>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setProjectToDelete(null)} className="px-4 py-2 text-slate-400 font-bold text-xs uppercase">Abort</button>
-                <button onClick={confirmDeleteProject} className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase rounded-xl">Finalize Purge</button>
+                <button onClick={() => setProjectToDelete(null)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase">Cancel</button>
+                <button onClick={confirmDeleteProject} className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase rounded-xl">Delete</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* METRIC ONBOARDING WIZARD */}
+      {/* ONBOARDING FLOW */}
       {showOnboarding && (
         <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl border shadow-2xl max-w-lg w-full overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
             <div className="p-6">
               <div className="flex justify-between items-center border-b pb-3 mb-4">
-                <span className="text-xs font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5"><HelpCircle size={14}/> Grid Infrastructure Execution Manual</span>
-                <span className="text-xs text-slate-400 font-bold">{onboardingStep} / 3</span>
+                <span className="text-xs font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5"><HelpCircle size={14}/> Site Companion Guide</span>
+                <span className="text-xs text-slate-400 font-semibold">{onboardingStep} / 3</span>
               </div>
 
               {onboardingStep === 1 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Welcome to MBV Dynamic Scheduler Core</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-medium">This interface synchronizes engineering steps, field labor loads, and quality hold points into a shared reactive view framework.</p>
+                  <h3 className="text-sm sm:text-base font-bold">Welcome to MBV Power Systems Scheduler</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-normal">This tool synchronizes site operations, manpower curves, and QA checks on a single interactive mother link. No more outdated paper schedules.</p>
                   <div className="bg-slate-900/40 p-3 rounded-2xl border border-slate-800">
-                    <p className="text-[11px] text-blue-400 font-bold">💡 Sequence: Access the drop-down switch matrix in the left header cluster to jump context domains seamlessly.</p>
+                    <p className="text-[11px] text-blue-400 font-semibold">💡 Tip: Use the drop-down menu next to the title in the header to jump between active site projects or add fresh phases.</p>
                   </div>
                 </div>
               )}
 
               {onboardingStep === 2 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Hold Point Clearance Matrix</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-medium">Quality assurance limits are bound into the row logic loops. Tap any list line or card node to toggle inspections or allocate worker metrics.</p>
+                  <h3 className="text-sm sm:text-base font-bold">Hold Point Clearance Controls</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-normal">QA/QC hold points are built right into the schedule logic. When a task requires an inspection, click on its row or card to access the Inspector Sign-off Checklist.</p>
                   <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-2xl border border-emerald-500/20">
-                    <p className="text-[11px] font-bold">🛑 Guard: Transformer energization and cable splices are held structurally transparent until prerequisites are set to APPROVED.</p>
+                    <p className="text-[11px] font-semibold">🛑 Safeguard: Concrete pouring and commissioning processes are physically locked on the timeline until prerequisites are APPROVED.</p>
                   </div>
                 </div>
               )}
 
               {onboardingStep === 3 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Global Database Synchronicity</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-medium">When schedule timelines shift, click the <strong>Sync Cloud</strong> button. This pushes parameters to the primary Firestore schema cluster and duplicates the active link target directly to your clipboard.</p>
+                  <h3 className="text-sm sm:text-base font-bold">Single Link Global Cloud Sync</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-normal">Every time you update task durations or complete a quality step, click the <strong>SYNC</strong> button in the top header. This updates the master server database and automatically synchronizes all users' dropdown lists.</p>
                   <div className="bg-blue-600/15 p-3 rounded-2xl border border-blue-500/20">
-                    <p className="text-[11px] text-blue-400 font-bold flex items-center gap-1.5"><CheckCircle2 size={12}/> Complete synergy between general contractors and oversight teams.</p>
+                    <p className="text-[11px] text-blue-400 font-semibold flex items-center gap-1.5"><CheckCircle2 size={12}/> Perfect alignment is guaranteed across subcontractor and executive offices.</p>
                   </div>
                 </div>
               )}
@@ -1615,7 +1634,7 @@ export default function App() {
               <div className="flex justify-between items-center border-t mt-6 pt-4">
                 <button 
                   onClick={() => setShowOnboarding(false)} 
-                  className="text-xs font-bold text-slate-400 uppercase hover:text-slate-200"
+                  className="text-xs font-semibold text-slate-500 uppercase hover:text-slate-300"
                 >
                   Skip Guide
                 </button>
@@ -1623,7 +1642,7 @@ export default function App() {
                   {onboardingStep > 1 && (
                     <button 
                       onClick={() => setOnboardingStep(onboardingStep - 1)} 
-                      className="px-4 py-2 border rounded-xl text-xs font-bold"
+                      className="px-4 py-2 border rounded-xl text-xs font-semibold"
                     >
                       Back
                     </button>
@@ -1634,12 +1653,12 @@ export default function App() {
                         setOnboardingStep(onboardingStep + 1);
                       } else {
                         setShowOnboarding(false);
-                        showToast("Onboarding guide sequence successfully completed.");
+                        showToast("Site onboarding completed.");
                       }
                     }} 
                     className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl flex items-center gap-1"
                   >
-                    {onboardingStep === 3 ? 'Initialize Workspace' : 'Continue'} <ArrowRight size={12}/>
+                    {onboardingStep === 3 ? 'Get Started' : 'Next Step'} <ArrowRight size={12}/>
                   </button>
                 </div>
               </div>
