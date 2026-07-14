@@ -162,7 +162,10 @@ export default function App() {
   const isSyncingLeftScroll = useRef(false);
   const isSyncingRightScroll = useRef(false);
 
-  // Synchronized scroll callbacks to solve image_7a9306.png issues
+  const [allProjectsTasks, setAllProjectsTasks] = useState([]);
+  const [isForecastLoading, setIsForecastLoading] = useState(false);
+  const [activeForecastFilter, setActiveForecastFilter] = useState('this-week'); // 'this-week' | 'all-active'
+
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
       isSyncingRightScroll.current = false;
@@ -238,6 +241,72 @@ export default function App() {
 
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
+
+  useEffect(() => {
+    if (!db || !user || projectList.length === 0) return;
+
+    const pullGlobalDatabaseForecasts = async () => {
+      setIsForecastLoading(true);
+      try {
+        const pooledForecasts = [];
+        for (const proj of projectList) {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', proj.id);
+          const snap = await getDoc(docRef);
+          
+          let projTasks = [];
+          let projStart = new Date().toISOString().split('T')[0];
+          let projName = proj.title;
+          let factor = 'sunny';
+
+          if (snap.exists()) {
+            const data = snap.data();
+            projTasks = data.tasks || [];
+            projStart = data.projectStartDate || projStart;
+            projName = data.appTitle || projName;
+            factor = data.weatherFactor || 'sunny';
+          } else if (proj.id === 'master-schedule') {
+            projTasks = INITIAL_TASKS;
+            projStart = projectStartDate;
+            projName = appTitle;
+            factor = weatherFactor;
+          }
+
+          let runningDays = 0;
+          const weatherMultiplier = factor === "heavy_rain" ? 1.35 : (factor === "typhoon" ? 1.8 : 1.0);
+
+          const mapped = projTasks.map(task => {
+            const duration = Math.max(1, Math.round(task.duration * weatherMultiplier));
+            const startOffset = runningDays;
+            runningDays += duration;
+
+            const startCal = new Date(projStart);
+            startCal.setDate(startCal.getDate() + startOffset);
+
+            const endCal = new Date(startCal);
+            endCal.setDate(endCal.getDate() + duration);
+
+            return {
+              ...task,
+              parentProjectName: projName,
+              parentProjectId: proj.id,
+              absoluteStartDate: startCal,
+              absoluteEndDate: endCal,
+              calculatedDuration: duration
+            };
+          });
+
+          pooledForecasts.push(...mapped);
+        }
+        setAllProjectsTasks(pooledForecasts);
+      } catch (err) {
+        console.warn("Failed pooling global datasets: ", err);
+      } finally {
+        setIsForecastLoading(false);
+      }
+    };
+
+    pullGlobalDatabaseForecasts();
+  }, [user, projectList, tasks, weatherFactor, projectStartDate]);
 
   const generateDateHeaderStr = (startDateStr, dayOffset) => {
     const d = new Date(startDateStr);
@@ -998,6 +1067,27 @@ export default function App() {
 
   const tomorrowAllocations = getTomorrowAllocations();
 
+  const getThisWeeksForecastTasks = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sevenDaysLater = new Date(today);
+    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+
+    return allProjectsTasks.filter(task => {
+      const startsInWindow = task.absoluteStartDate >= today && task.absoluteStartDate <= sevenDaysLater;
+      const endsInWindow = task.absoluteEndDate >= today && task.absoluteEndDate <= sevenDaysLater;
+      const spansWindow = task.absoluteStartDate <= today && task.absoluteEndDate >= sevenDaysLater;
+      
+      if (activeForecastFilter === 'this-week') {
+        return startsInWindow || endsInWindow || spansWindow;
+      }
+      return task.progress < 100 || task.qaStatus === 'HOLD';
+    }).sort((a, b) => a.absoluteStartDate - b.absoluteStartDate);
+  };
+
+  const thisWeeksForecastList = getThisWeeksForecastTasks();
+
   if (view === 'loading') {
     return (
       <div className="h-screen w-screen bg-[#0b0f19] flex flex-col items-center justify-center gap-4">
@@ -1299,6 +1389,7 @@ export default function App() {
         </div>
       </header>
 
+      {}
       {isMobileViewport && (
         <div className={`flex border-b text-xs font-semibold uppercase tracking-wider shrink-0 print:hidden ${
           isDarkMode ? 'bg-[#131c2e] border-slate-850' : 'bg-white border-slate-250'
@@ -1314,6 +1405,16 @@ export default function App() {
             📋 Site Cards
           </button>
           <button 
+            onClick={() => setMobileDisplayTab('weekly')}
+            className={`flex-1 py-3.5 text-center transition-colors font-bold ${
+              mobileDisplayTab === 'weekly' 
+                ? 'border-b-2 border-blue-500 text-blue-500' 
+                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
+            }`}
+          >
+            📅 Weekly Outlook
+          </button>
+          <button 
             onClick={() => setMobileDisplayTab('gantt')}
             className={`flex-1 py-3.5 text-center transition-colors font-bold ${
               mobileDisplayTab === 'gantt' 
@@ -1321,7 +1422,7 @@ export default function App() {
                 : isDarkMode ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
-            📊 Timeline Gantt
+            📊 Gantt
           </button>
           <button 
             onClick={() => setMobileDisplayTab('qa')}
@@ -1453,8 +1554,129 @@ export default function App() {
             </div>
           </div>
 
+          {}
+          {/* Main Workspace Frame container */}
           <div className="flex-grow flex flex-col min-h-0 relative">
             
+            {/* Desktop and Mobile Integrated Summary Workspace Tab */}
+            {(!isMobileViewport || mobileDisplayTab === 'weekly') && mobileDisplayTab === 'weekly' && (
+              <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
+                <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
+                  isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-200'
+                }`}>
+                  <div>
+                    <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2 text-blue-500 dark:text-blue-400">
+                      <CalendarDays size={18} /> Cross-Project Global Weekly Outlook
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all site databases matching compliance dates.</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 border p-1 rounded-xl bg-slate-900/40 border-slate-800 shrink-0">
+                    <button
+                      onClick={() => setActiveForecastFilter('this-week')}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                        activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      📅 This Week
+                    </button>
+                    <button
+                      onClick={() => setActiveForecastFilter('all-active')}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                        activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      ⚠️ All Unfinished Tasks
+                    </button>
+                  </div>
+                </div>
+
+                {isForecastLoading ? (
+                  <div className="flex-1 flex flex-col items-center justify-center gap-2">
+                    <Loader2 size={24} className="animate-spin text-blue-500" />
+                    <span className="text-xs text-slate-400 font-bold tracking-widest uppercase">Fetching sibling databases...</span>
+                  </div>
+                ) : thisWeeksForecastList.length === 0 ? (
+                  <div className={`flex-1 flex flex-col items-center justify-center p-8 rounded-2xl border border-dashed text-center ${
+                    isDarkMode ? 'border-slate-800' : 'border-slate-300'
+                  }`}>
+                    <CalendarDays size={40} className="text-slate-500 mb-3" />
+                    <h4 className="text-sm font-bold uppercase text-slate-400">No Operations Scheduled For This Cycle</h4>
+                    <p className="text-xs text-slate-550 mt-1 max-w-sm">All sibling project databases have finished tasks or launch starts outside this 7-day calendar window.</p>
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-thin">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {thisWeeksForecastList.map(item => {
+                        const isOverdue = item.absoluteEndDate < new Date() && item.progress < 100;
+                        return (
+                          <div
+                            key={`${item.parentProjectId}-${item.id}`}
+                            onClick={() => {
+                              // Switch project context first, then load task modal
+                              handleSwitchProject(item.parentProjectId);
+                              setTimeout(() => setActiveTaskModal(item.id), 400);
+                            }}
+                            className={`p-5 rounded-2xl border shadow-sm cursor-pointer transition-transform hover:scale-[1.015] flex flex-col justify-between gap-4 relative ${
+                              isDarkMode ? 'bg-[#131c2e] border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start gap-2 border-b pb-3 border-slate-200/40 dark:border-slate-800/40">
+                              <div className="min-w-0 flex-1">
+                                <span className="bg-blue-600/10 text-blue-500 dark:text-blue-400 px-2 py-0.5 rounded text-[9px] font-black tracking-wider uppercase block truncate max-w-full">
+                                  {item.parentProjectName}
+                                </span>
+                                <h4 className={`text-sm font-bold truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>
+                                  {item.task}
+                                </h4>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(item.qaStatus)}`}>
+                                {item.qaStatus}
+                              </span>
+                            </div>
+
+                            <div className="space-y-2 text-xs">
+                              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
+                                <span className="flex items-center gap-1"><Clock size={12}/> SCHEDULED TIME</span>
+                                <span className="font-mono text-slate-300">
+                                  {item.absoluteStartDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - {item.absoluteEndDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
+                                <span className="flex items-center gap-1"><Truck size={12}/> EQUIPMENT</span>
+                                <span className="font-bold text-blue-500">{item.assignedAsset || 'None'}</span>
+                              </div>
+                              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
+                                <span className="flex items-center gap-1"><Users size={12}/> CREW LOAD</span>
+                                <span className="font-bold">{item.totalManpower || 0} Men</span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
+                              <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                                <span className="uppercase">COMPLETE</span>
+                                <span>{item.progress || 0}%</span>
+                              </div>
+                              <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500" style={{width: `${item.progress || 0}%`}}></div>
+                              </div>
+                            </div>
+
+                            {isOverdue && (
+                              <div className="mt-1 p-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
+                                <AlertTriangle size={12} />
+                                <span>OVERDUE COMPARED TO ORIGINAL COMPLIANCE BUFFER</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {(!isMobileViewport || mobileDisplayTab === 'tasks') && isMobileViewport && (
               <div 
                 className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
