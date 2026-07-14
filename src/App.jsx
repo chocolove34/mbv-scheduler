@@ -5,7 +5,7 @@ import {
   Users, UserPlus, Minus, BarChart3, Info, Loader2, Printer,
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
-  CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle
+  CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -31,7 +31,7 @@ try {
     appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
   };
 } catch (e) {
-  // Silent fallback for standalone sandbox compiler env
+  // Silent fallback for standalone sandbox compiler environments
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -58,6 +58,13 @@ const MbvLogo = () => (
   </svg>
 );
 
+const SHARED_ASSETS = [
+  { key: 'PC135', label: 'PC135 Excavator', icon: '🚜', type: 'Heavy Equipment', defaultMobilizationDays: 1 },
+  { key: 'MVK01', label: 'MV Calibration Kit #1', icon: '🧰', type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'FSA22', label: 'Fusion Splicer Alpha', icon: '⚡', type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'PIT99', label: 'Primary Injection Tester', icon: '🧪', type: 'Testing Equipment', defaultMobilizationDays: 1 }
+];
+
 const LABOR_PROFILES = {
   civil: [
     { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-900/30 border-blue-500/25 text-blue-300', icon: '👔' },
@@ -80,58 +87,44 @@ const LABOR_PROFILES = {
 };
 
 const INITIAL_TASKS = [
-  { id: 'T1', ref: '1.0', desc: 'Pre-Construction', task: 'Permit Processing & Mobilization', duration: 2, progress: 100, pm: 1, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Mobilization Permit': true, 'Office Container Set': true } },
-  { id: 'T2', ref: '1.1', desc: 'Technical Survey', task: 'Geo-staking & Trenching Layout', duration: 1, progress: 100, pm: 1, se: 2, ee: 1, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Boundary Markers Laid': true, 'Topographical Crosscheck': true } },
-  { id: 'T3', ref: '2.0', desc: 'Civil Works', task: '1.5m Depth Manual Cable Potholing', duration: 3, progress: 80, pm: 0, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Utility Clearance Received': true, 'Depth Level Checked': false } },
-  { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false } },
-  { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false } },
-  { id: 'T6', ref: '3.1', desc: 'Equipment Alignment', task: 'Main Circuit Breaker Structural Alignment', duration: 1, progress: 0, pm: 1, se: 2, ee: 2, so: 1, st: 0, cp: 1, ms: 0, el: 3, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'HOLD', checklist: { 'Plumbness Signed-Off': false, 'Contact Alignment Check': false } },
-  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false } },
-  { id: 'T8', ref: '4.1', desc: 'Curing Period', task: '5-Day Continuous Pad Concrete Wet Curing (Hold)', duration: 5, progress: 0, pm: 0, se: 0, ee: 0, so: 1, st: 0, cp: 0, ms: 1, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Wet Sack Blanket Placed': false, 'Daily Water Log Checklist': false } },
-  { id: 'T9', ref: '5.0', desc: 'Assembly & Splicing', task: 'MV Cable Terminations & Splicing', duration: 3, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 2, cp: 2, ms: 0, el: 4, lm: 2, cs: 3, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Cable Splicing Certified': false, 'High Potential Test Logged': false } },
-  { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false } },
+  { id: 'T1', ref: '1.0', desc: 'Pre-Construction', task: 'Permit Processing & Mobilization', duration: 2, progress: 100, pm: 1, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Mobilization Permit': true, 'Office Container Set': true }, assignedAsset: 'None' },
+  { id: 'T2', ref: '1.1', desc: 'Technical Survey', task: 'Geo-staking & Trenching Layout', duration: 1, progress: 100, pm: 1, se: 2, ee: 1, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Boundary Markers Laid': true, 'Topographical Crosscheck': true }, assignedAsset: 'None' },
+  { id: 'T3', ref: '2.0', desc: 'Civil Works', task: '1.5m Depth Manual Cable Potholing', duration: 3, progress: 80, pm: 0, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Utility Clearance Received': true, 'Depth Level Checked': false }, assignedAsset: 'PC135' },
+  { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false }, assignedAsset: 'None' },
+  { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false }, assignedAsset: 'None' },
+  { id: 'T6', ref: '3.1', desc: 'Equipment Alignment', task: 'Main Circuit Breaker Structural Alignment', duration: 1, progress: 0, pm: 1, se: 2, ee: 2, so: 1, st: 0, cp: 1, ms: 0, el: 3, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'HOLD', checklist: { 'Plumbness Signed-Off': false, 'Contact Alignment Check': false }, assignedAsset: 'MVK01' },
+  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false }, assignedAsset: 'None' },
+  { id: 'T8', ref: '4.1', desc: 'Curing Period', task: '5-Day Continuous Pad Concrete Wet Curing (Hold)', duration: 5, progress: 0, pm: 0, se: 0, ee: 0, so: 1, st: 0, cp: 0, ms: 1, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Wet Sack Blanket Placed': false, 'Daily Water Log Checklist': false }, assignedAsset: 'None' },
+  { id: 'T9', ref: '5.0', desc: 'Assembly & Splicing', task: 'MV Cable Terminations & Splicing', duration: 3, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 2, cp: 2, ms: 0, el: 4, lm: 2, cs: 3, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Cable Splicing Certified': false, 'High Potential Test Logged': false }, assignedAsset: 'FSA22' },
+  { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false }, assignedAsset: 'PIT99' },
 ];
-
-const generateDateHeaderStr = (startDateStr, dayOffset) => {
-  const d = new Date(startDateStr);
-  d.setDate(d.getDate() + dayOffset);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
-const copyToClipboard = (text) => {
-  if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text);
-  } else {
-      let textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-99999px";
-      textArea.style.top = "-99999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try { document.execCommand('copy'); } catch (err) {}
-      textArea.remove();
-  }
-};
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('loading'); // 'loading', 'editor'
+  const [view, setView] = useState('loading');
   
   // Responsive displays
   const [mobileDisplayTab, setMobileDisplayTab] = useState('tasks'); 
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
-  // Active Labor Profile Toggle (Civil vs Electrical)
+  // Active Labor Profile Toggle
   const [laborProfile, setLaborProfile] = useState('electrical');
 
-  // Project select popover state
+  // Switcher Popover states
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Theme & App Configurations
+  // Notifications/Simulated Push Log
+  const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'info', text: 'Centralized Mother Link Synced with Citicore DB Cloud.', time: 'Just now' },
+    { id: 2, type: 'warning', text: 'Transit buffer auto-calculated for PC135 Excavator (+1 Day).', time: '5m ago' },
+    { id: 3, type: 'alert', text: 'Conflict Flag: Fusion Splicer Alpha overlaps Quezon and Pagbilao dates.', time: '12m ago' },
+    { id: 4, type: 'success', text: 'Engr. Ana Approved Pre-Construction coordinates for T1.', time: '1h ago' }
+  ]);
+
+  // Dark/Light State Control
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('mbv_dark_mode') !== 'false';
   });
@@ -142,7 +135,7 @@ export default function App() {
   const [projectStartDate, setProjectStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [appTitle, setAppTitle] = useState("Citicore 100MW Solar Grid");
   const [appSubtitle, setAppSubtitle] = useState("Site Operations & Verification Hub");
-  const [weatherFactor, setWeatherFactor] = useState("sunny"); // 'sunny', 'heavy_rain', 'typhoon'
+  const [weatherFactor, setWeatherFactor] = useState("sunny");
   
   const [logos, setLogos] = useState({ left: '', right: '' });
   const [docMetadata, setDocMetadata] = useState({
@@ -153,7 +146,7 @@ export default function App() {
     date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
   });
 
-  // Modal & Overlay Triggers
+  // Overlays
   const [toastMessage, setToastMessage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTaskModal, setActiveTaskModal] = useState(null);
@@ -161,19 +154,54 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
 
-  // Confirmation modally controlled alerts
+  // Deletions / Creation modals
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
-  // Search/Filter states
+  // Search/Filters
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
-  const [filterStatusTag, setFilterStatusTag] = useState('ALL'); // 'ALL', 'HOLD', 'APPROVED'
+  const [filterStatusTag, setFilterStatusTag] = useState('ALL');
+
+  // Moved utility functions inside the component to prevent Fast Refresh reference errors
+  const generateDateHeaderStr = (startDateStr, dayOffset) => {
+    const d = new Date(startDateStr);
+    d.setDate(d.getDate() + dayOffset);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const copyToClipboard = (text) => {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-99999px";
+        textArea.style.top = "-99999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        textArea.remove();
+    }
+  };
 
   const showToast = useCallback((message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(''), 4000);
   }, []);
+
+  // Send a simulated push notification
+  const addNotification = (text, type = 'info') => {
+    const newAlert = {
+      id: Date.now(),
+      type,
+      text,
+      time: 'Just now'
+    };
+    setNotifications(prev => [newAlert, ...prev]);
+  };
 
   useEffect(() => {
     localStorage.setItem('mbv_dark_mode', isDarkMode);
@@ -329,6 +357,7 @@ export default function App() {
     setShowCreateProjectModal(false);
     setNewProjectName('');
     showToast(`"${newProjectName}" initialized!`);
+    addNotification(`Created new sub-project space: ${newProjectName}`, 'success');
   };
 
   const handleSwitchProject = (id) => {
@@ -347,6 +376,7 @@ export default function App() {
     const url = new URL(window.location.href);
     url.searchParams.set('project', id);
     window.history.replaceState({}, document.title, url.toString());
+    addNotification(`Switched active timeline context to: ${matchingProject.title}`, 'info');
   };
 
   const handleDeleteProject = (id) => {
@@ -396,6 +426,7 @@ export default function App() {
       copyToClipboard(url.toString());
 
       showToast("Sync Successful! URL copied to clipboard.");
+      addNotification("Global Mother Link cloud database successfully updated.", "success");
     } catch (e) {
       console.error(e);
       showToast("Error synchronizing project data to cloud.");
@@ -423,6 +454,7 @@ export default function App() {
     return 1.0;
   };
 
+  // Algorithmic flow of the schedule with weather modifiers
   const flowSchedule = useCallback(() => {
     let currentStartDay = 0;
     const multiplier = fetchWeatherDelayMultiplier();
@@ -443,7 +475,8 @@ export default function App() {
         startDays: start, 
         adjustedDuration,
         totalManpower, 
-        progress: task.progress || 0 
+        progress: task.progress || 0,
+        assignedAsset: task.assignedAsset || 'None'
       };
     });
   }, [tasks, weatherFactor, laborProfile]);
@@ -463,7 +496,18 @@ export default function App() {
     ), 1
   );
 
-  const updateTask = (id, field, value) => setTasks(tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
+  const updateTask = (id, field, value) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
+    
+    // Auto trigger logistical alerts if we modified dates of an asset-bound task
+    if (field === 'duration' || field === 'assignedAsset') {
+      const match = tasks.find(t => t.id === id);
+      if (match && value !== 'None') {
+        const assetName = SHARED_ASSETS.find(a => a.key === value || a.key === match.assignedAsset)?.label || 'Asset';
+        addNotification(`Updated scheduling parameter for task using: ${assetName}`, 'warning');
+      }
+    }
+  };
   
   const adjustWorkerCount = (taskId, roleKey, increment) => {
     setTasks(tasks.map(t => {
@@ -500,9 +544,11 @@ export default function App() {
       pm: 0, se: 0, ee: 0, so: 0, st: 0, cp: 0, ms: 0, el: 1, lm: 0, cs: 0, hl: 1,
       assigned: {}, 
       qaStatus: 'PENDING', 
-      checklist: {} 
+      checklist: {},
+      assignedAsset: 'None'
     }]);
     showToast("New schedule row added.");
+    addNotification("Added new task sequence parameter.", "info");
   };
 
   const triggerTaskRemove = (id) => {
@@ -515,6 +561,10 @@ export default function App() {
       if (t.id === taskId) {
         const currentChecklist = { ...(t.checklist || {}) };
         currentChecklist[itemName] = !currentChecklist[itemName];
+        
+        const stateStr = currentChecklist[itemName] ? "APPROVED" : "PENDING";
+        addNotification(`Sign-off milestone "${itemName}" marked as ${stateStr}.`, 'success');
+        
         return { ...t, checklist: currentChecklist };
       }
       return t;
@@ -533,6 +583,34 @@ export default function App() {
     }));
   };
 
+  // Cross-Reference Overlap Logic for Tooling Assets
+  const checkAssetConflict = (taskToCheck) => {
+    if (!taskToCheck.assignedAsset || taskToCheck.assignedAsset === 'None') return null;
+
+    // Check if another task in the current project uses the same asset with overlapping dates
+    for (let otherTask of activeFlowTasks) {
+      if (otherTask.id === taskToCheck.id) continue;
+      if (otherTask.assignedAsset === taskToCheck.assignedAsset) {
+        // Test overlapping interval: (StartA <= EndB) and (EndA >= StartB)
+        const startA = taskToCheck.startDays;
+        const endA = taskToCheck.startDays + taskToCheck.adjustedDuration;
+        const startB = otherTask.startDays;
+        const endB = otherTask.startDays + otherTask.adjustedDuration;
+
+        if (startA < endB && endA > startB) {
+          const assetName = SHARED_ASSETS.find(a => a.key === taskToCheck.assignedAsset)?.label || 'Tool';
+          return {
+            conflictTaskRef: otherTask.ref,
+            conflictTaskName: otherTask.task,
+            assetName,
+            type: 'Direct Overlap'
+          };
+        }
+      }
+    }
+    return null;
+  };
+
   const filteredTasks = activeFlowTasks.filter(t => {
     const searchMatch = t.task.toLowerCase().includes(filterSearchQuery.toLowerCase()) || 
                         t.desc.toLowerCase().includes(filterSearchQuery.toLowerCase()) ||
@@ -548,12 +626,15 @@ export default function App() {
   const getRowBgColor = (task, index) => {
     const isHold = task.qaStatus === 'HOLD';
     const isApproved = task.qaStatus === 'APPROVED';
+    const hasConflict = checkAssetConflict(task);
     
     if (isDarkMode) {
+      if (hasConflict) return 'bg-amber-950/20 border-amber-500/30 hover:bg-amber-950/30';
       if (isHold) return 'bg-rose-950/20 border-rose-900/40 hover:bg-rose-950/30';
       if (isApproved) return 'bg-emerald-950/20 border-emerald-900/40 hover:bg-emerald-950/30';
       return index % 2 === 0 ? 'bg-[#131c2e]/60 border-slate-800/40 hover:bg-slate-800/30' : 'bg-[#131c2e]/30 border-slate-800/40 hover:bg-slate-800/20';
     } else {
+      if (hasConflict) return 'bg-amber-50/70 border-amber-300 hover:bg-amber-100/30';
       if (isHold) return 'bg-rose-50/70 border-rose-200 hover:bg-rose-100/30';
       if (isApproved) return 'bg-emerald-50/70 border-emerald-200 hover:bg-emerald-100/30';
       return index % 2 === 0 ? 'bg-white border-slate-200/60 hover:bg-slate-50/40' : 'bg-slate-50/50 border-slate-200/60 hover:bg-slate-50/30';
@@ -716,6 +797,10 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0 lg:hidden">
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-slate-800 border-slate-700 text-blue-400' : 'bg-white border-slate-300 text-blue-600'}`}>
+              <Bell size={16}/>
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500"></span>
+            </button>
             <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-amber-400' : 'bg-white border-slate-300 text-slate-600'}`}>
               {isDarkMode ? <Sun size={16}/> : <Moon size={16}/>}
             </button>
@@ -777,6 +862,7 @@ export default function App() {
               onChange={(e) => {
                 setWeatherFactor(e.target.value);
                 showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
+                addNotification(`Weather mode shifted to ${e.target.value.toUpperCase()}. Timelines recalculated.`, 'warning');
               }} 
               className={`text-xs font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-slate-900 [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
             >
@@ -795,8 +881,14 @@ export default function App() {
               <Plus size={14}/> <span>Add Task</span>
             </button>
             
-            <button onClick={triggerSystemPrint} className="hidden lg:flex bg-slate-800 hover:bg-slate-755 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
+            <button onClick={triggerSystemPrint} className="hidden lg:flex bg-slate-800 hover:bg-slate-750 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
               <Printer size={14}/> Export
+            </button>
+
+            {/* Notification Pane Button for Desktop */}
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`hidden lg:block p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
+              <Bell size={14}/>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
             </button>
 
             {/* Dark Mode toggle for desktop */}
@@ -821,7 +913,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* MOBILE SWITCHER CONTROLS - Rebalanced weights & borders */}
+      {/* MOBILE SWITCHER CONTROLS */}
       {isMobileViewport && (
         <div className={`flex border-b text-xs font-semibold uppercase tracking-wider shrink-0 print:hidden ${
           isDarkMode ? 'bg-[#131c2e] border-slate-850' : 'bg-white border-slate-250'
@@ -859,8 +951,34 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CANVAS - Configured as height flex-container to support native inner container scrolling */}
-      <main className="flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0">
+      {/* MAIN CANVAS */}
+      <main className="flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0 relative">
+        
+        {/* SIMULATED PUSH NOTIFICATIONS BAR */}
+        {isNotificationPaneOpen && (
+          <div className={`absolute right-4 top-4 w-80 rounded-2xl shadow-2xl border p-4 z-45 animate-in slide-in-from-right duration-250 ${
+            isDarkMode ? 'bg-[#131c2e]/95 border-slate-700 text-slate-200' : 'bg-white/95 border-slate-300 text-slate-800'
+          } backdrop-blur-md`}>
+            <div className="flex justify-between items-center border-b pb-2 mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"><Bell size={14}/> Live Operational Feed</span>
+              <button onClick={() => setIsNotificationPaneOpen(false)} className="text-slate-400 hover:text-slate-200"><X size={14}/></button>
+            </div>
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+              {notifications.map((notif) => (
+                <div key={notif.id} className={`p-2.5 rounded-xl border text-[11px] font-medium leading-relaxed ${
+                  notif.type === 'alert' ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' :
+                  notif.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' :
+                  notif.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' :
+                  'bg-blue-500/10 border-blue-500/20 text-blue-300'
+                }`}>
+                  <p>{notif.text}</p>
+                  <span className="text-[9px] text-slate-400 block mt-1">{notif.time}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
           {/* COLLAPSIBLE SPECS CARD */}
@@ -965,85 +1083,107 @@ export default function App() {
                 className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
                 style={{ WebkitOverflowScrolling: 'touch' }}
               >
-                {filteredTasks.map((task) => (
-                  <div 
-                    key={task.id}
-                    onClick={() => setActiveTaskModal(task.id)}
-                    className={`p-5 rounded-2xl border flex flex-col gap-4 relative shadow-sm cursor-pointer transition-transform hover:scale-[1.005] ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-250 text-slate-900'
-                    }`}
-                  >
-                    {/* Header Row: Prevent Overlaps */}
-                    <div className="flex justify-between items-center gap-2 border-b pb-3 border-slate-205/40 dark:border-slate-800/40">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-mono font-bold text-xs text-blue-500 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">{task.ref}</span>
-                        <span className="font-bold text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{task.desc}</span>
+                {filteredTasks.map((task) => {
+                  const conflict = checkAssetConflict(task);
+                  return (
+                    <div 
+                      key={task.id}
+                      onClick={() => setActiveTaskModal(task.id)}
+                      className={`p-5 rounded-2xl border flex flex-col gap-4 relative shadow-sm cursor-pointer transition-transform hover:scale-[1.005] ${
+                        getRowBgColor(task, 0)
+                      }`}
+                    >
+                      {/* Header Row */}
+                      <div className="flex justify-between items-center gap-2 border-b pb-3 border-slate-200/40 dark:border-slate-800/40">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-mono font-bold text-xs text-blue-500 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">{task.ref}</span>
+                          <span className="font-bold text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{task.desc}</span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
+                          {task.qaStatus}
+                        </span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
-                        {task.qaStatus}
-                      </span>
-                    </div>
 
-                    <h4 className={`text-base font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>{task.task}</h4>
-                    
-                    {/* Touch friendly duration blocks */}
-                    <div className="flex items-center justify-between mt-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mr-2">Duration:</span>
-                        <div className={`flex items-center rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', Math.max(1, task.duration - 1)); }} 
-                            className={`p-2 transition-colors ${isDarkMode ? 'text-slate-300 hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
-                          >
-                            <Minus size={13}/>
-                          </button>
-                          <span className="font-mono font-bold text-xs px-2 text-blue-600 dark:text-blue-400">{task.duration}d</span>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', task.duration + 1); }} 
-                            className={`p-2 transition-colors ${isDarkMode ? 'text-slate-300 hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
-                          >
-                            <Plus size={13}/>
-                          </button>
+                      <h4 className={`text-base font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>{task.task}</h4>
+                      
+                      {/* Logistical conflict banner warning in mobile cards */}
+                      {conflict && (
+                        <div className="p-3 bg-amber-500/15 border border-amber-500/35 rounded-xl flex items-start gap-2 text-amber-500 animate-pulse text-[11px] font-bold">
+                          <AlertTriangle className="shrink-0 mt-0.5" size={14}/>
+                          <div>
+                            <p>⚠️ LOGISTICS CLASH: {conflict.assetName} double-booked!</p>
+                            <p className="font-normal text-[10px] mt-0.5 opacity-80">Overlaps with Task {conflict.conflictTaskRef} ({conflict.conflictTaskName})</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Display active assigned asset */}
+                      {task.assignedAsset && task.assignedAsset !== 'None' && (
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-2 rounded-xl self-start">
+                          <Truck size={13}/>
+                          <span>Active Asset: {SHARED_ASSETS.find(a => a.key === task.assignedAsset)?.label}</span>
+                        </div>
+                      )}
+
+                      {/* Touch friendly duration blocks */}
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mr-2">Duration:</span>
+                          <div className={`flex items-center rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', Math.max(1, task.duration - 1)); }} 
+                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-300 hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
+                            >
+                              <Minus size={13}/>
+                            </button>
+                            <span className="font-mono font-bold text-xs px-2 text-blue-600 dark:text-blue-400">{task.duration}d</span>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', task.duration + 1); }} 
+                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-300 hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
+                            >
+                              <Plus size={13}/>
+                            </button>
+                          </div>
+                        </div>
+
+                        <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 uppercase tracking-wider">
+                          Inspect <ChevronRight size={14}/>
+                        </span>
+                      </div>
+
+                      {/* Progress tracking bar */}
+                      <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
+                        <div className="flex justify-between text-xs font-semibold text-slate-505 dark:text-slate-300">
+                          <span>PROGRESS</span>
+                          <span>{task.progress || 0}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full" style={{width: `${task.progress || 0}%`}}></div>
                         </div>
                       </div>
 
-                      <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 uppercase tracking-wider">
-                        Inspect <ChevronRight size={14}/>
-                      </span>
-                    </div>
-
-                    {/* Progress tracking bar */}
-                    <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-                      <div className="flex justify-between text-xs font-semibold text-slate-505 dark:text-slate-300">
-                        <span>PROGRESS</span>
-                        <span>{task.progress || 0}%</span>
+                      {/* Crew parameters */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-[11px] font-semibold">
+                        <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
+                        {activeRoles.filter(r => (parseInt(task[r.key]) || 0) > 0).map(r => (
+                          <span key={r.key} className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-300">
+                            {r.icon} {r.label}:{task[r.key]}
+                          </span>
+                        ))}
                       </div>
-                      <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full" style={{width: `${task.progress || 0}%`}}></div>
+
+                      {/* Delete row block */}
+                      <div className="flex justify-end pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
+                          className="text-rose-500 hover:text-rose-600 font-bold text-xs uppercase flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition-all"
+                        >
+                          <Trash2 size={13}/> Delete Task
+                        </button>
                       </div>
                     </div>
-
-                    {/* Crew parameters */}
-                    <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-[11px] font-semibold">
-                      <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
-                      {activeRoles.filter(r => (parseInt(task[r.key]) || 0) > 0).map(r => (
-                        <span key={r.key} className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-300">
-                          {r.icon} {r.label}:{task[r.key]}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Delete row block moved strictly to bottom footer to eliminate overlaps */}
-                    <div className="flex justify-end pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
-                        className="text-rose-500 hover:text-rose-600 font-bold text-xs uppercase flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition-all"
-                      >
-                        <Trash2 size={13}/> Delete Task
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -1064,6 +1204,7 @@ export default function App() {
                   }`}>
                     <span className="w-8 sm:w-10 text-center font-semibold">Ref</span>
                     <span className="flex-grow px-2 sm:px-3 truncate font-semibold">Work Description</span>
+                    <span className="w-14 text-center shrink-0 font-semibold text-slate-400">Assets</span>
                     <span className="w-8 sm:w-12 text-center shrink-0 font-semibold text-slate-400">Days</span>
                     <span className="w-10 sm:w-16 text-center shrink-0 font-semibold text-slate-400">Progress</span>
                     <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
@@ -1072,6 +1213,7 @@ export default function App() {
                   {/* Synchronized row heights */}
                   <div className="flex-1 overflow-y-auto min-h-0">
                     {filteredTasks.map((task, index) => {
+                      const conflict = checkAssetConflict(task);
                       return (
                         <div 
                           key={task.id} 
@@ -1101,9 +1243,27 @@ export default function App() {
                               value={task.task} 
                               onChange={(e) => updateTask(task.id, 'task', e.target.value)} 
                               className={`font-semibold text-xs sm:text-sm bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${
-                                isDarkMode ? 'text-white' : 'text-slate-800'
+                                isDarkMode ? 'text-white' : 'text-slate-850'
                               }`} 
                             />
+                          </div>
+
+                          {/* Quick-assign shared tooling assets */}
+                          <div className="w-14 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
+                            <select 
+                              value={task.assignedAsset || 'None'}
+                              onChange={(e) => updateTask(task.id, 'assignedAsset', e.target.value)}
+                              className={`text-[10px] font-bold py-1.5 rounded-lg border text-center outline-none w-full ${
+                                isDarkMode 
+                                  ? 'bg-[#0f172a] border-slate-700 text-blue-400' 
+                                  : 'bg-white border-slate-300 text-blue-600'
+                              }`}
+                            >
+                              <option value="None">None</option>
+                              {SHARED_ASSETS.map(asset => (
+                                <option key={asset.key} value={asset.key}>{asset.icon} {asset.key}</option>
+                              ))}
+                            </select>
                           </div>
                           
                           <div className="w-8 sm:w-12 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
@@ -1161,6 +1321,9 @@ export default function App() {
                   }`}>
                     {headerDays.map(day => {
                       const dateStr = generateDateHeaderStr(projectStartDate, day);
+                      const dateParts = dateStr.split(' ');
+                      const monthStr = dateParts[0] || '';
+                      const dayStr = dateParts[1] || '';
                       const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
                       const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
                       return (
@@ -1169,8 +1332,8 @@ export default function App() {
                             ? `border-slate-800/60 ${isSatSun ? 'bg-slate-900/40' : ''}` 
                             : `border-slate-200/60 ${isSatSun ? 'bg-slate-200/50' : ''}`
                         }`}>
-                          <span className={`text-[10px] font-bold leading-tight ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dateStr.split(' ')[0]}</span>
-                          <span className="text-[8px] font-semibold text-slate-400 leading-tight uppercase">{dateStr.split(' ')[1]}</span>
+                          <span className={`text-[10px] font-bold leading-tight ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{monthStr}</span>
+                          <span className="text-[8px] font-semibold text-slate-400 leading-tight uppercase">{dayStr}</span>
                         </div>
                       )
                     })}
@@ -1183,30 +1346,50 @@ export default function App() {
                      {filteredTasks.map((task) => {
                         const isHold = task.qaStatus === 'HOLD';
                         const isApproved = task.qaStatus === 'APPROVED';
+                        const conflict = checkAssetConflict(task);
                         
                         return (
                           <div key={task.id} className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200/60'}`}>
+                             
+                             {/* Auto-injected Transit mobilization days shown in yellow overlay */}
+                             {task.assignedAsset && task.assignedAsset !== 'None' && (
+                               <div 
+                                 className="absolute h-5 bg-amber-500/25 border-y border-dashed border-amber-500/40 flex items-center justify-center text-[8px] font-extrabold text-amber-500 uppercase z-0 pointer-events-none"
+                                 style={{ 
+                                   left: `${(task.startDays - 1) * 44 + 2}px`, 
+                                   width: '40px',
+                                   display: task.startDays > 0 ? 'flex' : 'none'
+                                 }}
+                               >
+                                 <Truck size={10} className="mr-0.5 animate-bounce"/> Mob
+                               </div>
+                             )}
+
                              <div 
                                onClick={() => setActiveTaskModal(task.id)}
-                               className={`absolute h-[28px] rounded-lg shadow-sm transition-all flex items-center justify-between overflow-hidden text-xs font-bold border cursor-pointer hover:scale-[1.01] hover:ring-2 hover:ring-blue-500/30 print:hover:ring-0
-                                 ${isHold 
-                                   ? 'bg-rose-50 border-rose-300 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-500/40' 
-                                   : isApproved 
-                                     ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-500/40' 
-                                     : 'bg-blue-50 border-blue-300 text-blue-800 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-500/40'}`}
+                               className={`absolute h-[28px] rounded-lg shadow-sm transition-all flex items-center justify-between overflow-hidden text-xs font-bold border cursor-pointer hover:scale-[1.01] hover:ring-2 hover:ring-blue-500/30 print:hover:ring-0 z-10
+                                 ${conflict
+                                   ? 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-500/40 animate-pulse'
+                                   : isHold 
+                                     ? 'bg-rose-50 border-rose-300 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-500/40' 
+                                     : isApproved 
+                                       ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-500/40' 
+                                       : 'bg-blue-50 border-blue-300 text-blue-800 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-500/40'}`}
                                style={{ left: `${(task.startDays) * 44 + 2}px`, width: `${(task.adjustedDuration * 44) - 4}px` }}
                              >
                                <div className={`absolute top-0 left-0 h-full ${
-                                 isHold ? 'bg-rose-500/10 dark:bg-rose-500/20' : isApproved ? 'bg-emerald-500/10 dark:bg-emerald-500/20' : 'bg-blue-500/10 dark:bg-blue-500/20'
+                                 conflict ? 'bg-amber-500/20' : isHold ? 'bg-rose-500/10 dark:bg-rose-500/20' : isApproved ? 'bg-emerald-500/10 dark:bg-emerald-500/20' : 'bg-blue-500/10 dark:bg-blue-500/20'
                                }`} style={{ width: `${task.progress || 0}%` }} />
                                
                                <div className="absolute inset-0 flex justify-between items-center px-2.5 z-10 pointer-events-none">
                                  <span className="font-bold text-[10px] sm:text-[11px] truncate max-w-[85%]">
                                    <span className="opacity-75 mr-1 text-[9px] font-semibold">{task.ref}</span>
                                    {isMobileViewport ? task.task : `${task.adjustedDuration}d`}
+                                   {task.assignedAsset !== 'None' && ` (${task.assignedAsset})`}
                                  </span>
                                  
                                  <div className="flex gap-1.5 items-center">
+                                   {conflict && <span className="bg-rose-600 text-white rounded px-1 text-[8px] font-extrabold animate-bounce">CLASH</span>}
                                    <span className={`flex items-center gap-0.5 text-[8.5px] font-bold border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
                                      isDarkMode 
                                        ? 'bg-slate-900 border-slate-700 text-slate-300' 
@@ -1275,7 +1458,7 @@ export default function App() {
                 <div className={`p-5 rounded-2xl border text-center ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'}`}>
                   <ShieldCheck className="mx-auto text-emerald-500 mb-3" size={32}/>
                   <h4 className="text-sm font-bold uppercase tracking-wider">QA/QC Hold Point Inspection Register</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-300 mt-2 leading-relaxed font-normal">
+                  <p className="text-xs text-slate-505 dark:text-slate-300 mt-2 leading-relaxed font-normal">
                     Tap any site card below to inspect parameters, check checklist gates, and co-sign approvals.
                   </p>
                 </div>
@@ -1342,14 +1525,14 @@ export default function App() {
                       <div className="flex items-center gap-1.5 mt-1">
                         <button 
                           onClick={() => updateTask(currentTaskEditing.id, 'duration', Math.max(1, currentTaskEditing.duration - 1))}
-                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}
+                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                         >
                           -
                         </button>
                         <span className="font-mono text-xs font-bold text-blue-500 px-2">{currentTaskEditing.duration} Days</span>
                         <button 
                           onClick={() => updateTask(currentTaskEditing.id, 'duration', currentTaskEditing.duration + 1)}
-                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'}`}
+                          className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                         >
                           +
                         </button>
@@ -1382,6 +1565,7 @@ export default function App() {
                         onClick={() => {
                           updateTask(currentTaskEditing.id, 'qaStatus', card.status);
                           showToast(`Task status updated to ${card.status}`);
+                          addNotification(`Task ${currentTaskEditing.ref} changed to ${card.status}`, card.status === 'APPROVED' ? 'success' : card.status === 'HOLD' ? 'alert' : 'info');
                         }}
                         className={`p-2.5 sm:p-3 rounded-2xl border text-center cursor-pointer transition-all ${
                           currentTaskEditing.qaStatus === card.status
@@ -1393,6 +1577,32 @@ export default function App() {
                         <span className="block text-[7.5px] sm:text-[8.5px] opacity-75 mt-0.5 leading-none font-normal">{card.desc}</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Logistics Asset Assignment dropdown inside field inspector */}
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Shared Asset Allocation</h4>
+                  <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row items-center justify-between gap-3`}>
+                    <div className="flex items-center gap-2">
+                      <Truck className="text-blue-500" size={18}/>
+                      <div className="text-left">
+                        <p className="text-xs font-bold">Assign Equipment/Specialized Tooling</p>
+                        <p className="text-[10px] text-slate-400 font-normal">System verifies global cross-project availability automatically.</p>
+                      </div>
+                    </div>
+                    <select 
+                      value={currentTaskEditing.assignedAsset || 'None'}
+                      onChange={(e) => updateTask(currentTaskEditing.id, 'assignedAsset', e.target.value)}
+                      className={`px-3 py-2 rounded-xl border text-xs font-bold outline-none cursor-pointer ${
+                        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-350 text-slate-800'
+                      }`}
+                    >
+                      <option value="None">None (Manual Crew Labor Only)</option>
+                      {SHARED_ASSETS.map(asset => (
+                        <option key={asset.key} value={asset.key}>{asset.icon} {asset.label} ({asset.type})</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -1489,7 +1699,7 @@ export default function App() {
                           onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
                           placeholder={`Enter name for ${r.fullName} #${i+1}...`}
                           className={`px-3 py-2 border rounded-xl text-xs font-semibold w-full outline-none ${
-                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-850 placeholder-slate-400'
+                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-855 placeholder-slate-400'
                           }`}
                         />
                       );
@@ -1613,8 +1823,8 @@ export default function App() {
 
               {onboardingStep === 2 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Hold Point Clearance Controls</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-normal">QA/QC hold points are built right into the schedule logic. When a task requires an inspection, click on its row or card to access the Inspector Sign-off Checklist.</p>
+                  <h3 className="text-sm sm:text-base font-bold">Hold Point & Shared Asset Protection</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-normal">QA/QC hold points are built right into the schedule logic. When a task requires an inspection, click on its row or card to access the Inspector Sign-off Checklist. Also, you can allocate heavy tools (PC135) with conflict warnings.</p>
                   <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-2xl border border-emerald-500/20">
                     <p className="text-[11px] font-semibold">🛑 Safeguard: Concrete pouring and commissioning processes are physically locked on the timeline until prerequisites are APPROVED.</p>
                   </div>
