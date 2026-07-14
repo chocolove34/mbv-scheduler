@@ -1719,24 +1719,32 @@ export default function App() {
                   </div>
                   
                   {/* RIGHT SCROLL TIMELINE CONTAINER: Fixed to scroll vertically in sync with task list. Confines elements so they cannot slide over other compartments (Fix for image_7a9306.png) */}
+            <div 
+              ref={rightScrollRef}
+              onScroll={handleRightScroll}
+              className={`flex-grow relative transition-all duration-200 overflow-y-auto overflow-x-hidden scrollbar-none ${
+                isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
+              }`}
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                width: `${headerDays.length * 44}px`
+              }}
+            >
+              {filteredTasks.map((task, index) => {
+                const isHold = task.qaStatus === 'HOLD';
+                const isApproved = task.qaStatus === 'APPROVED';
+                const conflict = checkAssetConflict(task);
+                const assetObj = customAssets.find(a => a.key === task.assignedAsset);
+                
+                return (
                   <div 
-                    ref={rightScrollRef}
-                    onScroll={handleRightScroll}
-                    className={`flex-grow min-w-max relative transition-all duration-200 overflow-y-auto overflow-x-hidden scrollbar-none ${
-                      isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
-                    }`}
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    key={task.id} 
+                    className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200/60'}`}
+                    style={{ width: `${headerDays.length * 44}px` }}
                   >
-                     {filteredTasks.map((task) => {
-                        const isHold = task.qaStatus === 'HOLD';
-                        const isApproved = task.qaStatus === 'APPROVED';
-                        const conflict = checkAssetConflict(task);
-                        const assetObj = customAssets.find(a => a.key === task.assignedAsset);
-                        
-                        return (
-                          <div key={task.id} className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200/60'}`}>
-                             
-                             {task.assignedAsset && task.assignedAsset !== 'None' && (
+                     
+                     {task.assignedAsset && task.assignedAsset !== 'None' && (
                                <div 
                                  className="absolute h-5 bg-amber-500/25 border-y border-dashed border-amber-500/40 flex items-center justify-center text-[8px] font-extrabold text-amber-500 uppercase z-0 pointer-events-none"
                                  style={{ 
