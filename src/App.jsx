@@ -6,12 +6,12 @@ import {
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
-  Menu, MessageSquareShare
+  Menu, MessageSquareShare, Volume2, VolumeX, Sparkles
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, query, limit } from 'firebase/firestore';
 
 let firebaseConfig = {
   apiKey: "",
@@ -23,7 +23,6 @@ let firebaseConfig = {
 };
 
 try {
-  // Use global provided config if available, fallback to empty/offline mode
   if (typeof __firebase_config !== 'undefined') {
       firebaseConfig = JSON.parse(__firebase_config);
   } else {
@@ -37,7 +36,7 @@ try {
       };
   }
 } catch (e) {
-  // Silent fallback for standalone sandbox compiler environments
+  // Silent fallback for sandbox compile environments
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -109,7 +108,6 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading');
   
-  // Responsive displays
   const [mobileDisplayTab, setMobileDisplayTab] = useState('tasks'); 
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
@@ -121,6 +119,10 @@ export default function App() {
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [activeVisualNotification, setActiveVisualNotification] = useState(null);
+  const sessionStartTimeRef = useRef(Date.now());
+
   // Notifications/Simulated Push Log
   const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
   const [notifications, setNotifications] = useState([
@@ -130,7 +132,6 @@ export default function App() {
     { id: 4, type: 'success', text: 'Engr. Ana Approved Pre-Construction coordinates for T1.', time: '1h ago' }
   ]);
 
-  // Dark/Light State Control
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('mbv_dark_mode') !== 'false';
   });
@@ -170,7 +171,6 @@ export default function App() {
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
 
-  // Moved utility functions inside the component to prevent Fast Refresh reference errors
   const generateDateHeaderStr = (startDateStr, dayOffset) => {
     const d = new Date(startDateStr);
     d.setDate(d.getDate() + dayOffset);
@@ -201,7 +201,7 @@ export default function App() {
 
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
-      showToast("Browser does not support notifications");
+      showToast("Browser does not support desktop notifications");
       return false;
     }
     if (Notification.permission === 'granted') return true;
@@ -214,52 +214,106 @@ export default function App() {
     return false;
   };
 
-  // Send a simulated push notification
-  const addNotification = (text, type = 'info') => {
-    const newAlert = {
+  const playAlertSound = useCallback(() => {
+    if (!soundEnabled) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      const now = ctx.currentTime;
+      // High-quality double chime oscillator synthesis
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gainNode1 = ctx.createGain();
+      const gainNode2 = ctx.createGain();
+      
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now); // D5
+      osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.12); // A5
+      gainNode1.gain.setValueAtTime(0.12, now);
+      gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      
+      osc1.connect(gainNode1);
+      gainNode1.connect(ctx.destination);
+      
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(440.00, now + 0.08); // A4
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.22); // D6
+      gainNode2.gain.setValueAtTime(0.08, now + 0.08);
+      gainNode2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      
+      osc2.connect(gainNode2);
+      gainNode2.connect(ctx.destination);
+      
+      osc1.start(now);
+      osc2.start(now + 0.08);
+      
+      osc1.stop(now + 0.55);
+      osc2.stop(now + 0.65);
+    } catch (e) {
+      console.warn("Synth audio feedback blocked by user interaction gesture rule:", e);
+    }
+  }, [soundEnabled]);
+
+  const logActivityToCloud = async (text, type = 'info') => {
+    const alertBody = {
+      text,
+      type,
+      timestamp: Date.now(),
+      projectTitle: appTitle,
+      projectId: activeProjectId,
+      userId: auth?.currentUser?.uid || 'anonymous'
+    };
+
+    // Keep client-side list synchronized
+    const clientAlert = {
       id: Date.now(),
       type,
-      text,
+      text: `[${appTitle}] ${text}`,
       time: 'Just now'
     };
-    setNotifications(prev => [newAlert, ...prev]);
+    setNotifications(prev => [clientAlert, ...prev]);
 
-    // Native notification if permitted
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Site Update', { body: text });
-    }
-  };
-
-  const shareToGroupChat = async () => {
-    const holds = tasks.filter(t => t.qaStatus === 'HOLD');
-    const completed = Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / (tasks.length || 1));
-    
-    let text = `🚧 *Site Update: ${appTitle}* 🚧\n`;
-    text += `Overall Progress: ${completed}%\n`;
-    
-    if (holds.length > 0) {
-      text += `\n⚠️ *Current QA Holds (${holds.length}):*\n`;
-      holds.forEach(h => text += `- [${h.ref}] ${h.task}\n`);
-    } else {
-      text += `\n✅ No active holds.\n`;
-    }
-    text += `\nLink: ${window.location.href}`;
-
-    if (navigator.share && isMobileViewport) {
+    if (db) {
       try {
-        await navigator.share({
-          title: 'Site Operations Update',
-          text: text
-        });
-        addNotification("Update sent to Group Chat successfully.", "success");
+        // Log to Firestore shared public activity node (Rule 1: Strict paths)
+        const activityRef = collection(db, 'artifacts', appId, 'public', 'data', 'activity_log');
+        await addDoc(activityRef, alertBody);
       } catch (err) {
-        console.log("Share cancelled or failed", err);
+        console.warn("Unable to sync activity record globally:", err);
       }
-    } else {
-      copyToClipboard(text);
-      showToast("Update copied to clipboard! Ready to paste into GC.");
     }
   };
+
+  const broadcastSignificantNotification = useCallback((message, type = 'info') => {
+    // 1. Play offline audio chime
+    playAlertSound();
+
+    // 2. Render dynamic slide-down Dynamic Island warning banner
+    setActiveVisualNotification({
+      id: Date.now(),
+      message,
+      type
+    });
+
+    // Auto dismiss after 6 seconds
+    setTimeout(() => {
+      setActiveVisualNotification(null);
+    }, 6000);
+
+    // 3. Fallback native notification if authorized
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(`Site Alert: ${appTitle}`, {
+          body: message,
+          icon: '/favicon.ico'
+        });
+      } catch (e) {
+        console.warn("Native Notification blocked in iframe container framework.");
+      }
+    }
+  }, [appTitle, playAlertSound]);
 
   useEffect(() => {
     localStorage.setItem('mbv_dark_mode', isDarkMode);
@@ -320,23 +374,53 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const activeRouteParam = urlParams.get('project');
+    if (!db || !user || !activeProjectId) return;
 
-    const localSchedules = localStorage.getItem('mbv_cloud_registry');
-    let loadedRegistry = localSchedules ? JSON.parse(localSchedules) : [];
-
-    if (activeRouteParam) {
-      fetchSiteSchedule(activeRouteParam, loadedRegistry);
-    } else {
-      const hasVisited = localStorage.getItem('mbv_has_visited');
-      if (!hasVisited) {
-        setShowOnboarding(true);
-        localStorage.setItem('mbv_has_visited', 'true');
+    // Real-time listener for current active project schedule (Rule 1 and Rule 2)
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
+    const unsubscribeProject = onSnapshot(docRef, (snap) => {
+      if (snap.exists()) {
+        const payload = snap.data();
+        setTasks(payload.tasks || INITIAL_TASKS);
+        setAppTitle(payload.appTitle || "Project Schedule");
+        setAppSubtitle(payload.appSubtitle || "");
+        setProjectStartDate(payload.projectStartDate || new Date().toISOString().split('T')[0]);
+        setDocMetadata(payload.docMetadata || {});
+        setLogos(payload.logos || { left: '', right: '' });
       }
-      setView('editor');
-    }
-  }, [user]);
+    }, (error) => {
+      console.warn("Firestore schedule listener blocked/error: ", error);
+    });
+
+    return () => unsubscribeProject();
+  }, [user, activeProjectId]);
+
+  useEffect(() => {
+    if (!db || !user) return;
+
+    // Real-time listener for global multi-project activities (Rule 1 & Rule 2 compliant)
+    const activityRef = collection(db, 'artifacts', appId, 'public', 'data', 'activity_log');
+    
+    const unsubscribeActivity = onSnapshot(activityRef, (snap) => {
+      snap.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const alertData = change.data();
+          // Filter out log events generated prior to this specific device session startup
+          if (alertData.timestamp > sessionStartTimeRef.current) {
+            // Do not fire alert if triggered by current client device session to avoid duplicate toasts
+            if (alertData.userId !== auth.currentUser?.uid) {
+              const textMessage = `[${alertData.projectTitle}] ${alertData.text}`;
+              broadcastSignificantNotification(textMessage, alertData.type);
+            }
+          }
+        }
+      });
+    }, (error) => {
+      console.warn("Global activity log stream blocked: ", error);
+    });
+
+    return () => unsubscribeActivity();
+  }, [user, broadcastSignificantNotification]);
 
   const fetchSiteSchedule = async (id, fallbackRegistry) => {
     if (!db) {
@@ -415,7 +499,8 @@ export default function App() {
     setShowCreateProjectModal(false);
     setNewProjectName('');
     showToast(`"${newProjectName}" initialized!`);
-    addNotification(`Created new sub-project space: ${newProjectName}`, 'success');
+    
+    logActivityToCloud(`Created and initialized sub-project workspace`, 'success');
   };
 
   const handleSwitchProject = (id) => {
@@ -434,7 +519,7 @@ export default function App() {
     const url = new URL(window.location.href);
     url.searchParams.set('project', id);
     window.history.replaceState({}, document.title, url.toString());
-    addNotification(`Switched active timeline context to: ${matchingProject.title}`, 'info');
+    logActivityToCloud(`Switched operational view context to: ${matchingProject.title}`, 'info');
   };
 
   const handleDeleteProject = (id) => {
@@ -484,7 +569,7 @@ export default function App() {
       copyToClipboard(url.toString());
 
       showToast("Sync Successful! URL copied to clipboard.");
-      addNotification("Global Mother Link cloud database successfully updated.", "success");
+      logActivityToCloud(`Global database synced successfully`, 'success');
     } catch (e) {
       console.error(e);
       showToast("Error synchronizing project data to cloud.");
@@ -512,7 +597,6 @@ export default function App() {
     return 1.0;
   };
 
-  // Algorithmic flow of the schedule with weather modifiers
   const flowSchedule = useCallback(() => {
     let currentStartDay = 0;
     const multiplier = fetchWeatherDelayMultiplier();
@@ -557,12 +641,11 @@ export default function App() {
   const updateTask = (id, field, value) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
     
-    // Auto trigger logistical alerts if we modified dates of an asset-bound task
     if (field === 'duration' || field === 'assignedAsset') {
       const match = tasks.find(t => t.id === id);
       if (match && value !== 'None') {
         const assetName = SHARED_ASSETS.find(a => a.key === value || a.key === match.assignedAsset)?.label || 'Asset';
-        addNotification(`Updated scheduling parameter for task using: ${assetName}`, 'warning');
+        logActivityToCloud(`Allocated shared logistical asset: ${assetName} to ${match.task}`, 'warning');
       }
     }
   };
@@ -606,12 +689,16 @@ export default function App() {
       assignedAsset: 'None'
     }]);
     showToast("New schedule row added.");
-    addNotification("Added new task sequence parameter.", "info");
+    logActivityToCloud("Added a new sequence timeline parameter.", "info");
   };
 
   const triggerTaskRemove = (id) => {
+    const matched = tasks.find(t => t.id === id);
     setTasks(tasks.filter(t => t.id !== id));
     showToast("Schedule row removed.");
+    if (matched) {
+      logActivityToCloud(`Deleted timeline sequence row: ${matched.task}`, 'alert');
+    }
   };
 
   const toggleChecklistItem = (taskId, itemName) => {
@@ -621,7 +708,7 @@ export default function App() {
         currentChecklist[itemName] = !currentChecklist[itemName];
         
         const stateStr = currentChecklist[itemName] ? "APPROVED" : "PENDING";
-        addNotification(`Sign-off milestone "${itemName}" marked as ${stateStr}.`, 'success');
+        logActivityToCloud(`Checklist: "${itemName}" marked as ${stateStr}`, 'success');
         
         return { ...t, checklist: currentChecklist };
       }
@@ -641,7 +728,6 @@ export default function App() {
     }));
   };
 
-  // Cross-Reference Overlap Logic for Tooling Assets
   const checkAssetConflict = (taskToCheck) => {
     if (!taskToCheck.assignedAsset || taskToCheck.assignedAsset === 'None') return null;
 
@@ -649,7 +735,6 @@ export default function App() {
     for (let otherTask of activeFlowTasks) {
       if (otherTask.id === taskToCheck.id) continue;
       if (otherTask.assignedAsset === taskToCheck.assignedAsset) {
-        // Test overlapping interval: (StartA <= EndB) and (EndA >= StartB)
         const startA = taskToCheck.startDays;
         const endA = taskToCheck.startDays + taskToCheck.adjustedDuration;
         const startB = otherTask.startDays;
@@ -713,15 +798,14 @@ export default function App() {
     return (
       <div className="h-screen w-screen bg-[#0b0f19] flex flex-col items-center justify-center gap-4">
         <Loader2 className="animate-spin text-blue-500 h-10 w-10"/>
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Accessing Citicore Mother DB...</span>
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center">Syncing Citicore Mother DB...</span>
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50/60 text-slate-855'}`}>
+    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19]' : 'bg-slate-50/60 text-slate-800'}`}>
       
-      {/* High-visibility contrast overrides and custom font adjustments */}
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
@@ -756,7 +840,27 @@ export default function App() {
         }
       `}} />
 
-      {/* Floating active feedback toast container */}
+      {}
+      {activeVisualNotification && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-sm sm:max-w-md px-4 z-50 animate-in slide-in-from-top-4 duration-300">
+          <div className="bg-slate-900/95 text-white border border-blue-500/50 backdrop-blur-md rounded-2xl shadow-2xl p-4 flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-blue-600/20 text-blue-400 shrink-0">
+              <Sparkles size={18} className="animate-pulse"/>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center justify-between">
+                <span>Significant Event</span>
+                <span className="text-[10px] text-slate-500 normal-case font-normal">Just now</span>
+              </h4>
+              <p className="text-xs text-slate-200 mt-1 font-medium leading-relaxed">{activeVisualNotification.message}</p>
+            </div>
+            <button onClick={() => setActiveVisualNotification(null)} className="text-slate-500 hover:text-white p-1 rounded">
+              <X size={14}/>
+            </button>
+          </div>
+        </div>
+      )}
+
       {toastMessage && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 bg-slate-900/95 text-white border border-slate-750 px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 backdrop-blur-md transition-all animate-bounce print:hidden">
           <CheckCircle2 className="text-emerald-400" size={16}/>
@@ -764,7 +868,6 @@ export default function App() {
         </div>
       )}
 
-      {/* RESPONSIVE HEADER BAR */}
       <header className={`border-b flex flex-col z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
         
         {/* Top Row: Title, Hamburger, Notifications */}
@@ -857,10 +960,23 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0">
-            {/* Share to GC Button (Mobile & Desktop) */}
+            {/* Audio Toggle control feedback button */}
+            <button 
+              onClick={() => {
+                setSoundEnabled(!soundEnabled);
+                showToast(soundEnabled ? "Audio chime alerts muted" : "Audio chime alerts enabled 🔊");
+              }} 
+              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-500' : 'text-slate-500'}`} 
+              title={soundEnabled ? "Mute audio alerts" : "Unmute audio alerts"}
+            >
+              {soundEnabled ? <Volume2 size={16}/> : <VolumeX size={16}/>}
+            </button>
+
+            {/* Share to GC Button */}
             <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'}`} title="Share to GC">
               <MessageSquareShare size={16}/>
             </button>
+
             <button onClick={async () => {
               await requestNotificationPermission();
               setIsNotificationPaneOpen(!isNotificationPaneOpen);
@@ -876,7 +992,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Action Controls Segment (Collapsible on Mobile) */}
         <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row flex-wrap items-stretch lg:items-center gap-3 px-4 pb-4 lg:py-3 lg:px-4 border-t lg:border-t-0 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
@@ -918,7 +1033,7 @@ export default function App() {
                 onChange={(e) => {
                   setWeatherFactor(e.target.value);
                   showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
-                  addNotification(`Weather mode shifted to ${e.target.value.toUpperCase()}. Timelines recalculated.`, 'warning');
+                  logActivityToCloud(`Weather shift triggered: ${e.target.value.toUpperCase()}. Recalculating timeline.`, 'warning');
                 }} 
                 className={`text-xs w-full text-center font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-slate-900 [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
               >
@@ -975,7 +1090,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* MOBILE SWITCHER CONTROLS */}
       {isMobileViewport && (
         <div className={`flex border-b text-xs font-semibold uppercase tracking-wider shrink-0 print:hidden ${
           isDarkMode ? 'bg-[#131c2e] border-slate-850' : 'bg-white border-slate-250'
@@ -1013,34 +1127,8 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CANVAS */}
-      <main className="flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0 relative">
-        
-        {/* SIMULATED PUSH NOTIFICATIONS BAR */}
-        {isNotificationPaneOpen && (
-          <div className={`absolute right-4 top-4 w-80 rounded-2xl shadow-2xl border p-4 z-45 animate-in slide-in-from-right duration-250 ${
-            isDarkMode ? 'bg-[#131c2e]/95 border-slate-700 text-slate-200' : 'bg-white/95 border-slate-300 text-slate-800'
-          } backdrop-blur-md`}>
-            <div className="flex justify-between items-center border-b pb-2 mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"><Bell size={14}/> Live Operational Feed</span>
-              <button onClick={() => setIsNotificationPaneOpen(false)} className="text-slate-400 hover:text-slate-200"><X size={14}/></button>
-            </div>
-            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-              {notifications.map((notif) => (
-                <div key={notif.id} className={`p-2.5 rounded-xl border text-[11px] font-medium leading-relaxed ${
-                  notif.type === 'alert' ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' :
-                  notif.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' :
-                  notif.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' :
-                  'bg-blue-500/10 border-blue-500/20 text-blue-300'
-                }`}>
-                  <p>{notif.text}</p>
-                  <span className="text-[9px] text-slate-400 block mt-1">{notif.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+      {/* Main layout wrapper containing concrete background attributes to block external page leaks */}
+      <main className={`flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0 relative ${isDarkMode ? 'bg-[#0b0f19]' : 'bg-slate-50'}`}>
         <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
           {/* COLLAPSIBLE SPECS CARD */}
@@ -1118,7 +1206,7 @@ export default function App() {
               />
             </div>
             
-            {/* Status filtering pill buttons - Now horizontally scrollable on mobile */}
+            {/* Status filtering pill buttons */}
             <div className="flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0 gap-1.5 shrink-0 justify-start md:justify-end scrollbar-none" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
               {['ALL', 'PENDING', 'HOLD', 'APPROVED'].map((tag) => (
                 <button
@@ -1273,7 +1361,7 @@ export default function App() {
                   </div>
 
                   {/* Synchronized row heights */}
-                  <div className="flex-1 overflow-y-auto min-h-0">
+                  <div className="flex-grow overflow-y-auto min-h-0">
                     {filteredTasks.map((task, index) => {
                       const conflict = checkAssetConflict(task);
                       return (
@@ -1375,7 +1463,7 @@ export default function App() {
                 </div>
 
                 {/* Gantt Calendar View */}
-                <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-thin">
+                <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-none">
                   
                   {/* Header Scale Dates */}
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
@@ -1475,7 +1563,7 @@ export default function App() {
                   </div>
                   
                   {/* Daily Load Workforce Chart */}
-                  <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
+                  <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-slate-300'
                   }`}>
                     <div className={`absolute left-3 top-2 sm:top-3 z-30 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2 py-1 rounded shadow border ${
@@ -1488,7 +1576,7 @@ export default function App() {
                         if (day >= task.startDays && day < task.startDays + task.adjustedDuration) return sum + task.totalManpower;
                         return sum;
                       }, 0);
-                      const heightPercentage = maxManpowerVal > 0 ? (dayManpower / maxManpowerVal) * 100 : 0;
+                      const heightPercentage = maxManpowerVal > 0 ? (dayManpower / maxManpowerVal) * 105 : 0;
                       return (
                         <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2 relative group ${
                           isDarkMode ? 'border-slate-800/60' : 'border-slate-200'
@@ -1499,7 +1587,7 @@ export default function App() {
                                 ? 'bg-rose-500/40 hover:bg-rose-500/65' 
                                 : (isDarkMode ? 'bg-indigo-950/70 hover:bg-indigo-900' : 'bg-indigo-200 hover:bg-indigo-300')
                             }`} 
-                            style={{ height: `${heightPercentage * 0.6}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} 
+                            style={{ height: `${heightPercentage * 0.55}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} 
                           />
                           <span className={`text-[9.5px] font-mono font-bold mt-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
                         </div>
@@ -1586,14 +1674,22 @@ export default function App() {
                       <span className="text-[9px] font-semibold text-slate-500">DURATION (BASE DAYS)</span>
                       <div className="flex items-center gap-1.5 mt-1">
                         <button 
-                          onClick={() => updateTask(currentTaskEditing.id, 'duration', Math.max(1, currentTaskEditing.duration - 1))}
+                          onClick={() => {
+                            const val = Math.max(1, currentTaskEditing.duration - 1);
+                            updateTask(currentTaskEditing.id, 'duration', val);
+                            logActivityToCloud(`Adjusted task "${currentTaskEditing.task}" duration to ${val} days`, 'info');
+                          }}
                           className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                         >
                           -
                         </button>
                         <span className="font-mono text-xs font-bold text-blue-500 px-2">{currentTaskEditing.duration} Days</span>
                         <button 
-                          onClick={() => updateTask(currentTaskEditing.id, 'duration', currentTaskEditing.duration + 1)}
+                          onClick={() => {
+                            const val = currentTaskEditing.duration + 1;
+                            updateTask(currentTaskEditing.id, 'duration', val);
+                            logActivityToCloud(`Adjusted task "${currentTaskEditing.task}" duration to ${val} days`, 'info');
+                          }}
                           className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                         >
                           +
@@ -1606,7 +1702,13 @@ export default function App() {
                       <input 
                         type="range" min="0" max="100" 
                         value={currentTaskEditing.progress || 0}
-                        onChange={(e) => updateTask(currentTaskEditing.id, 'progress', parseInt(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          updateTask(currentTaskEditing.id, 'progress', val);
+                          if (val === 100) {
+                            logActivityToCloud(`Task sequence: "${currentTaskEditing.task}" fully COMPLETED!`, 'success');
+                          }
+                        }}
                         className="mt-3.5 w-full cursor-pointer accent-blue-500 text-blue-500 bg-slate-350 dark:bg-slate-800"
                       />
                     </div>
@@ -1627,7 +1729,7 @@ export default function App() {
                         onClick={() => {
                           updateTask(currentTaskEditing.id, 'qaStatus', card.status);
                           showToast(`Task status updated to ${card.status}`);
-                          addNotification(`Task ${currentTaskEditing.ref} changed to ${card.status}`, card.status === 'APPROVED' ? 'success' : card.status === 'HOLD' ? 'alert' : 'info');
+                          logActivityToCloud(`Inspection status for task "${currentTaskEditing.task}" changed to ${card.status}`, card.status === 'APPROVED' ? 'success' : card.status === 'HOLD' ? 'alert' : 'info');
                         }}
                         className={`p-2.5 sm:p-3 rounded-2xl border text-center cursor-pointer transition-all ${
                           currentTaskEditing.qaStatus === card.status
@@ -1817,6 +1919,63 @@ export default function App() {
         </div>
       )}
 
+      {}
+      {isNotificationPaneOpen && (
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 flex justify-end print:hidden">
+          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-250 text-slate-850'}`}>
+            <div className="space-y-4 overflow-y-auto">
+              <div className="flex justify-between items-center border-b pb-3">
+                <div className="flex items-center gap-2">
+                  <Bell className="text-blue-500" size={18}/>
+                  <h3 className="text-sm font-bold uppercase tracking-wider">Site Activity Stream</h3>
+                </div>
+                <button onClick={() => setIsNotificationPaneOpen(false)} className="p-1 rounded-md hover:bg-slate-800">
+                  <X size={16}/>
+                </button>
+              </div>
+
+              {/* Developer Test Trigger buttons to verify mobile notification */}
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
+                <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block">Notification Testbed</span>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-normal">Tap to trigger simulated cross-device notifications on your phone or laptop immediately.</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => {
+                      logActivityToCloud("QA/QC clearance required for Quezon Transformer Alignment.", "alert");
+                      broadcastSignificantNotification("QA/QC Alert: Clearance required for Quezon Transformer Alignment.", "alert");
+                    }}
+                    className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[9px] uppercase py-1.5 px-2 rounded-lg transition-colors"
+                  >
+                    Hold Alarm
+                  </button>
+                  <button 
+                    onClick={() => {
+                      logActivityToCloud("Potholing works successfully completed by Subcon.", "success");
+                      broadcastSignificantNotification("Success: Potholing works successfully completed by Subcon.", "success");
+                    }}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[9px] uppercase py-1.5 px-2 rounded-lg transition-colors"
+                  >
+                    Success Chime
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                {notifications.map((notif) => (
+                  <div key={notif.id} className={`p-3 rounded-xl border text-xs ${notif.type === 'alert' ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' : notif.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : notif.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : (isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700')}`}>
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold block flex-1">{notif.text}</span>
+                      <span className="text-[9px] text-slate-500 font-mono ml-2 shrink-0">{notif.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button onClick={() => setIsNotificationPaneOpen(false)} className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider mt-4">Close Stream</button>
+          </div>
+        </div>
+      )}
+
       {/* CREATE NEW PROJECT MODAL */}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1906,7 +2065,7 @@ export default function App() {
               <div className="flex justify-between items-center border-t mt-6 pt-4">
                 <button 
                   onClick={() => setShowOnboarding(false)} 
-                  className="text-xs font-semibold text-slate-500 uppercase hover:text-slate-300"
+                  className="text-xs font-semibold text-slate-505 uppercase hover:text-slate-300"
                 >
                   Skip Guide
                 </button>
