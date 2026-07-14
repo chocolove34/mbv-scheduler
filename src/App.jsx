@@ -6,7 +6,8 @@ import {
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
-  Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer
+  Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer,
+  SlidersHorizontal, EyeOff
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -145,7 +146,9 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading');
   
-  const [mobileDisplayTab, setMobileDisplayTab] = useState('tasks'); 
+  const [activePerspective, setActivePerspective] = useState('gantt'); // 'gantt' | 'weekly' | 'qa' | 'logistics'
+  const [isGanttSidebarVisible, setIsGanttSidebarVisible] = useState(true);
+  const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
@@ -243,59 +246,77 @@ export default function App() {
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
 
   useEffect(() => {
-    if (!db || !user || projectList.length === 0) return;
-
     const pullGlobalDatabaseForecasts = async () => {
       setIsForecastLoading(true);
       try {
         const pooledForecasts = [];
-        for (const proj of projectList) {
-          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', proj.id);
-          const snap = await getDoc(docRef);
-          
-          let projTasks = [];
-          let projStart = new Date().toISOString().split('T')[0];
-          let projName = proj.title;
-          let factor = 'sunny';
+        
+        // Always populate with current active schedule first for immediate visibility
+        let activeRunningDays = 0;
+        const currentMultiplier = weatherFactor === "heavy_rain" ? 1.35 : (weatherFactor === "typhoon" ? 1.8 : 1.0);
+        const mappedActiveTasks = tasks.map(task => {
+          const duration = Math.max(1, Math.round(task.duration * currentMultiplier));
+          const startOffset = activeRunningDays;
+          activeRunningDays += duration;
 
-          if (snap.exists()) {
-            const data = snap.data();
-            projTasks = data.tasks || [];
-            projStart = data.projectStartDate || projStart;
-            projName = data.appTitle || projName;
-            factor = data.weatherFactor || 'sunny';
-          } else if (proj.id === 'master-schedule') {
-            projTasks = INITIAL_TASKS;
-            projStart = projectStartDate;
-            projName = appTitle;
-            factor = weatherFactor;
+          const startCal = new Date(projectStartDate);
+          startCal.setDate(startCal.getDate() + startOffset);
+
+          const endCal = new Date(startCal);
+          endCal.setDate(endCal.getDate() + duration);
+
+          return {
+            ...task,
+            parentProjectName: appTitle,
+            parentProjectId: activeProjectId,
+            absoluteStartDate: startCal,
+            absoluteEndDate: endCal,
+            calculatedDuration: duration
+          };
+        });
+        pooledForecasts.push(...mappedActiveTasks);
+
+        // Fetch sibling projects if DB is available
+        if (db && user && projectList.length > 1) {
+          for (const proj of projectList) {
+            if (proj.id === activeProjectId) continue; // Skip active as it's already added
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', proj.id);
+            const snap = await getDoc(docRef);
+            
+            if (snap.exists()) {
+              const data = snap.data();
+              const projTasks = data.tasks || [];
+              const projStart = data.projectStartDate || new Date().toISOString().split('T')[0];
+              const projName = data.appTitle || proj.title;
+              const factor = data.weatherFactor || 'sunny';
+
+              let runningDays = 0;
+              const weatherMultiplier = factor === "heavy_rain" ? 1.35 : (factor === "typhoon" ? 1.8 : 1.0);
+
+              const mapped = projTasks.map(task => {
+                const duration = Math.max(1, Math.round(task.duration * weatherMultiplier));
+                const startOffset = runningDays;
+                runningDays += duration;
+
+                const startCal = new Date(projStart);
+                startCal.setDate(startCal.getDate() + startOffset);
+
+                const endCal = new Date(startCal);
+                endCal.setDate(endCal.getDate() + duration);
+
+                return {
+                  ...task,
+                  parentProjectName: projName,
+                  parentProjectId: proj.id,
+                  absoluteStartDate: startCal,
+                  absoluteEndDate: endCal,
+                  calculatedDuration: duration
+                };
+              });
+
+              pooledForecasts.push(...mapped);
+            }
           }
-
-          let runningDays = 0;
-          const weatherMultiplier = factor === "heavy_rain" ? 1.35 : (factor === "typhoon" ? 1.8 : 1.0);
-
-          const mapped = projTasks.map(task => {
-            const duration = Math.max(1, Math.round(task.duration * weatherMultiplier));
-            const startOffset = runningDays;
-            runningDays += duration;
-
-            const startCal = new Date(projStart);
-            startCal.setDate(startCal.getDate() + startOffset);
-
-            const endCal = new Date(startCal);
-            endCal.setDate(endCal.getDate() + duration);
-
-            return {
-              ...task,
-              parentProjectName: projName,
-              parentProjectId: proj.id,
-              absoluteStartDate: startCal,
-              absoluteEndDate: endCal,
-              calculatedDuration: duration
-            };
-          });
-
-          pooledForecasts.push(...mapped);
         }
         setAllProjectsTasks(pooledForecasts);
       } catch (err) {
@@ -306,7 +327,7 @@ export default function App() {
     };
 
     pullGlobalDatabaseForecasts();
-  }, [user, projectList, tasks, weatherFactor, projectStartDate]);
+  }, [user, projectList, tasks, weatherFactor, projectStartDate, appTitle, activeProjectId]);
 
   const generateDateHeaderStr = (startDateStr, dayOffset) => {
     const d = new Date(startDateStr);
@@ -428,7 +449,6 @@ export default function App() {
       type
     });
     
-    // Add directly to in-app stream so it always registers
     setNotifications(prev => [
       { id: Date.now(), type, text: message, time: 'Just now' },
       ...prev
@@ -756,7 +776,6 @@ export default function App() {
     const updatedAssetsList = [...customAssets, newlyCreated];
     setCustomAssets(updatedAssetsList);
 
-    // Dynamic instant save to keep phone & tablet users synced automatically
     if (db && user) {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
       setDoc(docRef, {
@@ -768,7 +787,6 @@ export default function App() {
     logActivityToCloud(`Added new custom logistical equipment: ${newAssetName} (${normalizedCode})`, 'success');
     showToast(`Registered Custom Asset: ${normalizedCode}`);
     
-    // Clear fields
     setNewAssetCode('');
     setNewAssetName('');
     setNewAssetMobDays(1);
@@ -1027,14 +1045,14 @@ export default function App() {
     const hasConflict = checkAssetConflict(task);
     
     if (isDarkMode) {
-      if (hasConflict) return 'bg-amber-950/20 border-amber-500/30 hover:bg-amber-950/30';
-      if (isHold) return 'bg-rose-950/20 border-rose-900/40 hover:bg-rose-950/30';
-      if (isApproved) return 'bg-emerald-950/20 border-emerald-900/40 hover:bg-emerald-950/30';
-      return index % 2 === 0 ? 'bg-[#0f172a] border-slate-800/40 hover:bg-slate-800/30' : 'bg-[#0b0f19] border-slate-800/40 hover:bg-slate-800/20';
+      if (hasConflict) return 'bg-amber-950/25 border-amber-500/20 hover:bg-amber-950/35';
+      if (isHold) return 'bg-rose-950/20 border-rose-900/30 hover:bg-rose-950/30';
+      if (isApproved) return 'bg-emerald-950/15 border-emerald-900/30 hover:bg-emerald-950/25';
+      return index % 2 === 0 ? 'bg-[#0f172a] border-slate-800/20 hover:bg-slate-800/15' : 'bg-[#0b0f19] border-slate-800/10 hover:bg-slate-800/10';
     } else {
-      if (hasConflict) return 'bg-amber-50/70 border-amber-300 hover:bg-amber-100/30';
-      if (isHold) return 'bg-rose-50/70 border-rose-200 hover:bg-rose-100/30';
-      if (isApproved) return 'bg-emerald-50/70 border-emerald-200 hover:bg-emerald-100/30';
+      if (hasConflict) return 'bg-amber-50/70 border-amber-300/40 hover:bg-amber-100/30';
+      if (isHold) return 'bg-rose-50/70 border-rose-200/40 hover:bg-rose-100/30';
+      if (isApproved) return 'bg-emerald-50/50 border-emerald-200/40 hover:bg-emerald-100/20';
       return index % 2 === 0 ? 'bg-white border-slate-200 hover:bg-slate-50/40' : 'bg-slate-50/50 border-slate-200 hover:bg-slate-50/30';
     }
   };
@@ -1098,7 +1116,7 @@ export default function App() {
   }
 
   return (
-    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#0b0f19]' : 'bg-slate-50/60 text-slate-800'}`}>
+    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#080d1a] text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
       
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -1107,22 +1125,22 @@ export default function App() {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#334155' : '#cbd5e1'}; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#1e293b' : '#cbd5e1'}; border-radius: 8px; }
         ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
         
         .gantt-grid-light {
           background-image: 
-            linear-gradient(to right, rgba(226, 232, 240, 0.7) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(226, 232, 240, 0.7) 1px, transparent 1px);
+            linear-gradient(to right, rgba(226, 232, 240, 0.4) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(226, 232, 240, 0.4) 1px, transparent 1px);
           background-size: 44px 100%, 100% 54px;
         }
         
         .gantt-grid-dark {
           background-image: 
-            linear-gradient(to right, rgba(30, 41, 59, 0.7) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(30, 41, 59, 0.7) 1px, transparent 1px);
+            linear-gradient(to right, rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
           background-size: 44px 100%, 100% 54px;
         }
 
@@ -1134,82 +1152,54 @@ export default function App() {
         }
       `}} />
 
-      {activeVisualNotification && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-sm sm:max-w-md px-4 z-50 animate-in slide-in-from-top-4 duration-300">
-          <div className="bg-slate-900/95 text-white border border-blue-500/50 backdrop-blur-md rounded-2xl shadow-2xl p-4 flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-blue-600/20 text-blue-400 shrink-0">
-              <Sparkles size={18} className="animate-pulse"/>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center justify-between">
-                <span>Significant Event</span>
-                <span className="text-[10px] text-slate-500 normal-case font-normal">Just now</span>
-              </h4>
-              <p className="text-xs text-slate-200 mt-1 font-medium leading-relaxed">{activeVisualNotification.message}</p>
-            </div>
-            <button onClick={() => setActiveVisualNotification(null)} className="text-slate-500 hover:text-white p-1 rounded font-black">
-              <X size={14}/>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 bg-slate-900/95 text-white border border-slate-750 px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 backdrop-blur-md transition-all animate-bounce print:hidden">
-          <CheckCircle2 className="text-emerald-400" size={16}/>
-          <span className="text-xs font-semibold uppercase tracking-wider">{toastMessage}</span>
-        </div>
-      )}
-
-      <header className={`border-b flex flex-col z-25 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]' : 'bg-white border-slate-200'}`}>
-        
-        <div className="px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="bg-[#1e293b] p-2.5 rounded-xl border border-slate-700/60 text-white shrink-0 shadow-lg">
+      {}
+      <header className={`border-b z-20 shrink-0 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+        <div className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-[#1e293b] p-2 rounded-xl border border-slate-700 text-white shrink-0 shadow-lg">
               <LayoutDashboard size={18} className="text-blue-500"/>
             </div>
             
             <div className="flex flex-col min-w-0" ref={dropdownRef}>
-              <div className="relative">
+              <div className="relative flex items-center gap-2">
                 <button
                   onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all text-xs font-semibold select-none ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-bold select-none ${
                     isDarkMode 
-                      ? 'bg-[#0f172a] hover:bg-[#1e293b] text-white border-slate-700 hover:border-slate-500' 
+                      ? 'bg-[#131c2e] hover:bg-[#1e293b] text-white border-slate-700 hover:border-slate-500' 
                       : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
                   }`}
                 >
-                  <Folder className="text-blue-500 shrink-0" size={14}/>
-                  <span className="truncate max-w-[150px] sm:max-w-[280px]">
+                  <Folder className="text-blue-500 shrink-0" size={13}/>
+                  <span className="truncate max-w-[140px] sm:max-w-[220px]">
                     {projectList.find(p => p.id === activeProjectId)?.title || 'Switch Project...'}
                   </span>
-                  <ChevronDown className="text-slate-500 shrink-0" size={14}/>
+                  <ChevronDown className="text-slate-500 shrink-0" size={12}/>
                 </button>
 
                 {isProjectDropdownOpen && (
-                  <div className={`absolute left-0 mt-2 w-80 max-w-[90vw] rounded-2xl shadow-2xl border p-2.5 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
+                  <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
                     isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                   }`}>
-                    <div className="px-3 py-2 text-[10px] font-bold tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
-                      Site Schedules Directory
+                    <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
+                      Schedules Directory
                     </div>
-                    <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
+                    <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
                       {projectList.map((proj) => (
                         <div 
                           key={proj.id}
                           onClick={() => {
                             handleSwitchProject(proj.id);
                             setIsProjectDropdownOpen(false);
-                            showToast(`Switched active workspace to "${proj.title}"`);
                           }}
-                          className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                             activeProjectId === proj.id 
-                              ? 'bg-[#1e293b] text-blue-400 border border-slate-700 shadow-md' 
+                              ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20 shadow-md' 
                               : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-50 text-slate-700 border border-transparent')
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <Folder className={activeProjectId === proj.id ? 'text-blue-400' : 'text-slate-400'} size={13}/>
+                            <Folder className={activeProjectId === proj.id ? 'text-blue-400' : 'text-slate-400'} size={12}/>
                             <span className="truncate">{proj.title}</span>
                           </div>
                           {proj.id !== 'master-schedule' && (
@@ -1219,244 +1209,187 @@ export default function App() {
                                 handleDeleteProject(proj.id);
                                 setIsProjectDropdownOpen(false);
                               }}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0"
-                              title="Delete project"
+                              className="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors shrink-0"
                             >
-                              <Trash2 size={13}/>
+                              <Trash2 size={12}/>
                             </button>
                           )}
                         </div>
                       ))}
                     </div>
                     
-                    <div className="border-t border-slate-800 mt-2.5 pt-2.5">
+                    <div className="border-t border-slate-800 mt-2 pt-2">
                       <button 
                         onClick={() => {
                           setShowCreateProjectModal(true);
                           setIsProjectDropdownOpen(false);
                         }}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-xs font-bold uppercase tracking-wider shadow-md"
+                        className="w-full flex items-center justify-center gap-1 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-[10px] font-black uppercase tracking-wider shadow-md"
                       >
-                        <Plus size={14}/> Create New Project
+                        <Plus size={12}/> Create New Project
                       </button>
                     </div>
                   </div>
                 )}
+
+                {/* Lightweight specs indicators */}
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 shrink-0">
+                  {weatherFactor === 'sunny' ? '☀️ Sunny' : weatherFactor === 'heavy_rain' ? '🌧️ Rain Delay' : '🌀 Typhoon Lock'}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 hidden sm:inline shrink-0">
+                  {laborProfile === 'electrical' ? '⚡ Electrical' : '🏗️ Civil'}
+                </span>
               </div>
-              <span className="text-blue-500 text-[10px] font-bold uppercase tracking-wider truncate mt-1 pl-1">
-                {appSubtitle}
-              </span>
             </div>
           </div>
 
-          <div className="flex gap-2 shrink-0">
-            {}
+          {}
+          <div className="flex items-center gap-1 border border-slate-800 p-1 rounded-xl bg-slate-900/30">
+            {[
+              { id: 'gantt', label: '📊 Gantt Workspace' },
+              { id: 'weekly', label: '📅 7-Days Outlook' },
+              { id: 'qa', label: '🛡️ QA Compliance' },
+              { id: 'logistics', label: '🚚 Logistics Pool' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActivePerspective(tab.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide transition-all ${
+                  activePerspective === tab.id 
+                    ? 'bg-blue-600 text-white shadow-md' 
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2 shrink-0 justify-end">
             <button 
-              onClick={() => setIsAssetModalOpen(true)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border shadow-sm transition-all text-xs font-bold uppercase tracking-wider ${
-                isDarkMode 
-                  ? 'bg-blue-600/10 border-blue-500/20 text-blue-400 hover:bg-blue-600/20' 
-                  : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100'
+              onClick={() => setIsControlPanelOpen(!isControlPanelOpen)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border shadow-sm transition-all text-xs font-bold uppercase tracking-wider ${
+                isControlPanelOpen
+                  ? 'bg-blue-600 border-blue-600 text-white' 
+                  : isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'
               }`}
-              title="Manage Dynamic Equipment Pool"
+              title="Site Control Center"
             >
-              <Truck size={14} className="animate-pulse" />
-              <span className="hidden sm:inline">Equipment Pool</span>
+              <SlidersHorizontal size={13}/>
+              <span className="hidden sm:inline">Controls</span>
             </button>
 
             <button 
               onClick={() => {
                 setSoundEnabled(!soundEnabled);
-                showToast(soundEnabled ? "Audio chime alerts muted" : "Audio chime alerts enabled 🔊");
+                showToast(soundEnabled ? "Audio alerts muted" : "Audio alerts enabled 🔊");
               }} 
-              className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700/80 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-500' : 'text-slate-500'}`} 
-              title={soundEnabled ? "Mute audio alerts" : "Unmute audio alerts"}
+              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-500' : 'text-slate-500'}`} 
             >
-              {soundEnabled ? <Volume2 size={16}/> : <VolumeX size={16}/>}
+              {soundEnabled ? <Volume2 size={14}/> : <VolumeX size={14}/>}
             </button>
 
-            <button onClick={shareToGroupChat} className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'}`} title="Share to GC">
-              <MessageSquareShare size={16}/>
+            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-indigo-600/10 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'}`}>
+              <MessageSquareShare size={14}/>
             </button>
 
-            <button onClick={async () => {
-              await requestNotificationPermission();
-              setIsNotificationPaneOpen(!isNotificationPaneOpen);
-            }} className={`p-2.5 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#0f172a] border-slate-700/80 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
-              <Bell size={16}/>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-            </button>
-            
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`lg:hidden p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700/80 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'}`}>
-              {isMobileMenuOpen ? <X size={16}/> : <Menu size={16}/>}
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
+              <Bell size={14}/>
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
             </button>
           </div>
         </div>
 
-        <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row flex-wrap items-stretch lg:items-center gap-3 px-4 pb-4 lg:py-3 lg:px-4 border-t lg:border-t-0 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
-          
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            <div className={`flex flex-1 lg:flex-none items-center gap-1 border rounded-xl p-1 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/80 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 text-slate-400 hidden xl:inline">Crew Type:</span>
-              <button 
-                onClick={() => {
-                  setLaborProfile('civil');
-                  showToast("Switched crew structure to Civil Construction");
-                }}
-                className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                  laborProfile === 'civil' 
-                    ? 'bg-amber-600 text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Civil
-              </button>
-              <button 
-                onClick={() => {
-                  setLaborProfile('electrical');
-                  showToast("Switched crew structure to Electrical Power Systems ⚡");
-                }}
-                className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                  laborProfile === 'electrical' 
-                    ? 'bg-blue-600 text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Electrical ⚡
-              </button>
+        {/* Collapsible Site Controls drawer for uncluttered white space */}
+        {isControlPanelOpen && (
+          <div className={`px-6 py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/50'}`}>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Crew Structuring Profile</span>
+              <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-200'}`}>
+                <button 
+                  onClick={() => { setLaborProfile('civil'); showToast("Switched to Civil Crew"); }}
+                  className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${laborProfile === 'civil' ? 'bg-amber-600 text-white' : 'text-slate-400'}`}
+                >
+                  Civil
+                </button>
+                <button 
+                  onClick={() => { setLaborProfile('electrical'); showToast("Switched to Electrical Crew ⚡"); }}
+                  className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${laborProfile === 'electrical' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                >
+                  Electrical ⚡
+                </button>
+              </div>
             </div>
 
-            <div className={`flex flex-1 lg:flex-none items-center justify-center gap-1 border rounded-xl px-2.5 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Stochastic Weather State</span>
               <select 
                 value={weatherFactor} 
                 onChange={(e) => {
                   setWeatherFactor(e.target.value);
-                  showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
-                  logActivityToCloud(`Weather shift triggered: ${e.target.value.toUpperCase()}. Recalculating timeline.`, 'warning');
+                  logActivityToCloud(`Weather state updated to ${e.target.value.toUpperCase()}`, 'warning');
                 }} 
-                className={`text-xs w-full text-center font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-[#0f172a] [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
+                className={`text-xs px-3 py-2 border rounded-xl font-bold outline-none cursor-pointer ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 [&_option]:bg-[#131c2e]' : 'bg-white border-slate-300'}`}
               >
-                <option value="sunny">☀️ Sunny</option>
+                <option value="sunny">☀️ Sunny (Normal 1.0x)</option>
                 <option value="heavy_rain">🌧️ Rain Delay (+35%)</option>
                 <option value="typhoon">🌀 Typhoon Lock (+80%)</option>
               </select>
             </div>
 
-            <button 
-              onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-              className={`flex-1 lg:flex-none p-2 justify-center rounded-xl border transition-all text-xs flex items-center gap-1 ${
-                isDarkMode ? 'bg-[#0f172a] hover:bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'
-              }`}
-              title="Toggle Specs"
-            >
-              {isMetadataCollapsed ? <ChevronDown size={14}/> : <ChevronUp size={14}/>}
-              <span className="font-medium text-xs">Specs</span>
-            </button>
-            
-            <div className={`hidden lg:flex items-center border rounded-xl px-2.5 py-1.5 text-xs ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-              <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-medium text-blue-500" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Launch Target</span>
+              <div className={`flex items-center border rounded-xl px-3 py-1.5 text-xs font-bold ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-500' : 'bg-white border-slate-300'}`}>
+                <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer" />
+              </div>
             </div>
-            
-            <div className="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`flex-1 lg:flex-none justify-center p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 hover:bg-slate-800 text-amber-400' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-600'}`}>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-bold">Document Specs</span>
+              <button 
+                onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+                className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 ${
+                  isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-300'
+                }`}
+              >
+                {isMetadataCollapsed ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}
+                <span>Header Details</span>
+              </button>
+            </div>
+
+            <div className="flex gap-2 ml-auto">
+              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-white text-slate-600 border-slate-300'}`}>
                 {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
               </button>
-              
-              <button onClick={triggerSystemPrint} className="hidden lg:flex justify-center bg-[#131c2e] hover:bg-slate-850 text-white px-3.5 py-2 border border-slate-700/80 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
-                <Printer size={14}/> Export
+              <button onClick={triggerSystemPrint} className="bg-slate-800 hover:bg-slate-750 text-white px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                <Printer size={13}/> Print
               </button>
-
-              <button onClick={() => setIsSettingsOpen(true)} className={`flex-1 lg:flex-none justify-center p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'}`}>
+              <button onClick={() => setIsSettingsOpen(true)} className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}>
                 <Settings size={14}/>
               </button>
             </div>
           </div>
-
-          <div className="flex flex-wrap gap-2 mt-2 lg:mt-0 w-full lg:w-auto lg:ml-auto">
-            <button onClick={addTask} className="flex-1 lg:flex-none justify-center bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-blue-500/10">
-              <Plus size={14}/> <span>Add Task</span>
-            </button>
-            <button 
-              onClick={handleShareToCloud} 
-              disabled={isSavingCloud} 
-              className="flex-1 lg:flex-none justify-center bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-md"
-              title="Save changes to cloud"
-            >
-              {isSavingCloud ? <Loader2 className="animate-spin" size={14}/> : <Share2 size={14}/>} 
-              <span>SYNC</span>
-            </button>
-          </div>
-        </div>
+        )}
       </header>
 
       {}
-      {isMobileViewport && (
-        <div className={`flex border-b text-xs font-semibold uppercase tracking-wider shrink-0 print:hidden ${
-          isDarkMode ? 'bg-[#131c2e] border-slate-850' : 'bg-white border-slate-250'
-        }`}>
-          <button 
-            onClick={() => setMobileDisplayTab('tasks')}
-            className={`flex-1 py-3.5 text-center transition-colors font-bold ${
-              mobileDisplayTab === 'tasks' 
-                ? 'border-b-2 border-blue-500 text-blue-500' 
-                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
-            }`}
-          >
-            📋 Site Cards
-          </button>
-          <button 
-            onClick={() => setMobileDisplayTab('weekly')}
-            className={`flex-1 py-3.5 text-center transition-colors font-bold ${
-              mobileDisplayTab === 'weekly' 
-                ? 'border-b-2 border-blue-500 text-blue-500' 
-                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
-            }`}
-          >
-            📅 Weekly Outlook
-          </button>
-          <button 
-            onClick={() => setMobileDisplayTab('gantt')}
-            className={`flex-1 py-3.5 text-center transition-colors font-bold ${
-              mobileDisplayTab === 'gantt' 
-                ? 'border-b-2 border-blue-500 text-blue-500' 
-                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
-            }`}
-          >
-            📊 Gantt
-          </button>
-          <button 
-            onClick={() => setMobileDisplayTab('qa')}
-            className={`flex-1 py-3.5 text-center transition-colors font-bold ${
-              mobileDisplayTab === 'qa' 
-                ? 'border-b-2 border-blue-500 text-blue-500' 
-                : isDarkMode ? 'text-slate-300' : 'text-slate-600'
-            }`}
-          >
-            🛡️ QA Holds
-          </button>
-        </div>
-      )}
+      <main className="flex-1 overflow-hidden p-6 relative flex flex-col min-h-0">
+        <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
-      <main className={`flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0 relative ${isDarkMode ? 'bg-[#0b0f19]' : 'bg-slate-50'}`}>
-        <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
-
+          {/* Collapsible Document Metadata Branding Section */}
           {!isMetadataCollapsed && (
-            <div id="gantt-export-zone" className={`rounded-2xl border p-4 sm:p-5 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 ${
+            <div id="gantt-export-zone" className={`rounded-2xl border p-4 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 animate-in slide-in-from-top-1 ${
               isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
             }`}>
-              
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="w-full md:w-1/4 flex justify-start items-center">
                   {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <CiticoreLogo/>}
                 </div>
-                
                 <div className="w-full md:w-1/2 text-center flex flex-col">
                   <input 
                     value={docMetadata.projectName} 
                     onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                    className={`text-center font-bold text-sm sm:text-base tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-500 focus:border-blue-500 outline-none w-full transition-colors ${
-                      isDarkMode ? 'text-white' : 'text-slate-800'
-                    }`}
+                    className="text-center font-bold text-sm tracking-tight bg-transparent uppercase border-b border-transparent focus:border-blue-500 outline-none w-full transition-colors"
                     placeholder="Project Name..."
                   />
                   <input 
@@ -1466,696 +1399,532 @@ export default function App() {
                     placeholder="Location Hub..."
                   />
                 </div>
-
                 <div className="w-full md:w-1/4 flex justify-end items-center">
                   {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <MbvLogo/>}
                 </div>
               </div>
 
-              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-bold uppercase tracking-wider border-t pt-4 transition-colors ${
-                isDarkMode ? 'border-slate-800 text-slate-300' : 'border-slate-200 text-slate-600'
-              }`}>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-bold uppercase tracking-wider border-t pt-4 border-slate-800">
                 <div className="flex flex-col gap-1 border-r border-slate-800/40">
                   <span>Document No:</span>
-                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`} />
+                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className="font-mono bg-transparent outline-none w-full font-bold" />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-800/40 px-1">
                   <span>Revision:</span>
-                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`} />
+                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className="bg-transparent outline-none w-full font-bold" />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-800/40 px-1">
                   <span>Effective Date:</span>
-                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`} />
+                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className="bg-transparent outline-none w-full font-bold" />
                 </div>
                 <div className="flex flex-col gap-1 pl-1">
                   <span>Base Launch:</span>
-                  <span className={`font-bold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{projectStartDate}</span>
+                  <span className="font-bold">{projectStartDate}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {tomorrowAllocations.length > 0 && (
-            <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-              <div className="flex items-center gap-3">
-                <Clock className="text-amber-500 shrink-0" size={20}/>
-                <div className="text-left">
-                  <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider">📅 Tomorrow's Shared Equipment Allocation Monitor</h4>
-                  <p className="text-xs text-slate-300 font-normal mt-0.5">
-                    Verified active assignments on other team members' device screens:
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tomorrowAllocations.map(task => {
-                  const assetObj = customAssets.find(a => a.key === task.assignedAsset);
-                  return (
-                    <span key={task.id} className="bg-slate-900/90 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-400 flex items-center gap-1.5 animate-pulse">
-                      {renderAssetIcon(task.assignedAsset)}
-                      <span>{assetObj ? assetObj.label : task.assignedAsset} set for {task.ref} tomorrow</span>
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className={`p-3 rounded-2xl border flex flex-col md:flex-row justify-between items-center gap-3 shrink-0 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
-          }`}>
-            <div className="flex items-center gap-2 w-full md:w-1/2">
-              <input 
-                type="text" 
-                placeholder="Filter schedule rows by task, phase, reference..."
-                value={filterSearchQuery}
-                onChange={(e) => setFilterSearchQuery(e.target.value)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-medium border outline-none w-full transition-colors ${
-                  isDarkMode 
-                    ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-400 focus:border-blue-500' 
-                    : 'bg-slate-50 border-slate-250 text-slate-800 placeholder-slate-500 focus:border-blue-500'
-                }`}
-              />
-            </div>
-            
-            <div className="flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0 gap-1.5 shrink-0 justify-start md:justify-end scrollbar-none" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
-              {['ALL', 'PENDING', 'HOLD', 'APPROVED'].map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setFilterStatusTag(tag)}
-                  className={`px-3 py-1.5 whitespace-nowrap rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border shrink-0 ${
-                    filterStatusTag === tag
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                      : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {}
-          {/* Main Workspace Frame container */}
-          <div className="flex-grow flex flex-col min-h-0 relative">
-            
-            {/* Desktop and Mobile Integrated Summary Workspace Tab */}
-            {(!isMobileViewport || mobileDisplayTab === 'weekly') && mobileDisplayTab === 'weekly' && (
-              <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
-                <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-200'
-                }`}>
-                  <div>
-                    <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2 text-blue-500 dark:text-blue-400">
-                      <CalendarDays size={18} /> Cross-Project Global Weekly Outlook
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all site databases matching compliance dates.</p>
-                  </div>
+          {/* PERSPECTIVE VIEW 1: DYNAMIC GANTT WORKSPACE */}
+          {activePerspective === 'gantt' && (
+            <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
+              
+              {/* Table search filter bar */}
+              <div className={`p-3 rounded-2xl border flex items-center justify-between gap-3 shrink-0 ${
+                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                <div className="flex items-center gap-3 flex-1">
+                  <input 
+                    type="text" 
+                    placeholder="Search active project sequences..."
+                    value={filterSearchQuery}
+                    onChange={(e) => setFilterSearchQuery(e.target.value)}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold border outline-none w-full max-w-sm transition-colors ${
+                      isDarkMode 
+                        ? 'bg-[#0f172a] border-slate-700 text-white focus:border-blue-500' 
+                        : 'bg-slate-50 border-slate-300 text-slate-800'
+                    }`}
+                  />
                   
-                  <div className="flex items-center gap-1.5 border p-1 rounded-xl bg-slate-900/40 border-slate-800 shrink-0">
-                    <button
-                      onClick={() => setActiveForecastFilter('this-week')}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                        activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      📅 This Week
-                    </button>
-                    <button
-                      onClick={() => setActiveForecastFilter('all-active')}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                        activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      ⚠️ All Unfinished Tasks
-                    </button>
-                  </div>
-                </div>
-
-                {isForecastLoading ? (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-2">
-                    <Loader2 size={24} className="animate-spin text-blue-500" />
-                    <span className="text-xs text-slate-400 font-bold tracking-widest uppercase">Fetching sibling databases...</span>
-                  </div>
-                ) : thisWeeksForecastList.length === 0 ? (
-                  <div className={`flex-1 flex flex-col items-center justify-center p-8 rounded-2xl border border-dashed text-center ${
-                    isDarkMode ? 'border-slate-800' : 'border-slate-300'
-                  }`}>
-                    <CalendarDays size={40} className="text-slate-500 mb-3" />
-                    <h4 className="text-sm font-bold uppercase text-slate-400">No Operations Scheduled For This Cycle</h4>
-                    <p className="text-xs text-slate-550 mt-1 max-w-sm">All sibling project databases have finished tasks or launch starts outside this 7-day calendar window.</p>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-thin">
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {thisWeeksForecastList.map(item => {
-                        const isOverdue = item.absoluteEndDate < new Date() && item.progress < 100;
-                        return (
-                          <div
-                            key={`${item.parentProjectId}-${item.id}`}
-                            onClick={() => {
-                              // Switch project context first, then load task modal
-                              handleSwitchProject(item.parentProjectId);
-                              setTimeout(() => setActiveTaskModal(item.id), 400);
-                            }}
-                            className={`p-5 rounded-2xl border shadow-sm cursor-pointer transition-transform hover:scale-[1.015] flex flex-col justify-between gap-4 relative ${
-                              isDarkMode ? 'bg-[#131c2e] border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start gap-2 border-b pb-3 border-slate-200/40 dark:border-slate-800/40">
-                              <div className="min-w-0 flex-1">
-                                <span className="bg-blue-600/10 text-blue-500 dark:text-blue-400 px-2 py-0.5 rounded text-[9px] font-black tracking-wider uppercase block truncate max-w-full">
-                                  {item.parentProjectName}
-                                </span>
-                                <h4 className={`text-sm font-bold truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>
-                                  {item.task}
-                                </h4>
-                              </div>
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(item.qaStatus)}`}>
-                                {item.qaStatus}
-                              </span>
-                            </div>
-
-                            <div className="space-y-2 text-xs">
-                              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
-                                <span className="flex items-center gap-1"><Clock size={12}/> SCHEDULED TIME</span>
-                                <span className="font-mono text-slate-300">
-                                  {item.absoluteStartDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - {item.absoluteEndDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
-                                <span className="flex items-center gap-1"><Truck size={12}/> EQUIPMENT</span>
-                                <span className="font-bold text-blue-500">{item.assignedAsset || 'None'}</span>
-                              </div>
-                              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
-                                <span className="flex items-center gap-1"><Users size={12}/> CREW LOAD</span>
-                                <span className="font-bold">{item.totalManpower || 0} Men</span>
-                              </div>
-                            </div>
-
-                            <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-                              <div className="flex justify-between text-[10px] font-bold text-slate-400">
-                                <span className="uppercase">COMPLETE</span>
-                                <span>{item.progress || 0}%</span>
-                              </div>
-                              <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500" style={{width: `${item.progress || 0}%`}}></div>
-                              </div>
-                            </div>
-
-                            {isOverdue && (
-                              <div className="mt-1 p-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
-                                <AlertTriangle size={12} />
-                                <span>OVERDUE COMPARED TO ORIGINAL COMPLIANCE BUFFER</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(!isMobileViewport || mobileDisplayTab === 'tasks') && isMobileViewport && (
-              <div 
-                className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
-                style={{ WebkitOverflowScrolling: 'touch' }}
-              >
-                {filteredTasks.map((task) => {
-                  const conflict = checkAssetConflict(task);
-                  return (
-                    <div 
-                      key={task.id}
-                      onClick={() => setActiveTaskModal(task.id)}
-                      className={`p-5 rounded-2xl border flex flex-col gap-4 relative shadow-sm cursor-pointer transition-transform hover:scale-[1.005] ${
-                        getRowBgColor(task, 0)
-                      }`}
-                    >
-                      <div className="flex justify-between items-center gap-2 border-b pb-3 border-slate-200/40 dark:border-slate-800/40">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono font-bold text-xs text-blue-500 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">{task.ref}</span>
-                          <span className="font-bold text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{task.desc}</span>
-                        </div>
-                        <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
-                          {task.qaStatus}
-                        </span>
-                      </div>
-
-                      <h4 className={`text-base font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>{task.task}</h4>
-                      
-                      {conflict && (
-                        <div className="p-3 bg-amber-500/15 border border-amber-500/35 rounded-xl flex items-start gap-2 text-amber-500 animate-pulse text-[11px] font-bold">
-                          <AlertTriangle className="shrink-0 mt-0.5" size={14}/>
-                          <div>
-                            <p>⚠️ LOGISTICS CLASH: {conflict.assetName} double-booked!</p>
-                            <p className="font-normal text-[10px] mt-0.5 opacity-80">Overlaps with Task {conflict.conflictTaskRef} ({conflict.conflictTaskName})</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {task.assignedAsset && task.assignedAsset !== 'None' && (
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-2 rounded-xl self-start">
-                          {renderAssetIcon(task.assignedAsset)}
-                          <span>Active Asset: {customAssets.find(a => a.key === task.assignedAsset)?.label || task.assignedAsset}</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-505 dark:text-slate-400 mr-2">Duration:</span>
-                          <div className={`flex items-center rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', Math.max(1, task.duration - 1)); }} 
-                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-300 hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
-                            >
-                              <Minus size={13}/>
-                            </button>
-                            <span className="font-mono font-bold text-xs px-2 text-blue-600 dark:text-blue-400">{task.duration}d</span>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', task.duration + 1); }} 
-                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-300 hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
-                            >
-                              <Plus size={13}/>
-                            </button>
-                          </div>
-                        </div>
-
-                        <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 uppercase tracking-wider">
-                          Inspect <ChevronRight size={14}/>
-                        </span>
-                      </div>
-
-                      <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-                        <div className="flex justify-between text-xs font-semibold text-slate-550 dark:text-slate-300">
-                          <span>PROGRESS</span>
-                          <span>{task.progress || 0}%</span>
-                        </div>
-                        <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{width: `${task.progress || 0}%`}}></div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-[11px] font-semibold">
-                        <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
-                        {activeRoles.filter(r => (parseInt(task[r.key]) || 0) > 0).map(r => (
-                          <span key={r.key} className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-300">
-                            {r.icon} {r.label}:{task[r.key]}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="flex justify-end pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
-                          className="text-rose-500 hover:text-rose-600 font-bold text-xs uppercase flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition-all"
-                        >
-                          <Trash2 size={13}/> Delete Task
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {}
-            {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
-              <div className={`flex border rounded-2xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-700' : 'bg-slate-50/50 border-slate-250'}`}>
-                
-                {/* Left Side: Tasks Table List - Vertical scrollbar hidden for visual parity, scroll synchronized via React Ref */}
-                <div className={`hidden lg:flex w-[45%] md:w-[35%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-colors ${
-                  isDarkMode 
-                    ? 'bg-[#131c2e] border-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' 
-                    : 'bg-white border-slate-250 shadow-[2px_0_5px_-2px_rgba(226,232,240,0.5)]'
-                }`}>
-                  
-                  <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-bold text-[10px] flex items-center uppercase tracking-wider top-0 z-25 border-b transition-colors ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600 border-slate-250'
-                  }`}>
-                    <span className="w-8 sm:w-10 text-center font-semibold">Ref</span>
-                    <span className="flex-grow px-2 sm:px-3 truncate font-semibold">Work Description</span>
-                    <span className="w-24 text-center shrink-0 font-semibold text-slate-400">Asset Pool</span>
-                    <span className="w-8 sm:w-12 text-center shrink-0 font-semibold text-slate-400">Days</span>
-                    <span className="w-10 sm:w-16 text-center shrink-0 font-semibold text-slate-400">Progress</span>
-                    <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
-                  </div>
-
-                  {/* LEFT SCROLL CONTAINER: Linked with leftScrollRef */}
-                  <div 
-                    ref={leftScrollRef}
-                    onScroll={handleLeftScroll}
-                    className="flex-grow overflow-y-auto min-h-0 scrollbar-none"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  {/* Minimalism button to collapse left spreadsheet sidebar */}
+                  <button
+                    onClick={() => setIsGanttSidebarVisible(!isGanttSidebarVisible)}
+                    className={`hidden lg:flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
+                      isGanttSidebarVisible 
+                        ? 'bg-blue-600/10 border-blue-500/20 text-blue-400' 
+                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
+                    }`}
                   >
-                    {filteredTasks.map((task, index) => {
-                      const conflict = checkAssetConflict(task);
-                      return (
+                    {isGanttSidebarVisible ? <EyeOff size={13}/> : <Eye size={13}/>}
+                    <span>{isGanttSidebarVisible ? 'Hide List' : 'Show List'}</span>
+                  </button>
+                </div>
+                
+                <div className="flex gap-1">
+                  {['ALL', 'PENDING', 'HOLD', 'APPROVED'].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setFilterStatusTag(tag)}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
+                        filterStatusTag === tag
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-300 text-slate-600')
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Responsive main split screen panel with customizable workspace columns */}
+              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-slate-50/50 border-slate-250'}`}>
+                
+                {/* Left Task Spreadsheet Column list (Can be hidden for clean space) */}
+                {isGanttSidebarVisible && (
+                  <div className={`flex w-[50%] md:w-[40%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'
+                  }`}>
+                    
+                    {/* Synchronized header row */}
+                    <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-bold text-[9px] flex items-center uppercase tracking-widest border-b transition-colors ${
+                      isDarkMode ? 'bg-slate-950/60 border-slate-850 text-slate-400' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      <span className="w-8 text-center font-bold">Ref</span>
+                      <span className="flex-grow px-2 truncate font-bold">Work Description</span>
+                      <span className="w-20 text-center shrink-0 font-bold">Asset</span>
+                      <span className="w-8 text-center shrink-0 font-bold">Days</span>
+                      <span className="w-10 text-center shrink-0 font-bold">Complete</span>
+                    </div>
+
+                    <div 
+                      ref={leftScrollRef}
+                      onScroll={handleLeftScroll}
+                      className="flex-grow overflow-y-auto min-h-0 scrollbar-none"
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                      {filteredTasks.map((task, index) => (
                         <div 
                           key={task.id} 
-                          className={`h-[54px] min-h-[54px] max-h-[54px] flex items-center text-xs group transition-all border-b ${getRowBgColor(task, index)}`}
+                          onClick={() => setActiveTaskModal(task.id)}
+                          className={`h-[54px] min-h-[54px] max-h-[54px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-8 sm:w-10 h-full text-center flex items-center justify-center relative shrink-0">
-                            <GripVertical className="text-slate-500 absolute left-0 cursor-move opacity-0 group-hover:opacity-100 transition-opacity print:hidden" size={12}/>
-                            <input 
-                              value={task.ref} 
-                              onChange={(e) => updateTask(task.id, 'ref', e.target.value)} 
-                              className={`font-mono font-bold text-center w-full bg-transparent outline-none focus:text-blue-500 text-xs ${
-                                isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                              }`} 
-                            />
+                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-bold font-mono text-[10px] text-blue-500">
+                            {task.ref}
                           </div>
                           
-                          <div className="flex-grow h-full flex flex-col justify-center px-1.5 sm:px-3 border-l border-slate-100 dark:border-slate-800/40 min-w-0">
-                            <div className="flex items-center gap-1 sm:gap-2">
-                              <span className="font-bold text-[9px] text-blue-500 dark:text-blue-400 uppercase tracking-wider bg-transparent outline-none shrink-0">
+                          <div className="flex-grow h-full flex flex-col justify-center px-2 border-l border-slate-800/40 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-[8px] text-blue-400 uppercase tracking-wider block truncate">
                                 {task.desc}
                               </span>
-                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider shrink-0 border ${getBadgeStyle(task.qaStatus)}`}>
+                              <span className={`px-1 rounded text-[7px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                                 {task.qaStatus}
                               </span>
                             </div>
-                            <input 
-                              value={task.task} 
-                              onChange={(e) => updateTask(task.id, 'task', e.target.value)} 
-                              className={`font-semibold text-xs sm:text-sm bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${
-                                isDarkMode ? 'text-white' : 'text-slate-800'
-                              }`} 
-                            />
+                            <span className={`font-semibold text-xs truncate leading-tight mt-0.5 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                              {task.task}
+                            </span>
                           </div>
 
-                          <div className="w-24 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center px-1.5 shrink-0">
-                            <div className="relative w-full">
-                              <select 
-                                value={task.assignedAsset || 'None'}
-                                onChange={(e) => updateTask(task.id, 'assignedAsset', e.target.value)}
-                                className={`text-[10px] font-bold py-1.5 pl-2 pr-6 rounded-lg border text-left outline-none w-full appearance-none transition-all cursor-pointer ${
-                                  isDarkMode 
-                                    ? 'bg-[#0f172a] border-slate-700 hover:border-slate-600 text-blue-400 focus:ring-1 focus:ring-blue-500' 
-                                    : 'bg-white border-slate-300 hover:border-slate-400 text-blue-600 focus:ring-1 focus:ring-blue-500'
-                                }`}
-                              >
-                                <option value="None">None</option>
-                                {customAssets.map(asset => (
-                                  <option key={asset.key} value={asset.key}>
-                                    {asset.key}
-                                  </option>
-                                ))}
-                              </select>
-                              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-500">
-                                <ChevronDown size={11} />
-                              </div>
-                            </div>
+                          <div className="w-20 h-full border-l border-slate-800/40 flex items-center justify-center px-1 shrink-0">
+                            <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                              {task.assignedAsset !== 'None' ? task.assignedAsset : '-'}
+                            </span>
                           </div>
                           
-                          <div className="w-8 sm:w-12 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
-                            <input 
-                              type="number" min="1" value={task.duration} 
-                              onChange={(e) => updateTask(task.id, 'duration', parseInt(e.target.value) || 1)} 
-                              className={`w-full text-center border rounded-lg py-1 text-xs font-bold outline-none transition-all ${
-                                isDarkMode 
-                                  ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' 
-                                  : 'bg-white border-slate-300 text-slate-800 focus:border-blue-500'
-                              }`} 
-                            />
+                          <div className="w-8 h-full border-l border-slate-800/40 flex items-center justify-center font-bold text-center shrink-0 font-mono">
+                            {task.duration}d
                           </div>
 
-                          <div className="w-10 sm:w-16 h-full border-l border-slate-100 dark:border-slate-800/40 flex flex-col items-center justify-center px-1 sm:px-2 shrink-0">
-                            <div className="flex items-center gap-0.5 w-full justify-between mb-1 font-bold text-xs">
-                              <input 
-                                type="number" min="0" max="100" value={task.progress || 0} 
-                                onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} 
-                                className={`w-6 sm:w-8 text-left bg-transparent rounded outline-none font-mono font-bold ${
-                                  isDarkMode ? 'text-white' : 'text-slate-800'
-                                }`} 
-                              />
-                              <span className="text-[9px] text-slate-400 font-semibold">%</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-500" style={{width: `${task.progress || 0}%`}}></div>
-                            </div>
-                          </div>
-                          
-                          <div className="w-6 sm:w-8 h-full flex items-center justify-center shrink-0 border-l border-slate-100 dark:border-slate-800/40 print:hidden">
-                            <button onClick={() => triggerTaskRemove(task.id)} className="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Delete Task"><Trash2 size={14}/></button>
+                          <div className="w-10 h-full border-l border-slate-800/40 flex flex-col items-center justify-center px-1 shrink-0">
+                            <span className="font-mono text-[9px] font-bold text-slate-300">{task.progress || 0}%</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
 
-                  <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden shrink-0">
-                     <button onClick={addTask} className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed w-full justify-center ${
-                       isDarkMode ? 'bg-[#131c2e] text-blue-400 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
-                     }`}>
-                       <Plus size={14}/> Add Task Row
-                     </button>
+                    {/* Left footer column trigger */}
+                    <div className="h-[64px] p-2 flex items-center border-t border-slate-800/40 sticky bottom-0 z-20 shrink-0">
+                       <button onClick={addTask} className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-700 w-full justify-center text-blue-400 hover:text-blue-300">
+                         <Plus size={12}/> Add Task Parameter
+                       </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Right Side Scroll Column: Houses Header, SANDWICHED scrollable bars, and Sticky bottom Crew Profile */}
-                <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-thin">
+                {/* Right Timeline Canvas scrollable segment */}
+                <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin">
                   
-                  {/* Calendar scale header row (Static height: 48px) */}
+                  {/* Dynamic grid headers */}
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-100 border-slate-250'
-                  }`}>
+                    isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-slate-100 border-slate-200'
+                  }`}
+                  style={{ width: `${headerDays.length * 44}px` }}>
                     {headerDays.map(day => {
-                      const dateStr = generateDateHeaderStr(projectStartDate, day);
-                      const dateParts = dateStr.split(' ');
-                      const monthStr = dateParts[0] || '';
-                      const dayStr = dateParts[1] || '';
                       const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
                       const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
                       return (
                         <div key={day} className={`w-[44px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center transition-colors ${
                           isDarkMode 
-                            ? `border-slate-800/60 ${isSatSun ? 'bg-slate-900/40' : ''}` 
+                            ? `border-slate-800/60 ${isSatSun ? 'bg-slate-950/40' : ''}` 
                             : `border-slate-200/60 ${isSatSun ? 'bg-slate-200/50' : ''}`
                         }`}>
-                          <span className={`text-[10px] font-bold leading-tight ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{monthStr}</span>
-                          <span className="text-[8px] font-semibold text-slate-400 leading-tight uppercase">{dayStr}</span>
+                          <span className="text-[9px] font-bold leading-tight text-slate-400">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
+                          <span className="text-[8px] font-semibold text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
                         </div>
                       )
                     })}
                   </div>
                   
-                  {/* RIGHT SCROLL TIMELINE CONTAINER: Fixed to scroll vertically in sync with task list. Confines elements so they cannot slide over other compartments (Fix for image_7a9306.png) */}
-            <div 
-              ref={rightScrollRef}
-              onScroll={handleRightScroll}
-              className={`flex-grow relative transition-all duration-200 overflow-y-auto overflow-x-hidden scrollbar-none ${
-                isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
-              }`}
-              style={{ 
-                scrollbarWidth: 'none', 
-                msOverflowStyle: 'none',
-                width: `${headerDays.length * 44}px`
-              }}
-            >
-              {filteredTasks.map((task, index) => {
-                const isHold = task.qaStatus === 'HOLD';
-                const isApproved = task.qaStatus === 'APPROVED';
-                const conflict = checkAssetConflict(task);
-                const assetObj = customAssets.find(a => a.key === task.assignedAsset);
-                
-                return (
+                  {/* Right timeline blocks linked with explicit width metrics (Fixes cutoffs on scroll!) */}
                   <div 
-                    key={task.id} 
-                    className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200/60'}`}
-                    style={{ width: `${headerDays.length * 44}px` }}
+                    ref={rightScrollRef}
+                    onScroll={handleRightScroll}
+                    className={`flex-grow relative overflow-y-auto overflow-x-hidden scrollbar-none ${
+                      isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
+                    }`}
+                    style={{ 
+                      scrollbarWidth: 'none', 
+                      msOverflowStyle: 'none',
+                      width: `${headerDays.length * 44}px`
+                    }}
                   >
-                     
-                     {task.assignedAsset && task.assignedAsset !== 'None' && (
-                               <div 
-                                 className="absolute h-5 bg-amber-500/25 border-y border-dashed border-amber-500/40 flex items-center justify-center text-[8px] font-extrabold text-amber-500 uppercase z-0 pointer-events-none"
-                                 style={{ 
-                                   left: `${(task.startDays - (assetObj?.defaultMobilizationDays || 1)) * 44 + 2}px`, 
-                                   width: `${(assetObj?.defaultMobilizationDays || 1) * 44}px`,
-                                   display: task.startDays > 0 ? 'flex' : 'none'
-                                 }}
-                               >
-                                 <Truck size={10} className="mr-0.5 animate-bounce"/> Mob
-                               </div>
-                             )}
-
-                             <div 
-                               onClick={() => setActiveTaskModal(task.id)}
-                               className={`absolute h-[28px] rounded-lg shadow-sm transition-all flex items-center justify-between overflow-hidden text-xs font-bold border cursor-pointer hover:scale-[1.01] hover:ring-2 hover:ring-blue-500/30 print:hover:ring-0 z-10
-                                 ${conflict
-                                   ? 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-500/40 animate-pulse'
-                                   : isHold 
-                                     ? 'bg-rose-50 border-rose-300 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-500/40' 
-                                     : isApproved 
-                                       ? 'bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-500/40' 
-                                       : 'bg-blue-50 border-blue-300 text-blue-800 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-500/40'}`}
-                               style={{ left: `${(task.startDays) * 44 + 2}px`, width: `${(task.adjustedDuration * 44) - 4}px` }}
-                             >
-                               <div className={`absolute top-0 left-0 h-full ${
-                                 conflict ? 'bg-amber-500/20' : isHold ? 'bg-rose-500/10 dark:bg-rose-500/20' : isApproved ? 'bg-emerald-500/10 dark:bg-emerald-500/20' : 'bg-blue-500/10 dark:bg-blue-500/20'
-                               }`} style={{ width: `${task.progress || 0}%` }} />
-                               
-                               <div className="absolute inset-0 flex justify-between items-center px-2.5 z-10 pointer-events-none">
-                                 <span className="font-bold text-[10px] sm:text-[11px] truncate max-w-[85%]">
-                                   <span className="opacity-75 mr-1 text-[9px] font-semibold">{task.ref}</span>
-                                   {isMobileViewport ? task.task : `${task.adjustedDuration}d`}
-                                   {task.assignedAsset !== 'None' && ` (${task.assignedAsset})`}
-                                 </span>
-                                 
-                                 <div className="flex gap-1.5 items-center">
-                                   {conflict && <span className="bg-rose-600 text-white rounded px-1 text-[8px] font-extrabold animate-bounce">CLASH</span>}
-                                   <span className={`flex items-center gap-1 text-[8.5px] font-bold border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
-                                     isDarkMode 
-                                       ? 'bg-slate-900 border-slate-700 text-slate-300' 
-                                       : 'bg-white border-slate-200 text-slate-700'
-                                   }`}>
-                                     {task.assignedAsset !== 'None' ? (
-                                       renderAssetIcon(task.assignedAsset)
-                                     ) : (
-                                       <UserPlus size={10}/>
-                                     )}
-                                     Crew
-                                   </span>
-                                   {task.totalManpower > 0 && !isMobileViewport && (
-                                     <span className={`hidden md:flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${
-                                       isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-700 border border-slate-300'
-                                     }`}>
-                                       <Users size={10}/> {task.totalManpower}
-                                     </span>
-                                   )}
-                                 </div>
-                               </div>
-                             </div>
+                    {filteredTasks.map((task) => {
+                      const conflict = checkAssetConflict(task);
+                      return (
+                        <div 
+                          key={task.id} 
+                          className="h-[54px] min-h-[54px] max-h-[54px] border-b border-slate-800/40 relative flex items-center"
+                          style={{ width: `${headerDays.length * 44}px` }}
+                        >
+                          <div 
+                            onClick={() => setActiveTaskModal(task.id)}
+                            className={`absolute h-[24px] rounded-lg shadow-sm transition-all flex items-center justify-between overflow-hidden text-xs font-bold border cursor-pointer hover:scale-[1.015] z-10 ${
+                              conflict 
+                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse'
+                                : task.qaStatus === 'HOLD' 
+                                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' 
+                                  : task.qaStatus === 'APPROVED' 
+                                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
+                                    : 'bg-blue-600/15 border-blue-500/30 text-blue-300'
+                            }`}
+                            style={{ left: `${(task.startDays) * 44 + 2}px`, width: `${(task.adjustedDuration * 44) - 4}px` }}
+                          >
+                            <div className="absolute top-0 left-0 h-full bg-blue-500/10" style={{ width: `${task.progress || 0}%` }} />
+                            <span className="truncate px-2 font-black text-[9px] relative z-10 flex items-center gap-1.5">
+                              <span>{task.ref}</span>
+                              <span className="opacity-75">{task.task}</span>
+                            </span>
                           </div>
-                        )
-                     })}
+                        </div>
+                      )
+                    })}
                   </div>
-                  
-                  {/* Sticky bottom Crew Profile (Height: 148px, raised to completely clear scrollbar overlap as seen in image_7aec87.png) */}
-                  <div className={`h-[148px] min-h-[148px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-300'
-                  }`}>
-                    <div className="absolute inset-x-0 bottom-0 top-0 pointer-events-none flex flex-col justify-between py-6 px-1 opacity-25 z-0">
-                      <div className="border-b border-dashed border-slate-500 w-full flex justify-between">
-                        <span className="text-[7.5px] font-mono pl-3 text-slate-400">Target mobilization limit (14 workers)</span>
-                        <span></span>
-                      </div>
-                      <div className="border-b border-dashed border-slate-600 w-full"></div>
-                    </div>
 
-                    <div className={`absolute left-3 top-3 z-30 text-[9.5px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl shadow border ${
-                      isDarkMode ? 'bg-[#0b0f19] text-slate-300 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-300'
-                    }`}>
-                      <BarChart3 className="text-blue-500 animate-pulse" size={13}/> Crew Loading Profile
-                    </div>
-
+                  {/* High-fidelity crew loading metrics */}
+                  <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
+                    isDarkMode ? 'bg-[#0b0f19] border-slate-850' : 'bg-white border-slate-300'
+                  }`}
+                  style={{ width: `${headerDays.length * 44}px` }}>
                     {headerDays.map(day => {
                       const dayManpower = activeFlowTasks.reduce((sum, task) => {
                         if (day >= task.startDays && day < task.startDays + task.adjustedDuration) return sum + task.totalManpower;
                         return sum;
                       }, 0);
-                      
-                      const maximumScaleCeiling = Math.max(maxManpowerVal, 16);
-                      const heightPercentage = (dayManpower / maximumScaleCeiling) * 65; 
-
+                      const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
                       return (
-                        <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-6 relative group ${
-                          isDarkMode ? 'border-slate-800/60' : 'border-slate-200'
-                        }`}>
+                        <div key={`hist-${day}`} className="w-[44px] h-full flex-shrink-0 border-r border-slate-800/40 flex flex-col justify-end items-center pb-4">
                           {dayManpower > 0 && (
                             <div 
-                              className={`w-6 rounded-t-lg transition-all flex items-end justify-center z-10 ${
-                                dayManpower > 12 
-                                  ? 'bg-rose-500/50 hover:bg-rose-500/70 shadow-lg shadow-rose-500/10' 
-                                  : (isDarkMode ? 'bg-indigo-600/40 hover:bg-indigo-600/60' : 'bg-indigo-300 hover:bg-indigo-400')
-                              }`} 
-                              style={{ height: `${Math.max(4, heightPercentage)}%` }} 
+                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-500/40' : 'bg-blue-500/30'}`}
+                              style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
-                          <span className={`text-[10px] font-mono font-bold mt-1.5 z-10 ${
-                            dayManpower > 12 
-                              ? 'text-rose-400' 
-                              : (isDarkMode ? 'text-slate-300' : 'text-slate-700')
-                          }`}>
+                          <span className={`text-[9px] font-bold font-mono mt-1 ${dayManpower > 12 ? 'text-rose-400' : 'text-slate-400'}`}>
                             {dayManpower > 0 ? dayManpower : '-'}
                           </span>
                         </div>
-                      );
+                      )
+                    })}
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* PERSPECTIVE VIEW 2: 7-DAYS OUTLOOK (RE-CONFIGURED WITH GUARANTEED FALLBACK CODES) */}
+          {activePerspective === 'weekly' && (
+            <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
+              <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
+                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                <div>
+                  <h3 className="text-sm font-extrabold tracking-widest uppercase flex items-center gap-2 text-blue-400">
+                    <CalendarDays size={16} /> 7-Day Cross-Project Outlook Forecast
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
+                </div>
+                
+                <div className="flex items-center gap-1 border p-1 rounded-xl bg-slate-950/40 border-slate-850">
+                  <button
+                    onClick={() => setActiveForecastFilter('this-week')}
+                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
+                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    📅 This Week
+                  </button>
+                  <button
+                    onClick={() => setActiveForecastFilter('all-active')}
+                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
+                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    ⚠️ All Unfinished Tasks
+                  </button>
+                </div>
+              </div>
+
+              {thisWeeksForecastList.length === 0 ? (
+                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-800 text-center">
+                  <CalendarDays size={40} className="text-slate-600 mb-2"/>
+                  <h4 className="text-xs font-black uppercase text-slate-400">No Operations Scheduled Inside this Forecast cycle</h4>
+                  <p className="text-xs text-slate-550 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
+                </div>
+              ) : (
+                <div className="flex-grow overflow-y-auto pr-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {thisWeeksForecastList.map(item => {
+                      const isOverdue = item.absoluteEndDate < new Date() && item.progress < 100;
+                      return (
+                        <div
+                          key={`${item.parentProjectId}-${item.id}`}
+                          onClick={() => {
+                            if (item.parentProjectId === activeProjectId) {
+                              setActiveTaskModal(item.id);
+                            } else {
+                              handleSwitchProject(item.parentProjectId);
+                              setTimeout(() => setActiveTaskModal(item.id), 300);
+                            }
+                          }}
+                          className={`p-6 rounded-3xl border shadow-sm cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between gap-4 ${
+                            isDarkMode ? 'bg-[#131c2e] border-slate-850 hover:border-slate-700' : 'bg-white border-slate-200'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex justify-between items-start gap-2 border-b border-slate-800 pb-3">
+                              <div className="min-w-0 flex-1">
+                                <span className="bg-blue-600/15 text-blue-400 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
+                                  {item.parentProjectName}
+                                </span>
+                                <h4 className={`text-sm font-extrabold truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                  {item.task}
+                                </h4>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-wider ${getBadgeStyle(item.qaStatus)}`}>
+                                {item.qaStatus}
+                              </span>
+                            </div>
+
+                            <div className="space-y-2 mt-4 text-xs font-medium text-slate-400">
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="flex items-center gap-1 uppercase tracking-wide"><Clock size={11}/> Dates</span>
+                                <span className="font-mono text-slate-300">
+                                  {item.absoluteStartDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - {item.absoluteEndDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="flex items-center gap-1 uppercase tracking-wide"><Truck size={11}/> Allocated Asset</span>
+                                <span className="font-bold text-blue-400">{item.assignedAsset || 'None'}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="flex items-center gap-1 uppercase tracking-wide"><Users size={11}/> Workforce Loading</span>
+                                <span className="font-bold text-slate-300">{item.totalManpower || 0} Workers</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5 pt-4 border-t border-slate-850">
+                            <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-400">
+                              <span>PROGRESS COMPLETE</span>
+                              <span>{item.progress || 0}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-blue-500 rounded-full" style={{width: `${item.progress || 0}%`}}></div>
+                            </div>
+                          </div>
+
+                          {isOverdue && (
+                            <div className="mt-1 p-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
+                              <AlertTriangle size={12} />
+                              <span>OVERDUE BY COMPLIANCE BUFFER LIMITS</span>
+                            </div>
+                          )}
+                        </div>
+                      )
                     })}
                   </div>
                 </div>
+              )}
+            </div>
+          )}
 
-              </div>
-            )}
-
-            {isMobileViewport && mobileDisplayTab === 'qa' && (
-              <div 
-                className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
-                style={{ WebkitOverflowScrolling: 'touch' }}
-              >
-                <div className={`p-5 rounded-2xl border text-center ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'}`}>
-                  <ShieldCheck className="mx-auto text-emerald-500 mb-3" size={32}/>
-                  <h4 className="text-sm font-bold uppercase tracking-wider">QA/QC Hold Point Inspection Register</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-300 mt-2 leading-relaxed font-normal">
-                    Tap any site card below to inspect parameters, check checklist gates, and co-sign approvals.
-                  </p>
+          {/* PERSPECTIVE VIEW 3: QA/QC INSPECTIONS GATING REGISTRY */}
+          {activePerspective === 'qa' && (
+            <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
+              <div className={`p-6 rounded-3xl border flex items-center justify-between ${
+                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                <div>
+                  <h3 className="text-sm font-extrabold tracking-widest uppercase text-emerald-400 flex items-center gap-1.5">
+                    <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
+              </div>
+
+              <div className="flex-grow overflow-y-auto space-y-3">
                 {activeFlowTasks.map(task => (
                   <div 
-                    key={`qa-row-${task.id}`}
+                    key={`qa-${task.id}`}
                     onClick={() => setActiveTaskModal(task.id)}
-                    className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer shadow-sm transition-all ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800 text-white' : 'bg-white border-slate-250 hover:bg-slate-50 text-slate-800'
+                    className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer hover:border-slate-500 transition-all ${
+                      isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-200' : 'bg-white border-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="font-mono text-xs text-slate-400 dark:text-blue-400 font-bold shrink-0">{task.ref}</span>
-                      <span className="text-sm font-bold truncate text-slate-900 dark:text-slate-100">{task.task}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="font-bold font-mono text-xs text-blue-500">{task.ref}</span>
+                      <div className="min-w-0">
+                        <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500 block">{task.desc}</span>
+                        <span className={`font-semibold text-xs block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{task.task}</span>
+                      </div>
                     </div>
-                    <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
-                      {task.qaStatus}
-                    </span>
+                    
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-slate-400 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
+                        {task.qaStatus}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-          </div>
+          {/* PERSPECTIVE VIEW 4: LOGISTICS EQUIPMENT POOL */}
+          {activePerspective === 'logistics' && (
+            <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
+              <div className={`p-6 rounded-3xl border flex items-center justify-between ${
+                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                <div>
+                  <h3 className="text-sm font-extrabold tracking-widest uppercase text-purple-400 flex items-center gap-1.5">
+                    <Truck size={16}/> Heavy Rig & Logistics Equipment Pool
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">Configure site machinery, mobilization buffers, and check overlapping booking clashes.</p>
+                </div>
+                <button
+                  onClick={() => setIsAssetModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+                >
+                  <Plus size={14}/> Add Asset
+                </button>
+              </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide shrink-0 border-t pt-4 border-slate-800/40">
-             <span className="flex items-center gap-1.5"><Info size={14}/> Citicore Master cloud mother database linked.</span>
-             <span className="flex items-center gap-3">
-               <span>Global Completed: <strong className="text-blue-500 font-bold">{overallGlobalProgress}%</strong></span>
-               <span>Total Site Buffer: <strong className="text-blue-500 font-bold">{totalDays} Days</strong></span>
-             </span>
-          </div>
+              <div className="flex-grow overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {customAssets.map(asset => {
+                    const isAllocated = activeFlowTasks.filter(t => t.assignedAsset === asset.key);
+                    return (
+                      <div key={asset.key} className={`p-5 rounded-3xl border flex flex-col justify-between gap-4 ${
+                        isDarkMode ? 'bg-[#131c2e]/60 border-slate-850' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="flex items-center gap-3 justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 shrink-0">
+                              {renderAssetIcon(asset.key)}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-mono text-xs font-black text-blue-400 block">{asset.key}</span>
+                              <span className="text-xs font-bold truncate block">{asset.label}</span>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={() => handleRemoveCustomAsset(asset.key)}
+                            className="p-1 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg shrink-0 transition-all"
+                          >
+                            <Trash2 size={13}/>
+                          </button>
+                        </div>
+
+                        <div className="space-y-1.5 pt-3 border-t border-slate-800 text-[10px] text-slate-400">
+                          <div className="flex justify-between font-semibold">
+                            <span>CLASS:</span>
+                            <span className="font-bold text-slate-300">{asset.type}</span>
+                          </div>
+                          <div className="flex justify-between font-semibold">
+                            <span>TRANSIT BUFFER:</span>
+                            <span className="font-bold text-slate-300">{asset.defaultMobilizationDays} Days</span>
+                          </div>
+                          <div className="flex justify-between font-semibold">
+                            <span>ACTIVE DISPATCHES:</span>
+                            <span className="font-bold text-blue-400">{isAllocated.length} Sequences</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {}
+          {tomorrowAllocations.length > 0 && (
+            <div className="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3">
+                <Clock className="text-amber-500 shrink-0" size={18}/>
+                <p className="text-xs text-slate-300 font-semibold text-left">
+                  Tomorrow's logistical dispatch warnings detected across active schedule plans.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tomorrowAllocations.map(task => (
+                  <span key={task.id} className="bg-slate-950/80 border border-amber-500/30 px-3 py-1 rounded-lg text-[10px] font-bold text-amber-400 flex items-center gap-1">
+                    {renderAssetIcon(task.assignedAsset)}
+                    <span>{task.assignedAsset} dispatch for {task.ref}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
 
       {}
       {isAssetModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
             isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-850 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
               <div>
-                <h3 className="text-sm sm:text-base font-bold flex items-center gap-2"><Truck className="text-blue-500" size={18}/> Logistic Pool & Equipment Registry</h3>
-                <p className="text-[11px] text-slate-400 font-bold mt-1">Register new machinery, tools, or calibration devices to sync with conflict checks.</p>
+                <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-500" size={14}/> Logistics Pool Registry</h3>
               </div>
-              <button onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400 border-slate-300'}`}><X size={14}/></button>
+              <button onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} className="p-1 rounded-lg hover:bg-slate-800"><X size={14}/></button>
             </div>
 
-            <div className="p-5 sm:p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
-              
-              {/* Add New Equipment Form */}
-              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-blue-500 flex items-center gap-1"><Plus size={12}/> Register New Equipment/Tool</h4>
-                
+            <div className="p-5 overflow-y-auto space-y-6 scrollbar-thin">
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-100/50'} space-y-4`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Asset Code (Unique Ref)</label>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Asset Code (Unique Key)</label>
                     <input 
                       type="text" 
                       placeholder="e.g. CRN50, HVBT1"
@@ -2165,7 +1934,7 @@ export default function App() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Equipment Name / Spec</label>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Asset Label Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g. 50-Ton Crawler Crane"
@@ -2178,136 +1947,78 @@ export default function App() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Logistics Category</label>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Class</label>
                     <select 
                       value={newAssetType}
                       onChange={(e) => setNewAssetType(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                      className="w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer"
                     >
                       <option value="Heavy Equipment">Heavy Equipment</option>
                       <option value="Specialized Tools">Specialized Tools</option>
                       <option value="Testing Equipment">Testing Equipment</option>
-                      <option value="Vehicles">Vehicles Pool</option>
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Vector Icon preset</label>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Preset Design</label>
                     <select 
                       value={newAssetIconPreset}
                       onChange={(e) => setNewAssetIconPreset(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                      className="w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer"
                     >
                       <option value="heavy">🚚 Heavy Rig</option>
-                      <option value="case">🧳 Calibrator Kit Case</option>
-                      <option value="lightning">⚡ High Voltage Splicer</option>
-                      <option value="tester">🔬 Precision Tech Monitor</option>
-                      <option value="crane">🏗️ Crawler/Gantry Crane</option>
+                      <option value="case">🧳 Calibration Case</option>
+                      <option value="lightning">⚡ Electrical Terminal</option>
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Transit Buffer (Mob Days)</label>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Mob Buffer</label>
                     <input 
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                      className="w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none"
                     />
                   </div>
                 </div>
 
                 {assetValidationWarning && (
-                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold flex items-center gap-1.5">
-                    <AlertTriangle size={12} />
-                    <span>{assetValidationWarning}</span>
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold">
+                    {assetValidationWarning}
                   </div>
                 )}
 
                 <button 
                   onClick={handleAddCustomAsset}
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md"
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider"
                 >
-                  <Plus size={14}/> Register Custom Asset
+                  Register Custom Asset
                 </button>
               </div>
-
-              {/* Registered Active Pools List */}
-              <div className="space-y-3">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5"><Truck size={12}/> Active Logistics Pool ({customAssets.length})</h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {customAssets.map((asset) => (
-                    <div 
-                      key={asset.key}
-                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
-                        isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`p-2 rounded-xl shrink-0 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-100'}`}>
-                          {renderAssetIcon(asset.key)}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[10px] font-black text-blue-500">{asset.key}</span>
-                            <span className="text-[8px] uppercase tracking-wider font-bold text-slate-400 px-1.5 bg-slate-800/40 rounded border border-slate-700/20">{asset.type}</span>
-                          </div>
-                          <p className="text-xs font-bold truncate mt-0.5">{asset.label}</p>
-                          <p className="text-[9px] text-slate-500 font-normal mt-0.5">Mob Buffer: {asset.defaultMobilizationDays} Days</p>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => handleRemoveCustomAsset(asset.key)}
-                        className={`p-2 rounded-xl border transition-colors shrink-0 ${
-                          isDarkMode 
-                            ? 'bg-slate-950 border-slate-800 hover:text-rose-500 hover:bg-rose-500/10 text-slate-400' 
-                            : 'bg-slate-50 border-slate-300 hover:text-rose-600 hover:bg-rose-50 text-slate-500'
-                        }`}
-                        title={`De-register ${asset.key}`}
-                      >
-                        <Trash2 size={13}/>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            <div className={`p-4 border-t flex justify-end gap-2 ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <button 
-                onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} 
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm"
-              >
-                Close Manager
-              </button>
             </div>
           </div>
         </div>
       )}
 
+      {}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
         return (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[90vh] transition-all duration-300 ${
               isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
             }`}>
-              <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
+              <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-850 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold flex items-center gap-2"><ClipboardCheck className="text-blue-500" size={18}/> Site Field Inspector Card</h3>
-                  <p className="text-[11px] text-slate-400 font-bold mt-1"><span className="text-blue-500 bg-blue-500/15 border border-blue-500/20 px-1.5 py-0.5 rounded mr-1.5">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
+                  <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><ClipboardCheck className="text-blue-500" size={14}/> Site Field Inspector Card</h3>
+                  <p className="text-[10px] text-slate-400 mt-1"><span className="text-blue-500 bg-blue-500/15 border border-blue-500/20 px-1.5 py-0.5 rounded mr-1.5">{currentTaskEditing.ref}</span> {currentTaskEditing.task}</p>
                 </div>
-                <button onClick={() => setActiveTaskModal(null)} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400 border-slate-300'}`}><X size={14}/></button>
+                <button onClick={() => setActiveTaskModal(null)} className="p-1 rounded-lg hover:bg-slate-800"><X size={14}/></button>
               </div>
               
-              <div className="p-4 sm:p-6 overflow-y-auto flex-grow space-y-5 scrollbar-thin">
-                
-                <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Configure Base Days & Percent Complete</h4>
+              <div className="p-6 overflow-y-auto flex-grow space-y-5 scrollbar-thin">
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2">Configure Base Days & Percent Complete</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[9px] font-semibold text-slate-500">DURATION (BASE DAYS)</span>
@@ -2316,7 +2027,6 @@ export default function App() {
                           onClick={() => {
                             const val = Math.max(1, currentTaskEditing.duration - 1);
                             updateTask(currentTaskEditing.id, 'duration', val);
-                            logActivityToCloud(`Adjusted task "${currentTaskEditing.task}" duration to ${val} days`, 'info');
                           }}
                           className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                         >
@@ -2327,7 +2037,6 @@ export default function App() {
                           onClick={() => {
                             const val = currentTaskEditing.duration + 1;
                             updateTask(currentTaskEditing.id, 'duration', val);
-                            logActivityToCloud(`Adjusted task "${currentTaskEditing.task}" duration to ${val} days`, 'info');
                           }}
                           className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                         >
@@ -2355,68 +2064,60 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Co-Sign Inspector Status</h4>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <h4 className="text-[9px] font-black uppercase tracking-wider text-slate-400">Co-Sign Inspector Status</h4>
+                  <div className="grid grid-cols-3 gap-3">
                     {[
-                      { status: 'PENDING', label: 'Active Work', desc: 'Work under development', border: 'border-blue-500/30 text-blue-400', bg: 'bg-blue-500/10' },
-                      { status: 'HOLD', label: 'QA HOLD', desc: 'Hold point blocks progress', border: 'border-rose-500/30 text-rose-400', bg: 'bg-rose-500/10' },
-                      { status: 'APPROVED', label: 'APPROVED', desc: 'Inspection clearance signed', border: 'border-emerald-500/30 text-emerald-400', bg: 'bg-emerald-500/10' }
+                      { status: 'PENDING', label: 'Active Work', desc: 'In development', border: 'border-blue-500/30 text-blue-400', bg: 'bg-blue-500/10' },
+                      { status: 'HOLD', label: 'QA HOLD', desc: 'Blocked point', border: 'border-rose-500/30 text-rose-400', bg: 'bg-rose-500/10' },
+                      { status: 'APPROVED', label: 'APPROVED', desc: 'Inspection approved', border: 'border-emerald-500/30 text-emerald-400', bg: 'bg-emerald-500/10' }
                     ].map((card) => (
                       <div
                         key={card.status}
                         onClick={() => {
                           updateTask(currentTaskEditing.id, 'qaStatus', card.status);
-                          showToast(`Task status updated to ${card.status}`);
                           logActivityToCloud(`Inspection status for task "${currentTaskEditing.task}" changed to ${card.status}`, card.status === 'APPROVED' ? 'success' : card.status === 'HOLD' ? 'alert' : 'info');
                         }}
-                        className={`p-2.5 sm:p-3 rounded-2xl border text-center cursor-pointer transition-all ${
+                        className={`p-3 rounded-2xl border text-center cursor-pointer transition-all ${
                           currentTaskEditing.qaStatus === card.status
                             ? `ring-2 ring-blue-500 ${card.border} ${card.bg}`
                             : (isDarkMode ? 'border-slate-800 bg-slate-900 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')
                         }`}
                       >
-                        <span className="block font-bold text-[9px] sm:text-[11px] uppercase tracking-wide">{card.label}</span>
-                        <span className="block text-[7.5px] sm:text-[8.5px] opacity-75 mt-0.5 leading-none font-normal">{card.desc}</span>
+                        <span className="block font-bold text-[10px] uppercase tracking-wide">{card.label}</span>
+                        <span className="block text-[8px] opacity-75 mt-0.5 leading-none font-normal">{card.desc}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Shared Asset Allocation</h4>
-                  <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row items-center justify-between gap-3`}>
+                  <h4 className="text-[9px] font-black uppercase tracking-wider text-slate-400">Shared Asset Allocation</h4>
+                  <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row items-center justify-between gap-3`}>
                     <div className="flex items-center gap-2">
-                      <Truck className="text-blue-500" size={18}/>
+                      <Truck className="text-blue-500" size={16}/>
                       <div className="text-left">
                         <p className="text-xs font-bold">Assign Equipment/Specialized Tooling</p>
-                        <p className="text-[10px] text-slate-400 font-normal">System verifies global cross-project availability automatically.</p>
                       </div>
                     </div>
-                    <div className="relative min-w-[200px]">
+                    <div className="relative min-w-[180px]">
                       <select 
                         value={currentTaskEditing.assignedAsset || 'None'}
                         onChange={(e) => updateTask(currentTaskEditing.id, 'assignedAsset', e.target.value)}
-                        className={`pl-3 pr-8 py-2 rounded-xl border text-xs font-bold outline-none cursor-pointer appearance-none w-full ${
-                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-800'
-                        }`}
+                        className="pl-3 pr-8 py-1.5 rounded-xl border text-xs font-bold outline-none cursor-pointer w-full bg-transparent"
                       >
-                        <option value="None">None (Manual Crew Labor Only)</option>
+                        <option value="None">None</option>
                         {customAssets.map(asset => (
-                          <option key={asset.key} value={asset.key}>{asset.label} ({asset.type})</option>
+                          <option key={asset.key} value={asset.key}>{asset.label}</option>
                         ))}
                       </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-500">
-                        <ChevronDown size={14} />
-                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo className="text-blue-500" size={12}/> Engineering Sign-Off Steps</h4>
-                  
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'}`}>
+                  <h4 className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo className="text-blue-500" size={12}/> Engineering Checklist</h4>
                   {Object.keys(currentTaskEditing.checklist || {}).length === 0 ? (
-                    <p className="text-xs text-slate-505 italic font-normal">No checklist parameters set for this task class.</p>
+                    <p className="text-xs text-slate-500 italic font-normal">No checklist parameters set.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {Object.entries(currentTaskEditing.checklist).map(([name, completed]) => (
@@ -2424,307 +2125,94 @@ export default function App() {
                           key={name}
                           className={`flex items-center justify-between p-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
                             completed 
-                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-300 font-bold' 
-                              : (isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800 text-slate-200' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-800')
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold' 
+                              : (isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-200' : 'bg-white border-slate-300 text-slate-850')
                           }`}
                         >
-                          <span className="font-semibold">{name}</span>
+                          <span>{name}</span>
                           <input 
                             type="checkbox" 
                             checked={completed} 
                             onChange={() => toggleChecklistItem(currentTaskEditing.id, name)}
-                            className="rounded border-slate-600 text-emerald-600 focus:ring-emerald-500 h-4 w-4 shrink-0 bg-slate-950"
+                            className="rounded text-emerald-600 h-4 w-4 bg-slate-950"
                           />
                         </label>
                       ))}
                     </div>
                   )}
-
-                  <div className="mt-3 flex gap-1.5">
-                    <input 
-                      type="text" 
-                      placeholder="Add custom inspector checks" 
-                      id="new-check-input"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          addChecklistItem(currentTaskEditing.id, e.target.value);
-                          e.target.value = '';
-                        }
-                      }}
-                      className={`flex-grow px-3 py-2 rounded-xl text-xs font-semibold border outline-none ${
-                        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-800'
-                      }`}
-                    />
-                    <button 
-                      onClick={() => {
-                        const input = document.getElementById('new-check-input');
-                        if (input) {
-                          addChecklistItem(currentTaskEditing.id, input.value);
-                          input.value = '';
-                        }
-                      }}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 rounded-xl"
-                    >
-                      Add
-                    </button>
-                  </div>
                 </div>
-
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Labor Crew Requirements ({laborProfile.toUpperCase()} Pool)</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {activeRoles.map(r => {
-                      const countVal = parseInt(currentTaskEditing[r.key]);
-                      const count = isNaN(countVal) ? 0 : countVal;
-                      return (
-                        <div key={r.key} className={`flex items-center gap-2 border rounded-xl p-1.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-300 text-slate-400')}`}>
-                          <span className="text-xs pl-0.5">{r.icon} <span className="text-[9px] font-bold uppercase ml-0.5">{r.label}</span></span>
-                          <div className={`flex items-center rounded-lg border text-slate-800 overflow-hidden shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
-                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Minus size={10}/></button>
-                            <span className={`text-[10px] font-bold w-4 text-center ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{count}</span>
-                            <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-850 text-slate-300' : 'hover:bg-slate-100'}`}><Plus size={10}/></button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                <div className={`space-y-3 pt-3 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
-                  {activeRoles.filter(r => (parseInt(currentTaskEditing[r.key]) || 0) > 0).map(r => {
-                    const inputs = [];
-                    const countVal = parseInt(currentTaskEditing[r.key]);
-                    const count = isNaN(countVal) ? 0 : countVal;
-                    for(let i=0; i<count; i++) {
-                      inputs.push(
-                        <input 
-                          key={i} type="text" value={currentTaskEditing.assigned?.[r.key]?.[i] || ''}
-                          onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
-                          placeholder={`Enter name for ${r.fullName} #${i+1}...`}
-                          className={`px-3 py-2 border rounded-xl text-xs font-semibold w-full outline-none ${
-                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-800 placeholder-slate-400'
-                          }`}
-                        />
-                      );
-                    }
-                    return (
-                      <div key={r.key} className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{r.fullName} Name Log</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{inputs}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                <button onClick={() => setActiveTaskModal(null)} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm">Close Inspector</button>
               </div>
             </div>
           </div>
         );
       })()}
 
+      {}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#131c2e] text-slate-100' : 'bg-white text-slate-800'}`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <span className="font-bold flex items-center gap-2"><Settings size={18}/> Custom Site Branding</span>
-              <button onClick={() => setIsSettingsOpen(false)} className={`p-1 rounded-md border shadow-sm ${isDarkMode ? 'bg-slate-850 border-slate-700 text-slate-400' : 'bg-white text-slate-400 border-slate-300'}`}><X size={14}/></button>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'}`}>
+              <span className="font-bold flex items-center gap-2"><Settings size={14}/> Settings</span>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-1 rounded-lg hover:bg-slate-800"><X size={14}/></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase">Left Contractor Logo</label>
-                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-700 hover:bg-slate-850' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'}`}>
-                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <UploadCloud className="text-blue-400" size={20}/>}
-                  <span className="text-xs font-semibold text-slate-400 mt-1 uppercase">Upload Left Image</span>
+                <label className="cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1">
+                  <UploadCloud className="text-blue-400" size={20}/>
                   <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('left', e)} className="hidden" />
                 </label>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase">Right Owner Logo</label>
-                <label className={`cursor-pointer border border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-1 transition ${isDarkMode ? 'bg-slate-950/40 border-slate-700 hover:bg-slate-850' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'}`}>
-                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <UploadCloud className="text-blue-400" size={20}/>}
-                  <span className="text-xs font-semibold text-slate-400 mt-1 uppercase">Upload Right Image</span>
-                  <input type="file" accept="image/*" onChange={(e) => handleLogoUpload('right', e)} className="hidden" />
-                </label>
-              </div>
-            </div>
-            <div className={`p-5 border-t flex justify-end ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <button onClick={() => setIsSettingsOpen(false)} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-sm">Done</button>
             </div>
           </div>
         </div>
       )}
 
+      {}
       {isNotificationPaneOpen && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex justify-end print:hidden">
-          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-250 text-slate-800'}`}>
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex justify-end">
+          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-850 text-slate-100' : 'bg-white border-slate-250 text-slate-800'}`}>
             <div className="space-y-4 overflow-y-auto">
-              <div className="flex justify-between items-center border-b pb-3">
+              <div className="flex justify-between items-center border-b pb-3 border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Bell className="text-blue-500" size={18}/>
-                  <h3 className="text-sm font-bold uppercase tracking-wider">Site Activity Stream</h3>
+                  <Bell className="text-blue-500" size={14}/>
+                  <h3 className="text-xs font-black uppercase tracking-wider">Site Activity Stream</h3>
                 </div>
                 <button onClick={() => setIsNotificationPaneOpen(false)} className="p-1 rounded-md hover:bg-slate-800">
-                  <X size={16}/>
+                  <X size={14}/>
                 </button>
               </div>
 
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
-                <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block">Notification Testbed</span>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-normal">Tap to trigger simulated cross-device notifications immediately.</p>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => {
-                      logActivityToCloud("QA/QC clearance required for Quezon Transformer Alignment.", "alert");
-                      broadcastSignificantNotification("QA/QC Alert: Clearance required for Quezon Transformer Alignment.", "alert");
-                    }}
-                    className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[9px] uppercase py-1.5 px-2 rounded-lg transition-colors"
-                  >
-                    Hold Alarm
-                  </button>
-                  <button 
-                    onClick={() => {
-                      logActivityToCloud("Potholing works successfully completed by Subcon.", "success");
-                      broadcastSignificantNotification("Success: Potholing works successfully completed by Subcon.", "success");
-                    }}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[9px] uppercase py-1.5 px-2 rounded-lg transition-colors"
-                  >
-                    Success Chime
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {notifications.map((notif) => (
-                  <div key={notif.id} className={`p-3 rounded-xl border text-xs ${notif.type === 'alert' ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' : notif.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : notif.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : (isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700')}`}>
-                    <div className="flex justify-between items-start">
-                      <span className="font-semibold block flex-1">{notif.text}</span>
-                      <span className="text-[9px] text-slate-500 font-mono ml-2 shrink-0">{notif.time}</span>
-                    </div>
+                  <div key={notif.id} className={`p-3 rounded-xl border text-xs ${isDarkMode ? 'bg-slate-900 border-slate-850 text-slate-300' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className="font-semibold block">{notif.text}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <button onClick={() => setIsNotificationPaneOpen(false)} className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider mt-4">Close Stream</button>
           </div>
         </div>
       )}
 
+      {}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
             <div className="p-6">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-2">Create New Site Project</h3>
-              <p className="text-xs text-slate-400 mb-4 font-normal">Initializes a standalone database Mother Link for your specific sub-phase or substation.</p>
+              <h3 className="text-xs font-bold uppercase tracking-wider mb-2">Create New Project</h3>
               <input 
                 type="text"
                 placeholder="e.g. Pagbilao Phase 3B Splicing"
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none mb-4 ${
-                  isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-800'
+                  isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-800'
                 }`}
               />
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase font-black">Cancel</button>
-                <button onClick={handleCreateNewProject} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl">Create Project</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {projectToDelete && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
-            <div className="p-6">
-              <div className="flex items-center gap-3 text-rose-500 mb-3">
-                <AlertTriangle size={24}/>
-                <h3 className="text-sm font-bold uppercase tracking-wider">Confirm Delete Project</h3>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed mb-6 font-normal">
-                Are you sure you want to permanently delete project reference <span className="font-mono font-semibold text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded">{projectToDelete}</span>? This action is local and cannot be undone.
-              </p>
-              <div className="flex justify-end gap-2">
-                <button onClick={() => setProjectToDelete(null)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase font-black">Cancel</button>
-                <button onClick={confirmDeleteProject} className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase rounded-xl font-black">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showOnboarding && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className={`rounded-3xl border shadow-2xl max-w-lg w-full overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
-            <div className="p-6">
-              <div className="flex justify-between items-center border-b pb-3 mb-4">
-                <span className="text-xs font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5"><HelpCircle size={14}/> Site Companion Guide</span>
-                <span className="text-xs text-slate-400 font-semibold">{onboardingStep} / 3</span>
-              </div>
-
-              {onboardingStep === 1 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Welcome to MBV Power Systems Scheduler</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-normal">This tool synchronizes site operations, manpower curves, and QA checks on a single interactive mother link. No more outdated paper schedules.</p>
-                  <div className="bg-slate-900/40 p-3 rounded-2xl border border-slate-800">
-                    <p className="text-[11px] text-blue-400 font-semibold">💡 Tip: Use the drop-down menu next to the title in the header to jump between active site projects or add fresh phases.</p>
-                  </div>
-                </div>
-              )}
-
-              {onboardingStep === 2 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Hold Point & Shared Asset Protection</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-normal">QA/QC hold points are built right into the schedule logic. When a task requires an inspection, click on its row or card to access the Inspector Sign-off Checklist. Also, you can allocate heavy tools (PC135) with conflict warnings.</p>
-                  <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-2xl border border-emerald-500/20">
-                    <p className="text-[11px] font-semibold">🛑 Safeguard: Concrete pouring and commissioning processes are physically locked on the timeline until prerequisites are APPROVED.</p>
-                  </div>
-                </div>
-              )}
-
-              {onboardingStep === 3 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm sm:text-base font-bold">Single Link Global Cloud Sync</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-normal">Every time you update task durations or complete a quality step, click the <strong>SYNC</strong> button in the top header. This updates the master server database and automatically synchronizes all users' dropdown lists.</p>
-                  <div className="bg-blue-600/15 p-3 rounded-2xl border border-blue-500/20">
-                    <p className="text-[11px] text-blue-400 font-semibold flex items-center gap-1.5"><CheckCircle2 size={12}/> Perfect alignment is guaranteed across subcontractor and executive offices.</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center border-t mt-6 pt-4">
-                <button 
-                  onClick={() => setShowOnboarding(false)} 
-                  className="text-xs font-semibold text-slate-500 uppercase hover:text-slate-300 font-black"
-                >
-                  Skip Guide
-                </button>
-                <div className="flex gap-2">
-                  {onboardingStep > 1 && (
-                    <button 
-                      onClick={() => setOnboardingStep(onboardingStep - 1)} 
-                      className="px-4 py-2 border rounded-xl text-xs font-semibold font-black"
-                    >
-                      Back
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => {
-                      if (onboardingStep < 3) {
-                        setOnboardingStep(onboardingStep + 1);
-                      } else {
-                        setShowOnboarding(false);
-                        showToast("Site onboarding completed.");
-                      }
-                    }} 
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl flex items-center gap-1 font-black"
-                  >
-                    {onboardingStep === 3 ? 'Get Started' : 'Next Step'} <ArrowRight size={12}/>
-                  </button>
-                </div>
+                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-400 font-semibold text-xs">Cancel</button>
+                <button onClick={handleCreateNewProject} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl">Create</button>
               </div>
             </div>
           </div>
