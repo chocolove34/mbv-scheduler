@@ -157,6 +157,34 @@ export default function App() {
   const [activeVisualNotification, setActiveVisualNotification] = useState(null);
   const sessionStartTimeRef = useRef(Date.now());
 
+  const leftScrollRef = useRef(null);
+  const rightScrollRef = useRef(null);
+  const isSyncingLeftScroll = useRef(false);
+  const isSyncingRightScroll = useRef(false);
+
+  // Synchronized scroll callbacks to solve image_7a9306.png issues
+  const handleLeftScroll = (e) => {
+    if (isSyncingRightScroll.current) {
+      isSyncingRightScroll.current = false;
+      return;
+    }
+    isSyncingLeftScroll.current = true;
+    if (rightScrollRef.current) {
+      rightScrollRef.current.scrollTop = e.target.scrollTop;
+    }
+  };
+
+  const handleRightScroll = (e) => {
+    if (isSyncingLeftScroll.current) {
+      isSyncingLeftScroll.current = false;
+      return;
+    }
+    isSyncingRightScroll.current = true;
+    if (leftScrollRef.current) {
+      leftScrollRef.current.scrollTop = e.target.scrollTop;
+    }
+  };
+
   const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'info', text: 'Centralized Mother Link Synced with Citicore DB Cloud.', time: 'Just now' },
@@ -1244,7 +1272,7 @@ export default function App() {
                 {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
               </button>
               
-              <button onClick={triggerSystemPrint} className="hidden lg:flex justify-center bg-[#131c2e] hover:bg-slate-800 text-white px-3.5 py-2 border border-slate-700/80 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
+              <button onClick={triggerSystemPrint} className="hidden lg:flex justify-center bg-[#131c2e] hover:bg-slate-850 text-white px-3.5 py-2 border border-slate-700/80 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
                 <Printer size={14}/> Export
               </button>
 
@@ -1473,7 +1501,7 @@ export default function App() {
 
                       <div className="flex items-center justify-between mt-1">
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-2">Duration:</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-505 dark:text-slate-400 mr-2">Duration:</span>
                           <div className={`flex items-center rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', Math.max(1, task.duration - 1)); }} 
@@ -1497,7 +1525,7 @@ export default function App() {
                       </div>
 
                       <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-                        <div className="flex justify-between text-xs font-semibold text-slate-500 dark:text-slate-300">
+                        <div className="flex justify-between text-xs font-semibold text-slate-550 dark:text-slate-300">
                           <span>PROGRESS</span>
                           <span>{task.progress || 0}%</span>
                         </div>
@@ -1507,7 +1535,7 @@ export default function App() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-[11px] font-semibold">
-                        <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
+                        <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
                         {activeRoles.filter(r => (parseInt(task[r.key]) || 0) > 0).map(r => (
                           <span key={r.key} className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-300">
                             {r.icon} {r.label}:{task[r.key]}
@@ -1529,9 +1557,11 @@ export default function App() {
               </div>
             )}
 
+            {}
             {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
               <div className={`flex border rounded-2xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-700' : 'bg-slate-50/50 border-slate-250'}`}>
                 
+                {/* Left Side: Tasks Table List - Vertical scrollbar hidden for visual parity, scroll synchronized via React Ref */}
                 <div className={`hidden lg:flex w-[45%] md:w-[35%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-colors ${
                   isDarkMode 
                     ? 'bg-[#131c2e] border-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' 
@@ -1549,7 +1579,13 @@ export default function App() {
                     <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
                   </div>
 
-                  <div className="flex-grow overflow-y-auto min-h-0">
+                  {/* LEFT SCROLL CONTAINER: Linked with leftScrollRef */}
+                  <div 
+                    ref={leftScrollRef}
+                    onScroll={handleLeftScroll}
+                    className="flex-grow overflow-y-auto min-h-0 scrollbar-none"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
                     {filteredTasks.map((task, index) => {
                       const conflict = checkAssetConflict(task);
                       return (
@@ -1586,7 +1622,6 @@ export default function App() {
                             />
                           </div>
 
-                          {}
                           <div className="w-24 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center px-1.5 shrink-0">
                             <div className="relative w-full">
                               <select 
@@ -1647,7 +1682,7 @@ export default function App() {
                     })}
                   </div>
 
-                  <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden">
+                  <div className="h-[80px] p-2.5 sm:p-4 flex flex-col justify-center border-t border-slate-100 dark:border-slate-800/40 sticky bottom-0 z-20 print:hidden shrink-0">
                      <button onClick={addTask} className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed w-full justify-center ${
                        isDarkMode ? 'bg-[#131c2e] text-blue-400 hover:text-blue-300 border-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200'
                      }`}>
@@ -1656,8 +1691,10 @@ export default function App() {
                   </div>
                 </div>
 
-                <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-none">
+                {/* Right Side Scroll Column: Houses Header, SANDWICHED scrollable bars, and Sticky bottom Crew Profile */}
+                <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-thin">
                   
+                  {/* Calendar scale header row (Static height: 48px) */}
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-100 border-slate-250'
                   }`}>
@@ -1681,9 +1718,15 @@ export default function App() {
                     })}
                   </div>
                   
-                  <div className={`flex-1 min-w-max relative transition-all duration-200 ${
-                    isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
-                  }`}>
+                  {/* RIGHT SCROLL TIMELINE CONTAINER: Fixed to scroll vertically in sync with task list. Confines elements so they cannot slide over other compartments (Fix for image_7a9306.png) */}
+                  <div 
+                    ref={rightScrollRef}
+                    onScroll={handleRightScroll}
+                    className={`flex-grow min-w-max relative transition-all duration-200 overflow-y-auto overflow-x-hidden scrollbar-none ${
+                      isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
+                    }`}
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
                      {filteredTasks.map((task) => {
                         const isHold = task.qaStatus === 'HOLD';
                         const isApproved = task.qaStatus === 'APPROVED';
@@ -1758,7 +1801,8 @@ export default function App() {
                      })}
                   </div>
                   
-                  <div className={`h-[130px] min-h-[130px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
+                  {/* Sticky bottom Crew Profile (Height: 148px, raised to completely clear scrollbar overlap as seen in image_7aec87.png) */}
+                  <div className={`h-[148px] min-h-[148px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-300'
                   }`}>
                     <div className="absolute inset-x-0 bottom-0 top-0 pointer-events-none flex flex-col justify-between py-6 px-1 opacity-25 z-0">
@@ -1785,7 +1829,7 @@ export default function App() {
                       const heightPercentage = (dayManpower / maximumScaleCeiling) * 65; 
 
                       return (
-                        <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2.5 relative group ${
+                        <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-6 relative group ${
                           isDarkMode ? 'border-slate-800/60' : 'border-slate-200'
                         }`}>
                           {dayManpower > 0 && (
@@ -2142,7 +2186,7 @@ export default function App() {
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo className="text-blue-500" size={12}/> Engineering Sign-Off Steps</h4>
                   
                   {Object.keys(currentTaskEditing.checklist || {}).length === 0 ? (
-                    <p className="text-xs text-slate-500 italic font-normal">No checklist parameters set for this task class.</p>
+                    <p className="text-xs text-slate-505 italic font-normal">No checklist parameters set for this task class.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {Object.entries(currentTaskEditing.checklist).map(([name, completed]) => (
