@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
-  Menu, MessageSquareShare, Volume2, VolumeX, Sparkles
+  Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -69,36 +69,42 @@ const AssetIcons = {
       <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
     </svg>
   ),
-  PC135: () => (
+  heavy: () => (
     <svg className="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 13.5v6H5v-6m14 0V9a2 2 0 00-2-2h-3m5 6.5H14m0 0V7m0 0h-4m0 0a2 2 0 00-2 2v4.5H5" />
       <circle cx="8" cy="19" r="2.5" />
       <circle cx="16" cy="19" r="2.5" />
     </svg>
   ),
-  MVK01: () => (
+  case: () => (
     <svg className="w-3.5 h-3.5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="7" width="18" height="12" rx="2" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M12 11v4M9 13h6" />
     </svg>
   ),
-  FSA22: () => (
+  lightning: () => (
     <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
       <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
   ),
-  PIT99: () => (
+  tester: () => (
     <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
+    </svg>
+  ),
+  crane: () => (
+    <svg className="w-3.5 h-3.5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V8l7-4M12 8h9M12 8l4 6" />
+      <circle cx="12" cy="17" r="2" />
     </svg>
   )
 };
 
-const SHARED_ASSETS = [
-  { key: 'PC135', label: 'PC135 Excavator', icon: AssetIcons.PC135, type: 'Heavy Equipment', defaultMobilizationDays: 1 },
-  { key: 'MVK01', label: 'MV Calibration Kit #1', icon: AssetIcons.MVK01, type: 'Specialized Tools', defaultMobilizationDays: 0 },
-  { key: 'FSA22', label: 'Fusion Splicer Alpha', icon: AssetIcons.FSA22, type: 'Specialized Tools', defaultMobilizationDays: 0 },
-  { key: 'PIT99', label: 'Primary Injection Tester', icon: AssetIcons.PIT99, type: 'Testing Equipment', defaultMobilizationDays: 1 }
+const DEFAULT_SHARED_ASSETS = [
+  { key: 'PC135', label: 'PC135 Excavator', iconPreset: 'heavy', type: 'Heavy Equipment', defaultMobilizationDays: 1 },
+  { key: 'MVK01', label: 'MV Calibration Kit #1', iconPreset: 'case', type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'FSA22', label: 'Fusion Splicer Alpha', iconPreset: 'lightning', type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'PIT99', label: 'Primary Injection Tester', iconPreset: 'tester', type: 'Testing Equipment', defaultMobilizationDays: 1 }
 ];
 
 const LABOR_PROFILES = {
@@ -166,6 +172,16 @@ export default function App() {
   const [projectList, setProjectList] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState('master-schedule');
   const [tasks, setTasks] = useState(INITIAL_TASKS);
+  
+  const [customAssets, setCustomAssets] = useState(DEFAULT_SHARED_ASSETS);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [newAssetCode, setNewAssetCode] = useState('');
+  const [newAssetName, setNewAssetName] = useState('');
+  const [newAssetType, setNewAssetType] = useState('Heavy Equipment');
+  const [newAssetIconPreset, setNewAssetIconPreset] = useState('heavy');
+  const [newAssetMobDays, setNewAssetMobDays] = useState(1);
+  const [assetValidationWarning, setAssetValidationWarning] = useState('');
+
   const [projectStartDate, setProjectStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [appTitle, setAppTitle] = useState("Citicore 100MW Solar Grid");
   const [appSubtitle, setAppSubtitle] = useState("Site Operations & Verification Hub");
@@ -314,9 +330,16 @@ export default function App() {
       message,
       type
     });
+    
+    // Add directly to in-app stream so it always registers
+    setNotifications(prev => [
+      { id: Date.now(), type, text: message, time: 'Just now' },
+      ...prev
+    ]);
+
     setTimeout(() => {
       setActiveVisualNotification(null);
-    }, 6000);
+    }, 8000);
 
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
@@ -413,6 +436,7 @@ export default function App() {
       if (snap.exists()) {
         const payload = snap.data();
         setTasks(payload.tasks || INITIAL_TASKS);
+        setCustomAssets(payload.customAssets || DEFAULT_SHARED_ASSETS);
         setAppTitle(payload.appTitle || "Project Schedule");
         setAppSubtitle(payload.appSubtitle || "");
         setProjectStartDate(payload.projectStartDate || new Date().toISOString().split('T')[0]);
@@ -436,9 +460,9 @@ export default function App() {
       snap.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const alertData = change.data();
-          if (alertData.timestamp > sessionStartTimeRef.current) {
+          if (alertData.timestamp > (sessionStartTimeRef.current - 120000)) { 
             if (alertData.userId !== auth.currentUser?.uid) {
-              const textMessage = `[${alertData.projectTitle}] ${alertData.text}`;
+              const textMessage = `${alertData.text}`;
               broadcastSignificantNotification(textMessage, alertData.type);
             }
           }
@@ -463,6 +487,7 @@ export default function App() {
       if (snap.exists()) {
         const payload = snap.data();
         setTasks(payload.tasks || INITIAL_TASKS);
+        setCustomAssets(payload.customAssets || DEFAULT_SHARED_ASSETS);
         setAppTitle(payload.appTitle || "Project Schedule");
         setAppSubtitle(payload.appSubtitle || "");
         setProjectStartDate(payload.projectStartDate || new Date().toISOString().split('T')[0]);
@@ -513,6 +538,7 @@ export default function App() {
     setActiveProjectId(nextId);
     setAppTitle(newProjectName);
     setTasks(INITIAL_TASKS.map(t => ({...t, progress: 0, qaStatus: 'PENDING', assigned: {}})));
+    setCustomAssets(DEFAULT_SHARED_ASSETS);
     setDocMetadata({
       projectName: newProjectName.toUpperCase(),
       location: "Active Construction Zone",
@@ -579,6 +605,7 @@ export default function App() {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
       await setDoc(docRef, {
         tasks,
+        customAssets,
         docMetadata,
         projectStartDate,
         appTitle,
@@ -605,6 +632,84 @@ export default function App() {
     } finally {
       setIsSavingCloud(false);
     }
+  };
+
+  const handleAddCustomAsset = () => {
+    setAssetValidationWarning('');
+    if (!newAssetCode.trim() || !newAssetName.trim()) {
+      setAssetValidationWarning("Please populate both Asset Code and Name.");
+      return;
+    }
+
+    const normalizedCode = newAssetCode.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const codeExists = customAssets.some(a => a.key === normalizedCode);
+    if (codeExists) {
+      setAssetValidationWarning(`An asset with code "${normalizedCode}" already exists.`);
+      return;
+    }
+
+    const newlyCreated = {
+      key: normalizedCode,
+      label: newAssetName,
+      iconPreset: newAssetIconPreset,
+      type: newAssetType,
+      defaultMobilizationDays: parseInt(newAssetMobDays) || 0
+    };
+
+    const updatedAssetsList = [...customAssets, newlyCreated];
+    setCustomAssets(updatedAssetsList);
+
+    // Dynamic instant save to keep phone & tablet users synced automatically
+    if (db && user) {
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
+      setDoc(docRef, {
+        customAssets: updatedAssetsList,
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(err => console.warn(err));
+    }
+
+    logActivityToCloud(`Added new custom logistical equipment: ${newAssetName} (${normalizedCode})`, 'success');
+    showToast(`Registered Custom Asset: ${normalizedCode}`);
+    
+    // Clear fields
+    setNewAssetCode('');
+    setNewAssetName('');
+    setNewAssetMobDays(1);
+  };
+
+  const handleRemoveCustomAsset = (assetKey) => {
+    const isAssigned = tasks.some(t => t.assignedAsset === assetKey);
+    if (isAssigned) {
+      setAssetValidationWarning(`Cannot delete ${assetKey}. It is currently allocated on active schedule rows.`);
+      return;
+    }
+
+    const updatedAssetsList = customAssets.filter(a => a.key !== assetKey);
+    setCustomAssets(updatedAssetsList);
+
+    if (db && user) {
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
+      setDoc(docRef, {
+        customAssets: updatedAssetsList,
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(err => console.warn(err));
+    }
+
+    logActivityToCloud(`Removed logistical asset: ${assetKey}`, 'alert');
+    showToast(`Removed Asset: ${assetKey}`);
+  };
+
+  const renderAssetIcon = (assetKey) => {
+    if (!assetKey || assetKey === 'None') {
+      return AssetIcons.None();
+    }
+    const matchingAsset = customAssets.find(a => a.key === assetKey);
+    if (matchingAsset) {
+      const preset = matchingAsset.iconPreset || 'heavy';
+      const renderingFunc = AssetIcons[preset] || AssetIcons.heavy;
+      return renderingFunc();
+    }
+    return AssetIcons.heavy();
   };
 
   const handleLogoUpload = (side, e) => {
@@ -658,7 +763,6 @@ export default function App() {
 
   const activeRoles = LABOR_PROFILES[laborProfile];
 
-  // Dynamic cap limits for manpower profile grid height alignment
   const maxManpowerVal = Math.max(
     ...headerDays.map(day => 
       activeFlowTasks.reduce((sum, task) => {
@@ -668,13 +772,31 @@ export default function App() {
     ), 1
   );
 
-  const updateTask = (id, field, value) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
+  const updateTask = async (id, field, value) => {
+    const updatedTasks = tasks.map(t => t.id === id ? { ...t, [field]: value } : t);
+    setTasks(updatedTasks);
     
+    if (db && user && (field === 'assignedAsset' || field === 'qaStatus' || field === 'duration')) {
+      try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
+        await setDoc(docRef, {
+          tasks: updatedTasks,
+          docMetadata,
+          projectStartDate,
+          appTitle,
+          appSubtitle,
+          logos,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (e) {
+        console.warn("Real-time autosave offline fallback triggered:", e);
+      }
+    }
+
     if (field === 'duration' || field === 'assignedAsset') {
       const match = tasks.find(t => t.id === id);
       if (match && value !== 'None') {
-        const assetName = SHARED_ASSETS.find(a => a.key === value || a.key === match.assignedAsset)?.label || 'Asset';
+        const assetName = customAssets.find(a => a.key === value || a.key === match.assignedAsset)?.label || 'Asset';
         logActivityToCloud(`Allocated shared logistical asset: ${assetName} to ${match.task}`, 'warning');
       }
     }
@@ -770,7 +892,7 @@ export default function App() {
         const endB = otherTask.startDays + otherTask.adjustedDuration;
 
         if (startA < endB && endA > startB) {
-          const assetName = SHARED_ASSETS.find(a => a.key === taskToCheck.assignedAsset)?.label || 'Tool';
+          const assetName = customAssets.find(a => a.key === taskToCheck.assignedAsset)?.label || 'Tool';
           return {
             conflictTaskRef: otherTask.ref,
             conflictTaskName: otherTask.task,
@@ -829,6 +951,24 @@ export default function App() {
     }
     return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 dark:border-blue-500/40';
   };
+
+  const getTomorrowAllocations = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const start = new Date(projectStartDate);
+    const diffTime = tomorrow.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0 || diffDays > totalDays + 5) return [];
+    
+    return activeFlowTasks.filter(task => {
+      return diffDays >= task.startDays && diffDays < task.startDays + task.adjustedDuration && task.assignedAsset !== 'None';
+    });
+  };
+
+  const tomorrowAllocations = getTomorrowAllocations();
 
   if (view === 'loading') {
     return (
@@ -889,7 +1029,7 @@ export default function App() {
               </h4>
               <p className="text-xs text-slate-200 mt-1 font-medium leading-relaxed">{activeVisualNotification.message}</p>
             </div>
-            <button onClick={() => setActiveVisualNotification(null)} className="text-slate-500 hover:text-white p-1 rounded">
+            <button onClick={() => setActiveVisualNotification(null)} className="text-slate-500 hover:text-white p-1 rounded font-black">
               <X size={14}/>
             </button>
           </div>
@@ -903,7 +1043,7 @@ export default function App() {
         </div>
       )}
 
-      <header className={`border-b flex flex-col z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]' : 'bg-white border-slate-200'}`}>
+      <header className={`border-b flex flex-col z-25 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]' : 'bg-white border-slate-200'}`}>
         
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 min-w-0">
@@ -992,6 +1132,20 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0">
+            {}
+            <button 
+              onClick={() => setIsAssetModalOpen(true)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border shadow-sm transition-all text-xs font-bold uppercase tracking-wider ${
+                isDarkMode 
+                  ? 'bg-blue-600/10 border-blue-500/20 text-blue-400 hover:bg-blue-600/20' 
+                  : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100'
+              }`}
+              title="Manage Dynamic Equipment Pool"
+            >
+              <Truck size={14} className="animate-pulse" />
+              <span className="hidden sm:inline">Equipment Pool</span>
+            </button>
+
             <button 
               onClick={() => {
                 setSoundEnabled(!soundEnabled);
@@ -1212,6 +1366,31 @@ export default function App() {
             </div>
           )}
 
+          {tomorrowAllocations.length > 0 && (
+            <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3">
+                <Clock className="text-amber-500 shrink-0" size={20}/>
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider">📅 Tomorrow's Shared Equipment Allocation Monitor</h4>
+                  <p className="text-xs text-slate-300 font-normal mt-0.5">
+                    Verified active assignments on other team members' device screens:
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tomorrowAllocations.map(task => {
+                  const assetObj = customAssets.find(a => a.key === task.assignedAsset);
+                  return (
+                    <span key={task.id} className="bg-slate-900/90 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-400 flex items-center gap-1.5 animate-pulse">
+                      {renderAssetIcon(task.assignedAsset)}
+                      <span>{assetObj ? assetObj.label : task.assignedAsset} set for {task.ref} tomorrow</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className={`p-3 rounded-2xl border flex flex-col md:flex-row justify-between items-center gap-3 shrink-0 ${
             isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
           }`}>
@@ -1287,8 +1466,8 @@ export default function App() {
 
                       {task.assignedAsset && task.assignedAsset !== 'None' && (
                         <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-2 rounded-xl self-start">
-                          <Truck size={13}/>
-                          <span>Active Asset: {SHARED_ASSETS.find(a => a.key === task.assignedAsset)?.label}</span>
+                          {renderAssetIcon(task.assignedAsset)}
+                          <span>Active Asset: {customAssets.find(a => a.key === task.assignedAsset)?.label || task.assignedAsset}</span>
                         </div>
                       )}
 
@@ -1350,7 +1529,6 @@ export default function App() {
               </div>
             )}
 
-            {}
             {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
               <div className={`flex border rounded-2xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-700' : 'bg-slate-50/50 border-slate-250'}`}>
                 
@@ -1365,7 +1543,7 @@ export default function App() {
                   }`}>
                     <span className="w-8 sm:w-10 text-center font-semibold">Ref</span>
                     <span className="flex-grow px-2 sm:px-3 truncate font-semibold">Work Description</span>
-                    <span className="w-20 text-center shrink-0 font-semibold text-slate-400">Asset (Conflict)</span>
+                    <span className="w-24 text-center shrink-0 font-semibold text-slate-400">Asset Pool</span>
                     <span className="w-8 sm:w-12 text-center shrink-0 font-semibold text-slate-400">Days</span>
                     <span className="w-10 sm:w-16 text-center shrink-0 font-semibold text-slate-400">Progress</span>
                     <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
@@ -1408,8 +1586,8 @@ export default function App() {
                             />
                           </div>
 
-                          {/* Upgraded Professional Asset Select Field (fixing image_6ec109.png styling) */}
-                          <div className="w-20 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center px-1.5 shrink-0">
+                          {}
+                          <div className="w-24 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center px-1.5 shrink-0">
                             <div className="relative w-full">
                               <select 
                                 value={task.assignedAsset || 'None'}
@@ -1421,7 +1599,7 @@ export default function App() {
                                 }`}
                               >
                                 <option value="None">None</option>
-                                {SHARED_ASSETS.map(asset => (
+                                {customAssets.map(asset => (
                                   <option key={asset.key} value={asset.key}>
                                     {asset.key}
                                   </option>
@@ -1478,7 +1656,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {}
                 <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-none">
                   
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
@@ -1511,6 +1688,7 @@ export default function App() {
                         const isHold = task.qaStatus === 'HOLD';
                         const isApproved = task.qaStatus === 'APPROVED';
                         const conflict = checkAssetConflict(task);
+                        const assetObj = customAssets.find(a => a.key === task.assignedAsset);
                         
                         return (
                           <div key={task.id} className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200/60'}`}>
@@ -1519,8 +1697,8 @@ export default function App() {
                                <div 
                                  className="absolute h-5 bg-amber-500/25 border-y border-dashed border-amber-500/40 flex items-center justify-center text-[8px] font-extrabold text-amber-500 uppercase z-0 pointer-events-none"
                                  style={{ 
-                                   left: `${(task.startDays - 1) * 44 + 2}px`, 
-                                   width: '40px',
+                                   left: `${(task.startDays - (assetObj?.defaultMobilizationDays || 1)) * 44 + 2}px`, 
+                                   width: `${(assetObj?.defaultMobilizationDays || 1) * 44}px`,
                                    display: task.startDays > 0 ? 'flex' : 'none'
                                  }}
                                >
@@ -1558,8 +1736,8 @@ export default function App() {
                                        ? 'bg-slate-900 border-slate-700 text-slate-300' 
                                        : 'bg-white border-slate-200 text-slate-700'
                                    }`}>
-                                     {task.assignedAsset !== 'None' && SHARED_ASSETS.find(a => a.key === task.assignedAsset) ? (
-                                       React.createElement(SHARED_ASSETS.find(a => a.key === task.assignedAsset).icon)
+                                     {task.assignedAsset !== 'None' ? (
+                                       renderAssetIcon(task.assignedAsset)
                                      ) : (
                                        <UserPlus size={10}/>
                                      )}
@@ -1580,11 +1758,9 @@ export default function App() {
                      })}
                   </div>
                   
-                  {}
                   <div className={`h-[130px] min-h-[130px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-300'
                   }`}>
-                    {/* Background Grid Guide Lines for Professional Engineering look */}
                     <div className="absolute inset-x-0 bottom-0 top-0 pointer-events-none flex flex-col justify-between py-6 px-1 opacity-25 z-0">
                       <div className="border-b border-dashed border-slate-500 w-full flex justify-between">
                         <span className="text-[7.5px] font-mono pl-3 text-slate-400">Target mobilization limit (14 workers)</span>
@@ -1605,7 +1781,6 @@ export default function App() {
                         return sum;
                       }, 0);
                       
-                      // Capping maximum visible height dynamically to a safe percentage (65%) to avoid cutoff
                       const maximumScaleCeiling = Math.max(maxManpowerVal, 16);
                       const heightPercentage = (dayManpower / maximumScaleCeiling) * 65; 
 
@@ -1685,6 +1860,160 @@ export default function App() {
       </main>
 
       {}
+      {isAssetModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
+          <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+          }`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold flex items-center gap-2"><Truck className="text-blue-500" size={18}/> Logistic Pool & Equipment Registry</h3>
+                <p className="text-[11px] text-slate-400 font-bold mt-1">Register new machinery, tools, or calibration devices to sync with conflict checks.</p>
+              </div>
+              <button onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} className={`p-1.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-400 border-slate-300'}`}><X size={14}/></button>
+            </div>
+
+            <div className="p-5 sm:p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
+              
+              {/* Add New Equipment Form */}
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-blue-500 flex items-center gap-1"><Plus size={12}/> Register New Equipment/Tool</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Asset Code (Unique Ref)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. CRN50, HVBT1"
+                      value={newAssetCode}
+                      onChange={(e) => setNewAssetCode(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Equipment Name / Spec</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 50-Ton Crawler Crane"
+                      value={newAssetName}
+                      onChange={(e) => setNewAssetName(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Logistics Category</label>
+                    <select 
+                      value={newAssetType}
+                      onChange={(e) => setNewAssetType(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                    >
+                      <option value="Heavy Equipment">Heavy Equipment</option>
+                      <option value="Specialized Tools">Specialized Tools</option>
+                      <option value="Testing Equipment">Testing Equipment</option>
+                      <option value="Vehicles">Vehicles Pool</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Vector Icon preset</label>
+                    <select 
+                      value={newAssetIconPreset}
+                      onChange={(e) => setNewAssetIconPreset(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                    >
+                      <option value="heavy">🚚 Heavy Rig</option>
+                      <option value="case">🧳 Calibrator Kit Case</option>
+                      <option value="lightning">⚡ High Voltage Splicer</option>
+                      <option value="tester">🔬 Precision Tech Monitor</option>
+                      <option value="crane">🏗️ Crawler/Gantry Crane</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Transit Buffer (Mob Days)</label>
+                    <input 
+                      type="number" min="0" max="7"
+                      value={newAssetMobDays}
+                      onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300'}`}
+                    />
+                  </div>
+                </div>
+
+                {assetValidationWarning && (
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold flex items-center gap-1.5">
+                    <AlertTriangle size={12} />
+                    <span>{assetValidationWarning}</span>
+                  </div>
+                )}
+
+                <button 
+                  onClick={handleAddCustomAsset}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md"
+                >
+                  <Plus size={14}/> Register Custom Asset
+                </button>
+              </div>
+
+              {/* Registered Active Pools List */}
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5"><Truck size={12}/> Active Logistics Pool ({customAssets.length})</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {customAssets.map((asset) => (
+                    <div 
+                      key={asset.key}
+                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
+                        isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`p-2 rounded-xl shrink-0 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-100'}`}>
+                          {renderAssetIcon(asset.key)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[10px] font-black text-blue-500">{asset.key}</span>
+                            <span className="text-[8px] uppercase tracking-wider font-bold text-slate-400 px-1.5 bg-slate-800/40 rounded border border-slate-700/20">{asset.type}</span>
+                          </div>
+                          <p className="text-xs font-bold truncate mt-0.5">{asset.label}</p>
+                          <p className="text-[9px] text-slate-500 font-normal mt-0.5">Mob Buffer: {asset.defaultMobilizationDays} Days</p>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => handleRemoveCustomAsset(asset.key)}
+                        className={`p-2 rounded-xl border transition-colors shrink-0 ${
+                          isDarkMode 
+                            ? 'bg-slate-950 border-slate-800 hover:text-rose-500 hover:bg-rose-500/10 text-slate-400' 
+                            : 'bg-slate-50 border-slate-300 hover:text-rose-600 hover:bg-rose-50 text-slate-500'
+                        }`}
+                        title={`De-register ${asset.key}`}
+                      >
+                        <Trash2 size={13}/>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            <div className={`p-4 border-t flex justify-end gap-2 ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+              <button 
+                onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} 
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm"
+              >
+                Close Manager
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -1779,7 +2108,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Upgraded Asset Picker within Field Inspector Modal (solving image_6ec109.png logic) */}
                 <div className="space-y-2">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Shared Asset Allocation</h4>
                   <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row items-center justify-between gap-3`}>
@@ -1799,7 +2127,7 @@ export default function App() {
                         }`}
                       >
                         <option value="None">None (Manual Crew Labor Only)</option>
-                        {SHARED_ASSETS.map(asset => (
+                        {customAssets.map(asset => (
                           <option key={asset.key} value={asset.key}>{asset.label} ({asset.type})</option>
                         ))}
                       </select>
@@ -2026,7 +2354,7 @@ export default function App() {
                 }`}
               />
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase">Cancel</button>
+                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase font-black">Cancel</button>
                 <button onClick={handleCreateNewProject} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl">Create Project</button>
               </div>
             </div>
@@ -2046,8 +2374,8 @@ export default function App() {
                 Are you sure you want to permanently delete project reference <span className="font-mono font-semibold text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded">{projectToDelete}</span>? This action is local and cannot be undone.
               </p>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setProjectToDelete(null)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase">Cancel</button>
-                <button onClick={confirmDeleteProject} className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase rounded-xl">Delete</button>
+                <button onClick={() => setProjectToDelete(null)} className="px-4 py-2 text-slate-400 font-semibold text-xs uppercase font-black">Cancel</button>
+                <button onClick={confirmDeleteProject} className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase rounded-xl font-black">Delete</button>
               </div>
             </div>
           </div>
@@ -2096,7 +2424,7 @@ export default function App() {
               <div className="flex justify-between items-center border-t mt-6 pt-4">
                 <button 
                   onClick={() => setShowOnboarding(false)} 
-                  className="text-xs font-semibold text-slate-500 uppercase hover:text-slate-300"
+                  className="text-xs font-semibold text-slate-500 uppercase hover:text-slate-300 font-black"
                 >
                   Skip Guide
                 </button>
@@ -2104,7 +2432,7 @@ export default function App() {
                   {onboardingStep > 1 && (
                     <button 
                       onClick={() => setOnboardingStep(onboardingStep - 1)} 
-                      className="px-4 py-2 border rounded-xl text-xs font-semibold"
+                      className="px-4 py-2 border rounded-xl text-xs font-semibold font-black"
                     >
                       Back
                     </button>
@@ -2118,7 +2446,7 @@ export default function App() {
                         showToast("Site onboarding completed.");
                       }
                     }} 
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl flex items-center gap-1"
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl flex items-center gap-1 font-black"
                   >
                     {onboardingStep === 3 ? 'Get Started' : 'Next Step'} <ArrowRight size={12}/>
                   </button>
