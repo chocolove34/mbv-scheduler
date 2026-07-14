@@ -5,7 +5,8 @@ import {
   Users, UserPlus, Minus, BarChart3, Info, Loader2, Printer,
   LayoutDashboard, FilePlus2, Clock, ChevronRight, Home, FolderPlus, Sun, Moon,
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
-  CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench
+  CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
+  Menu, MessageSquareShare
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -22,14 +23,19 @@ let firebaseConfig = {
 };
 
 try {
-  firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
-  };
+  // Use global provided config if available, fallback to empty/offline mode
+  if (typeof __firebase_config !== 'undefined') {
+      firebaseConfig = JSON.parse(__firebase_config);
+  } else {
+      firebaseConfig = {
+        apiKey: import.meta.env?.VITE_FIREBASE_API_KEY || "",
+        authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN || "",
+        projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID || "",
+        storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET || "",
+        messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+        appId: import.meta.env?.VITE_FIREBASE_APP_ID || ""
+      };
+  }
 } catch (e) {
   // Silent fallback for standalone sandbox compiler environments
 }
@@ -149,6 +155,7 @@ export default function App() {
   // Overlays
   const [toastMessage, setToastMessage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTaskModal, setActiveTaskModal] = useState(null);
   const [isSavingCloud, setIsSavingCloud] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -192,6 +199,21 @@ export default function App() {
     setTimeout(() => setToastMessage(''), 4000);
   }, []);
 
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      showToast("Browser does not support notifications");
+      return false;
+    }
+    if (Notification.permission === 'granted') return true;
+    
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      showToast("Notification permissions granted!");
+      return true;
+    }
+    return false;
+  };
+
   // Send a simulated push notification
   const addNotification = (text, type = 'info') => {
     const newAlert = {
@@ -201,6 +223,42 @@ export default function App() {
       time: 'Just now'
     };
     setNotifications(prev => [newAlert, ...prev]);
+
+    // Native notification if permitted
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Site Update', { body: text });
+    }
+  };
+
+  const shareToGroupChat = async () => {
+    const holds = tasks.filter(t => t.qaStatus === 'HOLD');
+    const completed = Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / (tasks.length || 1));
+    
+    let text = `🚧 *Site Update: ${appTitle}* 🚧\n`;
+    text += `Overall Progress: ${completed}%\n`;
+    
+    if (holds.length > 0) {
+      text += `\n⚠️ *Current QA Holds (${holds.length}):*\n`;
+      holds.forEach(h => text += `- [${h.ref}] ${h.task}\n`);
+    } else {
+      text += `\n✅ No active holds.\n`;
+    }
+    text += `\nLink: ${window.location.href}`;
+
+    if (navigator.share && isMobileViewport) {
+      try {
+        await navigator.share({
+          title: 'Site Operations Update',
+          text: text
+        });
+        addNotification("Update sent to Group Chat successfully.", "success");
+      } catch (err) {
+        console.log("Share cancelled or failed", err);
+      }
+    } else {
+      copyToClipboard(text);
+      showToast("Update copied to clipboard! Ready to paste into GC.");
+    }
   };
 
   useEffect(() => {
@@ -707,8 +765,10 @@ export default function App() {
       )}
 
       {/* RESPONSIVE HEADER BAR */}
-      <header className={`border-b px-4 py-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shadow-sm z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
-        <div className="flex items-center justify-between lg:justify-start gap-3 min-w-0 flex-1">
+      <header className={`border-b flex flex-col z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
+        
+        {/* Top Row: Title, Hamburger, Notifications */}
+        <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 min-w-0">
             <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0 shadow-lg shadow-blue-500/15">
               <LayoutDashboard size={18}/>
@@ -734,7 +794,7 @@ export default function App() {
 
                 {/* Dropdown panel */}
                 {isProjectDropdownOpen && (
-                  <div className={`absolute left-0 mt-2 w-80 rounded-2xl shadow-2xl border p-2.5 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
+                  <div className={`absolute left-0 mt-2 w-80 max-w-[90vw] rounded-2xl shadow-2xl border p-2.5 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
                     isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                   }`}>
                     <div className="px-3 py-2 text-[10px] font-bold tracking-widest text-slate-400 border-b border-slate-850/40 uppercase mb-2">
@@ -796,118 +856,120 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex gap-2 shrink-0 lg:hidden">
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-slate-800 border-slate-700 text-blue-400' : 'bg-white border-slate-300 text-blue-600'}`}>
+          <div className="flex gap-2 shrink-0">
+            {/* Share to GC Button (Mobile & Desktop) */}
+            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'}`} title="Share to GC">
+              <MessageSquareShare size={16}/>
+            </button>
+            <button onClick={async () => {
+              await requestNotificationPermission();
+              setIsNotificationPaneOpen(!isNotificationPaneOpen);
+            }} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
               <Bell size={16}/>
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
             </button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-amber-400' : 'bg-white border-slate-300 text-slate-600'}`}>
-              {isDarkMode ? <Sun size={16}/> : <Moon size={16}/>}
-            </button>
-            <button onClick={() => setIsSettingsOpen(true)} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-600'}`}>
-              <Settings size={16}/>
+            
+            {/* Mobile Hamburger Menu Toggle */}
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`lg:hidden p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'}`}>
+              {isMobileMenuOpen ? <X size={16}/> : <Menu size={16}/>}
             </button>
           </div>
         </div>
 
-        {/* Action Controls Segment */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+        {/* Action Controls Segment (Collapsible on Mobile) */}
+        <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row flex-wrap items-stretch lg:items-center gap-3 px-4 pb-4 lg:py-3 lg:px-4 border-t lg:border-t-0 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
           
-          {/* Crew Switcher */}
-          <div className={`flex items-center gap-1 border rounded-xl p-1 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/80 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 text-slate-400 hidden xl:inline">Crew Type:</span>
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {/* Crew Switcher */}
+            <div className={`flex flex-1 lg:flex-none items-center gap-1 border rounded-xl p-1 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/80 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 text-slate-400 hidden xl:inline">Crew Type:</span>
+              <button 
+                onClick={() => {
+                  setLaborProfile('civil');
+                  showToast("Switched crew structure to Civil Construction");
+                }}
+                className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                  laborProfile === 'civil' 
+                    ? 'bg-amber-600 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Civil
+              </button>
+              <button 
+                onClick={() => {
+                  setLaborProfile('electrical');
+                  showToast("Switched crew structure to Electrical Power Systems ⚡");
+                }}
+                className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                  laborProfile === 'electrical' 
+                    ? 'bg-blue-600 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Electrical ⚡
+              </button>
+            </div>
+
+            {/* Weather Selector */}
+            <div className={`flex flex-1 lg:flex-none items-center justify-center gap-1 border rounded-xl px-2.5 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+              <select 
+                value={weatherFactor} 
+                onChange={(e) => {
+                  setWeatherFactor(e.target.value);
+                  showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
+                  addNotification(`Weather mode shifted to ${e.target.value.toUpperCase()}. Timelines recalculated.`, 'warning');
+                }} 
+                className={`text-xs w-full text-center font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-slate-900 [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
+              >
+                <option value="sunny">☀️ Sunny</option>
+                <option value="heavy_rain">🌧️ Rain Delay (+35%)</option>
+                <option value="typhoon">🌀 Typhoon Lock (+80%)</option>
+              </select>
+            </div>
+
             <button 
-              onClick={() => {
-                setLaborProfile('civil');
-                showToast("Switched crew structure to Civil Construction");
-              }}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                laborProfile === 'civil' 
-                  ? 'bg-amber-600 text-white shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-200'
+              onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+              className={`flex-1 lg:flex-none p-2 justify-center rounded-xl border transition-all text-xs flex items-center gap-1 ${
+                isDarkMode ? 'bg-[#0f172a] hover:bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'
               }`}
+              title="Toggle Specs"
             >
-              Civil
-            </button>
-            <button 
-              onClick={() => {
-                setLaborProfile('electrical');
-                showToast("Switched crew structure to Electrical Power Systems ⚡");
-              }}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                laborProfile === 'electrical' 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Electrical ⚡
-            </button>
-          </div>
-
-          <button 
-            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-            className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1 ${
-              isDarkMode ? 'bg-[#0f172a] hover:bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'
-            }`}
-            title="Toggle Specs"
-          >
-            {isMetadataCollapsed ? <ChevronDown size={14}/> : <ChevronUp size={14}/>}
-            <span className="font-medium text-xs">Specs</span>
-          </button>
-
-          {/* Weather Selector */}
-          <div className={`flex items-center gap-1 border rounded-xl px-2.5 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-            <select 
-              value={weatherFactor} 
-              onChange={(e) => {
-                setWeatherFactor(e.target.value);
-                showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
-                addNotification(`Weather mode shifted to ${e.target.value.toUpperCase()}. Timelines recalculated.`, 'warning');
-              }} 
-              className={`text-xs font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-slate-900 [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
-            >
-              <option value="sunny">☀️ Sunny</option>
-              <option value="heavy_rain">🌧️ Rain Delay (+35%)</option>
-              <option value="typhoon">🌀 Typhoon Lock (+80%)</option>
-            </select>
-          </div>
-
-          <div className={`hidden lg:flex items-center border rounded-xl px-2.5 py-1.5 text-xs ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-            <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-medium text-blue-500" />
-          </div>
-
-          <div className="flex gap-2">
-            <button onClick={addTask} className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-blue-500/10">
-              <Plus size={14}/> <span>Add Task</span>
+              {isMetadataCollapsed ? <ChevronDown size={14}/> : <ChevronUp size={14}/>}
+              <span className="font-medium text-xs">Specs</span>
             </button>
             
-            <button onClick={triggerSystemPrint} className="hidden lg:flex bg-slate-800 hover:bg-slate-750 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
-              <Printer size={14}/> Export
-            </button>
+            <div className={`hidden lg:flex items-center border rounded-xl px-2.5 py-1.5 text-xs ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+              <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-medium text-blue-500" />
+            </div>
+            
+            <div className="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`flex-1 lg:flex-none justify-center p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 hover:bg-slate-800 text-amber-400' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-600'}`}>
+                {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
+              </button>
+              
+              <button onClick={triggerSystemPrint} className="hidden lg:flex justify-center bg-slate-800 hover:bg-slate-750 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
+                <Printer size={14}/> Export
+              </button>
 
-            {/* Notification Pane Button for Desktop */}
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`hidden lg:block p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
-              <Bell size={14}/>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-            </button>
+              <button onClick={() => setIsSettingsOpen(true)} className={`flex-1 lg:flex-none justify-center p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'}`}>
+                <Settings size={14}/>
+              </button>
+            </div>
+          </div>
 
-            {/* Dark Mode toggle for desktop */}
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`hidden lg:block p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 hover:bg-slate-800 text-amber-400' : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-600'}`}>
-              {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
+          <div className="flex flex-wrap gap-2 mt-2 lg:mt-0 w-full lg:w-auto lg:ml-auto">
+            <button onClick={addTask} className="flex-1 lg:flex-none justify-center bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-lg shadow-blue-500/10">
+              <Plus size={14}/> <span>Add Task</span>
             </button>
-
             <button 
               onClick={handleShareToCloud} 
               disabled={isSavingCloud} 
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-md"
+              className="flex-1 lg:flex-none justify-center bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow-md"
               title="Save changes to cloud"
             >
               {isSavingCloud ? <Loader2 className="animate-spin" size={14}/> : <Share2 size={14}/>} 
               <span>SYNC</span>
-            </button>
-            
-            <button onClick={() => setIsSettingsOpen(true)} className={`hidden lg:block p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200' : 'bg-white border-slate-300'}`}>
-              <Settings size={14}/>
             </button>
           </div>
         </div>
@@ -1056,13 +1118,13 @@ export default function App() {
               />
             </div>
             
-            {/* Status filtering pill buttons */}
-            <div className="flex flex-wrap gap-1.5 shrink-0 w-full md:w-auto justify-start md:justify-end">
+            {/* Status filtering pill buttons - Now horizontally scrollable on mobile */}
+            <div className="flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0 gap-1.5 shrink-0 justify-start md:justify-end scrollbar-none" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
               {['ALL', 'PENDING', 'HOLD', 'APPROVED'].map((tag) => (
                 <button
                   key={tag}
                   onClick={() => setFilterStatusTag(tag)}
-                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                  className={`px-3 py-1.5 whitespace-nowrap rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border shrink-0 ${
                     filterStatusTag === tag
                       ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                       : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
@@ -1416,8 +1478,8 @@ export default function App() {
                   <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-slate-300'
                   }`}>
-                    <div className={`absolute left-3 top-3 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2 py-1 rounded shadow border ${
-                      isDarkMode ? 'bg-[#0b0f19] text-slate-300 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-300'
+                    <div className={`absolute left-3 top-2 sm:top-3 z-30 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2 py-1 rounded shadow border ${
+                      isDarkMode ? 'bg-[#0b0f19]/90 text-slate-300 border-slate-700' : 'bg-slate-50/90 text-slate-600 border-slate-300'
                     }`}>
                       <BarChart3 className="text-blue-500" size={12}/> Crew Loading Profile
                     </div>
