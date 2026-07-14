@@ -2288,4 +2288,39 @@ export default function App() {
 
               <div className="space-y-2">
                 {notifications.map((notif) => (
-                  <div key={notif.id} className={`p-3 rounded-xl border text-xs font-bold ${isDarkMode ? 'bg-
+                  <div key={notif.id} className={`p-3 rounded-xl border text-xs font-bold ${isDarkMode ? 'bg-slate-900 border-slate-855 text-slate-300' : 'bg-slate-100 border-slate-400 text-slate-955'}`}>
+                    <span className="font-bold block">{notif.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateProjectModal && (
+        <div className="fixed inset-0 bg-slate-955/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-400'}`}>
+            <div className="p-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider mb-2">Create New Project</h3>
+              <input 
+                type="text"
+                placeholder="e.g. Pagbilao Phase 3B Splicing"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                className={`w-full px-4 py-3 rounded-xl border text-xs font-bold outline-none mb-4 ${
+                  isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-100 border-slate-400 text-slate-955'
+                }`}
+              />
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowCreateProjectModal(false)} className="px-4 py-2 text-slate-655 font-bold text-xs">Cancel</button>
+                <button onClick={handleCreateNewProject} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase rounded-xl shadow-sm">Create</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
