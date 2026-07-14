@@ -47,8 +47,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 
 const CiticoreLogo = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-8 w-auto">
-    <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#EAB308" />
-    <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#F1C40F" />
+    <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#3b82f6" />
+    <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#06b6d4" />
     <text x="50" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="800" fontSize="14" fill="#3b82f6" letterSpacing="-0.03em">CITICORE</text>
     <text x="50" y="34" fontFamily="Inter, system-ui, sans-serif" fontWeight="600" fontSize="6.5" fill="#64748b" letterSpacing="0.1em">CONSTRUCTION</text>
   </svg>
@@ -56,18 +56,49 @@ const CiticoreLogo = () => (
 
 const MbvLogo = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-8 w-auto">
-    <rect x="10" y="5" width="35" height="35" rx="8" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5" />
-    <path d="M27 10 L19 23 L26 23 L23 33 L32 19 L25 19 Z" fill="#EAB308" />
+    <rect x="10" y="5" width="35" height="35" rx="8" fill="#131c2e" stroke="#3b82f6" strokeWidth="1.5" />
+    <path d="M27 10 L19 23 L26 23 L23 33 L32 19 L25 19 Z" fill="#06b6d4" />
     <text x="55" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="800" fontSize="14" fill="#3b82f6" letterSpacing="-0.03em">MBV ELECTRIC</text>
     <text x="55" y="34" fontFamily="Inter, system-ui, sans-serif" fontWeight="600" fontSize="6.5" fill="#6366f1" letterSpacing="0.1em">POWER SYSTEM</text>
   </svg>
 );
 
+const AssetIcons = {
+  None: () => (
+    <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+      <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
+    </svg>
+  ),
+  PC135: () => (
+    <svg className="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 13.5v6H5v-6m14 0V9a2 2 0 00-2-2h-3m5 6.5H14m0 0V7m0 0h-4m0 0a2 2 0 00-2 2v4.5H5" />
+      <circle cx="8" cy="19" r="2.5" />
+      <circle cx="16" cy="19" r="2.5" />
+    </svg>
+  ),
+  MVK01: () => (
+    <svg className="w-3.5 h-3.5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="7" width="18" height="12" rx="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M12 11v4M9 13h6" />
+    </svg>
+  ),
+  FSA22: () => (
+    <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  ),
+  PIT99: () => (
+    <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
+    </svg>
+  )
+};
+
 const SHARED_ASSETS = [
-  { key: 'PC135', label: 'PC135 Excavator', icon: '🚜', type: 'Heavy Equipment', defaultMobilizationDays: 1 },
-  { key: 'MVK01', label: 'MV Calibration Kit #1', icon: '🧰', type: 'Specialized Tools', defaultMobilizationDays: 0 },
-  { key: 'FSA22', label: 'Fusion Splicer Alpha', icon: '⚡', type: 'Specialized Tools', defaultMobilizationDays: 0 },
-  { key: 'PIT99', label: 'Primary Injection Tester', icon: '🧪', type: 'Testing Equipment', defaultMobilizationDays: 1 }
+  { key: 'PC135', label: 'PC135 Excavator', icon: AssetIcons.PC135, type: 'Heavy Equipment', defaultMobilizationDays: 1 },
+  { key: 'MVK01', label: 'MV Calibration Kit #1', icon: AssetIcons.MVK01, type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'FSA22', label: 'Fusion Splicer Alpha', icon: AssetIcons.FSA22, type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'PIT99', label: 'Primary Injection Tester', icon: AssetIcons.PIT99, type: 'Testing Equipment', defaultMobilizationDays: 1 }
 ];
 
 const LABOR_PROFILES = {
@@ -112,10 +143,7 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
-  // Active Labor Profile Toggle
   const [laborProfile, setLaborProfile] = useState('electrical');
-
-  // Switcher Popover states
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -123,7 +151,6 @@ export default function App() {
   const [activeVisualNotification, setActiveVisualNotification] = useState(null);
   const sessionStartTimeRef = useRef(Date.now());
 
-  // Notifications/Simulated Push Log
   const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'info', text: 'Centralized Mother Link Synced with Citicore DB Cloud.', time: 'Just now' },
@@ -153,7 +180,6 @@ export default function App() {
     date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
   });
 
-  // Overlays
   const [toastMessage, setToastMessage] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -162,12 +188,10 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
 
-  // Deletions / Creation modals
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
-  // Search/Filters
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
 
@@ -222,15 +246,14 @@ export default function App() {
       const ctx = new AudioContext();
       
       const now = ctx.currentTime;
-      // High-quality double chime oscillator synthesis
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gainNode1 = ctx.createGain();
       const gainNode2 = ctx.createGain();
       
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(587.33, now); // D5
-      osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.12); // A5
+      osc1.frequency.setValueAtTime(587.33, now); 
+      osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.12); 
       gainNode1.gain.setValueAtTime(0.12, now);
       gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       
@@ -238,8 +261,8 @@ export default function App() {
       gainNode1.connect(ctx.destination);
       
       osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(440.00, now + 0.08); // A4
-      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.22); // D6
+      osc2.frequency.setValueAtTime(440.00, now + 0.08); 
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.22); 
       gainNode2.gain.setValueAtTime(0.08, now + 0.08);
       gainNode2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
       
@@ -266,7 +289,6 @@ export default function App() {
       userId: auth?.currentUser?.uid || 'anonymous'
     };
 
-    // Keep client-side list synchronized
     const clientAlert = {
       id: Date.now(),
       type,
@@ -277,7 +299,6 @@ export default function App() {
 
     if (db) {
       try {
-        // Log to Firestore shared public activity node (Rule 1: Strict paths)
         const activityRef = collection(db, 'artifacts', appId, 'public', 'data', 'activity_log');
         await addDoc(activityRef, alertBody);
       } catch (err) {
@@ -287,22 +308,16 @@ export default function App() {
   };
 
   const broadcastSignificantNotification = useCallback((message, type = 'info') => {
-    // 1. Play offline audio chime
     playAlertSound();
-
-    // 2. Render dynamic slide-down Dynamic Island warning banner
     setActiveVisualNotification({
       id: Date.now(),
       message,
       type
     });
-
-    // Auto dismiss after 6 seconds
     setTimeout(() => {
       setActiveVisualNotification(null);
     }, 6000);
 
-    // 3. Fallback native notification if authorized
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
         new Notification(`Site Alert: ${appTitle}`, {
@@ -352,7 +367,10 @@ export default function App() {
     setProjectList(loadedRegistry);
 
     const initAuth = async () => {
-      if (!auth) return;
+      if (!auth) {
+        setView('editor');
+        return;
+      }
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
           await signInWithCustomToken(auth, __initial_auth_token);
@@ -361,13 +379,27 @@ export default function App() {
         }
       } catch (err) {
         console.warn("Bypassed default auth gateway: ", err);
+        setView('editor');
       }
     };
     initAuth();
 
     if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, setUser);
-      return () => unsubscribe();
+      const unsubscribe = onAuthStateChanged(auth, (u) => {
+        setUser(u);
+        if (!u) {
+          setView('editor');
+        }
+      });
+      
+      const safetyTimeout = setTimeout(() => {
+        setView('editor');
+      }, 3500);
+
+      return () => {
+        unsubscribe();
+        clearTimeout(safetyTimeout);
+      };
     } else {
       setView('editor');
     }
@@ -376,7 +408,6 @@ export default function App() {
   useEffect(() => {
     if (!db || !user || !activeProjectId) return;
 
-    // Real-time listener for current active project schedule (Rule 1 and Rule 2)
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
     const unsubscribeProject = onSnapshot(docRef, (snap) => {
       if (snap.exists()) {
@@ -388,8 +419,10 @@ export default function App() {
         setDocMetadata(payload.docMetadata || {});
         setLogos(payload.logos || { left: '', right: '' });
       }
+      setView('editor');
     }, (error) => {
       console.warn("Firestore schedule listener blocked/error: ", error);
+      setView('editor');
     });
 
     return () => unsubscribeProject();
@@ -398,16 +431,12 @@ export default function App() {
   useEffect(() => {
     if (!db || !user) return;
 
-    // Real-time listener for global multi-project activities (Rule 1 & Rule 2 compliant)
     const activityRef = collection(db, 'artifacts', appId, 'public', 'data', 'activity_log');
-    
     const unsubscribeActivity = onSnapshot(activityRef, (snap) => {
       snap.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const alertData = change.data();
-          // Filter out log events generated prior to this specific device session startup
           if (alertData.timestamp > sessionStartTimeRef.current) {
-            // Do not fire alert if triggered by current client device session to avoid duplicate toasts
             if (alertData.userId !== auth.currentUser?.uid) {
               const textMessage = `[${alertData.projectTitle}] ${alertData.text}`;
               broadcastSignificantNotification(textMessage, alertData.type);
@@ -629,6 +658,7 @@ export default function App() {
 
   const activeRoles = LABOR_PROFILES[laborProfile];
 
+  // Dynamic cap limits for manpower profile grid height alignment
   const maxManpowerVal = Math.max(
     ...headerDays.map(day => 
       activeFlowTasks.reduce((sum, task) => {
@@ -731,7 +761,6 @@ export default function App() {
   const checkAssetConflict = (taskToCheck) => {
     if (!taskToCheck.assignedAsset || taskToCheck.assignedAsset === 'None') return null;
 
-    // Check if another task in the current project uses the same asset with overlapping dates
     for (let otherTask of activeFlowTasks) {
       if (otherTask.id === taskToCheck.id) continue;
       if (otherTask.assignedAsset === taskToCheck.assignedAsset) {
@@ -752,6 +781,13 @@ export default function App() {
       }
     }
     return null;
+  };
+
+  const shareToGroupChat = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('project', activeProjectId);
+    copyToClipboard(url.toString());
+    showToast("Workspace link copied! Share with Engr. Ana.");
   };
 
   const filteredTasks = activeFlowTasks.filter(t => {
@@ -775,12 +811,12 @@ export default function App() {
       if (hasConflict) return 'bg-amber-950/20 border-amber-500/30 hover:bg-amber-950/30';
       if (isHold) return 'bg-rose-950/20 border-rose-900/40 hover:bg-rose-950/30';
       if (isApproved) return 'bg-emerald-950/20 border-emerald-900/40 hover:bg-emerald-950/30';
-      return index % 2 === 0 ? 'bg-[#131c2e]/60 border-slate-800/40 hover:bg-slate-800/30' : 'bg-[#131c2e]/30 border-slate-800/40 hover:bg-slate-800/20';
+      return index % 2 === 0 ? 'bg-[#0f172a] border-slate-800/40 hover:bg-slate-800/30' : 'bg-[#0b0f19] border-slate-800/40 hover:bg-slate-800/20';
     } else {
       if (hasConflict) return 'bg-amber-50/70 border-amber-300 hover:bg-amber-100/30';
       if (isHold) return 'bg-rose-50/70 border-rose-200 hover:bg-rose-100/30';
       if (isApproved) return 'bg-emerald-50/70 border-emerald-200 hover:bg-emerald-100/30';
-      return index % 2 === 0 ? 'bg-white border-slate-200/60 hover:bg-slate-50/40' : 'bg-slate-50/50 border-slate-200/60 hover:bg-slate-50/30';
+      return index % 2 === 0 ? 'bg-white border-slate-200 hover:bg-slate-50/40' : 'bg-slate-50/50 border-slate-200 hover:bg-slate-50/30';
     }
   };
 
@@ -840,7 +876,6 @@ export default function App() {
         }
       `}} />
 
-      {}
       {activeVisualNotification && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-sm sm:max-w-md px-4 z-50 animate-in slide-in-from-top-4 duration-300">
           <div className="bg-slate-900/95 text-white border border-blue-500/50 backdrop-blur-md rounded-2xl shadow-2xl p-4 flex items-start gap-3">
@@ -868,16 +903,14 @@ export default function App() {
         </div>
       )}
 
-      <header className={`border-b flex flex-col z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
+      <header className={`border-b flex flex-col z-20 shrink-0 print:hidden transition-colors ${isDarkMode ? 'bg-[#131c2e]' : 'bg-white border-slate-200'}`}>
         
-        {/* Top Row: Title, Hamburger, Notifications */}
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0 shadow-lg shadow-blue-500/15">
-              <LayoutDashboard size={18}/>
+            <div className="bg-[#1e293b] p-2.5 rounded-xl border border-slate-700/60 text-white shrink-0 shadow-lg">
+              <LayoutDashboard size={18} className="text-blue-500"/>
             </div>
             
-            {/* SWITCHER DROPDOWN */}
             <div className="flex flex-col min-w-0" ref={dropdownRef}>
               <div className="relative">
                 <button
@@ -895,12 +928,11 @@ export default function App() {
                   <ChevronDown className="text-slate-500 shrink-0" size={14}/>
                 </button>
 
-                {/* Dropdown panel */}
                 {isProjectDropdownOpen && (
                   <div className={`absolute left-0 mt-2 w-80 max-w-[90vw] rounded-2xl shadow-2xl border p-2.5 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
                     isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
                   }`}>
-                    <div className="px-3 py-2 text-[10px] font-bold tracking-widest text-slate-400 border-b border-slate-850/40 uppercase mb-2">
+                    <div className="px-3 py-2 text-[10px] font-bold tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
                       Site Schedules Directory
                     </div>
                     <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
@@ -914,8 +946,8 @@ export default function App() {
                           }}
                           className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                             activeProjectId === proj.id 
-                              ? 'bg-blue-600/10 text-blue-500 dark:text-blue-400 border border-blue-500/30' 
-                              : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300' : 'hover:bg-slate-50 text-slate-700')
+                              ? 'bg-[#1e293b] text-blue-400 border border-slate-700 shadow-md' 
+                              : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-50 text-slate-700 border border-transparent')
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
@@ -939,13 +971,13 @@ export default function App() {
                       ))}
                     </div>
                     
-                    <div className="border-t border-slate-800/40 mt-2.5 pt-2.5">
+                    <div className="border-t border-slate-800 mt-2.5 pt-2.5">
                       <button 
                         onClick={() => {
                           setShowCreateProjectModal(true);
                           setIsProjectDropdownOpen(false);
                         }}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-xs font-bold uppercase tracking-wider"
+                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-xs font-bold uppercase tracking-wider shadow-md"
                       >
                         <Plus size={14}/> Create New Project
                       </button>
@@ -960,33 +992,30 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0">
-            {/* Audio Toggle control feedback button */}
             <button 
               onClick={() => {
                 setSoundEnabled(!soundEnabled);
                 showToast(soundEnabled ? "Audio chime alerts muted" : "Audio chime alerts enabled 🔊");
               }} 
-              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-500' : 'text-slate-500'}`} 
+              className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700/80 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-500' : 'text-slate-500'}`} 
               title={soundEnabled ? "Mute audio alerts" : "Unmute audio alerts"}
             >
               {soundEnabled ? <Volume2 size={16}/> : <VolumeX size={16}/>}
             </button>
 
-            {/* Share to GC Button */}
-            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'}`} title="Share to GC">
+            <button onClick={shareToGroupChat} className={`p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'}`} title="Share to GC">
               <MessageSquareShare size={16}/>
             </button>
 
             <button onClick={async () => {
               await requestNotificationPermission();
               setIsNotificationPaneOpen(!isNotificationPaneOpen);
-            }} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
+            }} className={`p-2.5 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#0f172a] border-slate-700/80 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-600 hover:bg-slate-100'}`}>
               <Bell size={16}/>
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
             </button>
             
-            {/* Mobile Hamburger Menu Toggle */}
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`lg:hidden p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'}`}>
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`lg:hidden p-2.5 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-700/80 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'}`}>
               {isMobileMenuOpen ? <X size={16}/> : <Menu size={16}/>}
             </button>
           </div>
@@ -995,7 +1024,6 @@ export default function App() {
         <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row flex-wrap items-stretch lg:items-center gap-3 px-4 pb-4 lg:py-3 lg:px-4 border-t lg:border-t-0 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            {/* Crew Switcher */}
             <div className={`flex flex-1 lg:flex-none items-center gap-1 border rounded-xl p-1 transition-colors ${isDarkMode ? 'bg-[#0b0f19]/80 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 text-slate-400 hidden xl:inline">Crew Type:</span>
               <button 
@@ -1026,7 +1054,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Weather Selector */}
             <div className={`flex flex-1 lg:flex-none items-center justify-center gap-1 border rounded-xl px-2.5 py-1.5 transition-colors ${isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
               <select 
                 value={weatherFactor} 
@@ -1035,7 +1062,7 @@ export default function App() {
                   showToast(`Weather multiplier set to ${e.target.value.replace('_', ' ').toUpperCase()}`);
                   logActivityToCloud(`Weather shift triggered: ${e.target.value.toUpperCase()}. Recalculating timeline.`, 'warning');
                 }} 
-                className={`text-xs w-full text-center font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-slate-900 [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
+                className={`text-xs w-full text-center font-semibold bg-transparent outline-none border-none text-blue-500 cursor-pointer ${isDarkMode ? '[&_option]:bg-[#0f172a] [&_option]:text-white' : '[&_option]:bg-white [&_option]:text-slate-800'}`}
               >
                 <option value="sunny">☀️ Sunny</option>
                 <option value="heavy_rain">🌧️ Rain Delay (+35%)</option>
@@ -1063,7 +1090,7 @@ export default function App() {
                 {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
               </button>
               
-              <button onClick={triggerSystemPrint} className="hidden lg:flex justify-center bg-slate-800 hover:bg-slate-750 text-white px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
+              <button onClick={triggerSystemPrint} className="hidden lg:flex justify-center bg-[#131c2e] hover:bg-slate-800 text-white px-3.5 py-2 border border-slate-700/80 rounded-xl text-xs font-bold uppercase tracking-wider items-center gap-1.5 transition">
                 <Printer size={14}/> Export
               </button>
 
@@ -1127,11 +1154,9 @@ export default function App() {
         </div>
       )}
 
-      {/* Main layout wrapper containing concrete background attributes to block external page leaks */}
       <main className={`flex-1 overflow-hidden p-3 md:p-6 flex flex-col min-h-0 relative ${isDarkMode ? 'bg-[#0b0f19]' : 'bg-slate-50'}`}>
         <div className="max-w-[1600px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
-          {/* COLLAPSIBLE SPECS CARD */}
           {!isMetadataCollapsed && (
             <div id="gantt-export-zone" className={`rounded-2xl border p-4 sm:p-5 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 ${
               isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
@@ -1146,7 +1171,7 @@ export default function App() {
                   <input 
                     value={docMetadata.projectName} 
                     onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                    className={`text-center font-bold text-sm sm:text-base tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-550 focus:border-blue-500 outline-none w-full transition-colors ${
+                    className={`text-center font-bold text-sm sm:text-base tracking-tight bg-transparent uppercase border-b border-transparent hover:border-slate-500 focus:border-blue-500 outline-none w-full transition-colors ${
                       isDarkMode ? 'text-white' : 'text-slate-800'
                     }`}
                     placeholder="Project Name..."
@@ -1164,7 +1189,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Data specifications */}
               <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-bold uppercase tracking-wider border-t pt-4 transition-colors ${
                 isDarkMode ? 'border-slate-800 text-slate-300' : 'border-slate-200 text-slate-600'
               }`}>
@@ -1188,7 +1212,6 @@ export default function App() {
             </div>
           )}
 
-          {/* ACTIVE FILTER / SEARCH TOOLBAR PANEL */}
           <div className={`p-3 rounded-2xl border flex flex-col md:flex-row justify-between items-center gap-3 shrink-0 ${
             isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'
           }`}>
@@ -1206,7 +1229,6 @@ export default function App() {
               />
             </div>
             
-            {/* Status filtering pill buttons */}
             <div className="flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0 gap-1.5 shrink-0 justify-start md:justify-end scrollbar-none" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
               {['ALL', 'PENDING', 'HOLD', 'APPROVED'].map((tag) => (
                 <button
@@ -1224,10 +1246,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* DUAL WORKSPACE PANEL - Height delegated strictly to prevent scroll freezing */}
-          <div className="flex-1 flex flex-col min-h-0 relative">
+          <div className="flex-grow flex flex-col min-h-0 relative">
             
-            {/* 1. MOBILE SITE CARDS VIEW */}
             {(!isMobileViewport || mobileDisplayTab === 'tasks') && isMobileViewport && (
               <div 
                 className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
@@ -1243,7 +1263,6 @@ export default function App() {
                         getRowBgColor(task, 0)
                       }`}
                     >
-                      {/* Header Row */}
                       <div className="flex justify-between items-center gap-2 border-b pb-3 border-slate-200/40 dark:border-slate-800/40">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="font-mono font-bold text-xs text-blue-500 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">{task.ref}</span>
@@ -1256,7 +1275,6 @@ export default function App() {
 
                       <h4 className={`text-base font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-slate-850'}`}>{task.task}</h4>
                       
-                      {/* Logistical conflict banner warning in mobile cards */}
                       {conflict && (
                         <div className="p-3 bg-amber-500/15 border border-amber-500/35 rounded-xl flex items-start gap-2 text-amber-500 animate-pulse text-[11px] font-bold">
                           <AlertTriangle className="shrink-0 mt-0.5" size={14}/>
@@ -1267,7 +1285,6 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Display active assigned asset */}
                       {task.assignedAsset && task.assignedAsset !== 'None' && (
                         <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-2 rounded-xl self-start">
                           <Truck size={13}/>
@@ -1275,10 +1292,9 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Touch friendly duration blocks */}
                       <div className="flex items-center justify-between mt-1">
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-550 dark:text-slate-400 mr-2">Duration:</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-2">Duration:</span>
                           <div className={`flex items-center rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); updateTask(task.id, 'duration', Math.max(1, task.duration - 1)); }} 
@@ -1301,9 +1317,8 @@ export default function App() {
                         </span>
                       </div>
 
-                      {/* Progress tracking bar */}
                       <div className="space-y-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-                        <div className="flex justify-between text-xs font-semibold text-slate-505 dark:text-slate-300">
+                        <div className="flex justify-between text-xs font-semibold text-slate-500 dark:text-slate-300">
                           <span>PROGRESS</span>
                           <span>{task.progress || 0}%</span>
                         </div>
@@ -1312,9 +1327,8 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Crew parameters */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-[11px] font-semibold">
-                        <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
+                        <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1 uppercase tracking-wider"><Users size={13}/> CREW ({task.totalManpower}):</span>
                         {activeRoles.filter(r => (parseInt(task[r.key]) || 0) > 0).map(r => (
                           <span key={r.key} className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded font-bold text-slate-700 dark:text-slate-300">
                             {r.icon} {r.label}:{task[r.key]}
@@ -1322,7 +1336,6 @@ export default function App() {
                         ))}
                       </div>
 
-                      {/* Delete row block */}
                       <div className="flex justify-end pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
                         <button 
                           onClick={(e) => { e.stopPropagation(); triggerTaskRemove(task.id); }}
@@ -1337,30 +1350,27 @@ export default function App() {
               </div>
             )}
 
-            {/* 2. RESPONSIVE GANTT TIMELINE */}
+            {}
             {(!isMobileViewport || mobileDisplayTab === 'gantt') && (
-              <div className={`flex border rounded-2xl overflow-hidden flex-1 shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-700' : 'bg-slate-50/50 border-slate-250'}`}>
+              <div className={`flex border rounded-2xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-700' : 'bg-slate-50/50 border-slate-250'}`}>
                 
-                {/* Left spreadsheet column segment */}
                 <div className={`hidden lg:flex w-[45%] md:w-[35%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-colors ${
                   isDarkMode 
                     ? 'bg-[#131c2e] border-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]' 
                     : 'bg-white border-slate-250 shadow-[2px_0_5px_-2px_rgba(226,232,240,0.5)]'
                 }`}>
                   
-                  {/* Calendar columns Scale Header */}
-                  <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-bold text-[10px] flex items-center uppercase tracking-wider sticky top-0 z-25 border-b transition-colors ${
+                  <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-bold text-[10px] flex items-center uppercase tracking-wider top-0 z-25 border-b transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600 border-slate-250'
                   }`}>
                     <span className="w-8 sm:w-10 text-center font-semibold">Ref</span>
                     <span className="flex-grow px-2 sm:px-3 truncate font-semibold">Work Description</span>
-                    <span className="w-14 text-center shrink-0 font-semibold text-slate-400">Assets</span>
+                    <span className="w-20 text-center shrink-0 font-semibold text-slate-400">Asset (Conflict)</span>
                     <span className="w-8 sm:w-12 text-center shrink-0 font-semibold text-slate-400">Days</span>
                     <span className="w-10 sm:w-16 text-center shrink-0 font-semibold text-slate-400">Progress</span>
                     <span className="w-6 sm:w-8 print:hidden shrink-0"></span>
                   </div>
 
-                  {/* Synchronized row heights */}
                   <div className="flex-grow overflow-y-auto min-h-0">
                     {filteredTasks.map((task, index) => {
                       const conflict = checkAssetConflict(task);
@@ -1393,27 +1403,34 @@ export default function App() {
                               value={task.task} 
                               onChange={(e) => updateTask(task.id, 'task', e.target.value)} 
                               className={`font-semibold text-xs sm:text-sm bg-transparent outline-none rounded-md w-full truncate leading-tight transition-all p-0.5 -ml-0.5 ${
-                                isDarkMode ? 'text-white' : 'text-slate-850'
+                                isDarkMode ? 'text-white' : 'text-slate-800'
                               }`} 
                             />
                           </div>
 
-                          {/* Quick-assign shared tooling assets */}
-                          <div className="w-14 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
-                            <select 
-                              value={task.assignedAsset || 'None'}
-                              onChange={(e) => updateTask(task.id, 'assignedAsset', e.target.value)}
-                              className={`text-[10px] font-bold py-1.5 rounded-lg border text-center outline-none w-full ${
-                                isDarkMode 
-                                  ? 'bg-[#0f172a] border-slate-700 text-blue-400' 
-                                  : 'bg-white border-slate-300 text-blue-600'
-                              }`}
-                            >
-                              <option value="None">None</option>
-                              {SHARED_ASSETS.map(asset => (
-                                <option key={asset.key} value={asset.key}>{asset.icon} {asset.key}</option>
-                              ))}
-                            </select>
+                          {/* Upgraded Professional Asset Select Field (fixing image_6ec109.png styling) */}
+                          <div className="w-20 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center px-1.5 shrink-0">
+                            <div className="relative w-full">
+                              <select 
+                                value={task.assignedAsset || 'None'}
+                                onChange={(e) => updateTask(task.id, 'assignedAsset', e.target.value)}
+                                className={`text-[10px] font-bold py-1.5 pl-2 pr-6 rounded-lg border text-left outline-none w-full appearance-none transition-all cursor-pointer ${
+                                  isDarkMode 
+                                    ? 'bg-[#0f172a] border-slate-700 hover:border-slate-600 text-blue-400 focus:ring-1 focus:ring-blue-500' 
+                                    : 'bg-white border-slate-300 hover:border-slate-400 text-blue-600 focus:ring-1 focus:ring-blue-500'
+                                }`}
+                              >
+                                <option value="None">None</option>
+                                {SHARED_ASSETS.map(asset => (
+                                  <option key={asset.key} value={asset.key}>
+                                    {asset.key}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-500">
+                                <ChevronDown size={11} />
+                              </div>
+                            </div>
                           </div>
                           
                           <div className="w-8 sm:w-12 h-full border-l border-slate-100 dark:border-slate-800/40 flex items-center justify-center p-1 shrink-0">
@@ -1428,14 +1445,13 @@ export default function App() {
                             />
                           </div>
 
-                          {/* Progress slider inputs */}
                           <div className="w-10 sm:w-16 h-full border-l border-slate-100 dark:border-slate-800/40 flex flex-col items-center justify-center px-1 sm:px-2 shrink-0">
                             <div className="flex items-center gap-0.5 w-full justify-between mb-1 font-bold text-xs">
                               <input 
                                 type="number" min="0" max="100" value={task.progress || 0} 
                                 onChange={(e) => updateTask(task.id, 'progress', Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} 
                                 className={`w-6 sm:w-8 text-left bg-transparent rounded outline-none font-mono font-bold ${
-                                  isDarkMode ? 'text-white' : 'text-slate-850'
+                                  isDarkMode ? 'text-white' : 'text-slate-800'
                                 }`} 
                               />
                               <span className="text-[9px] text-slate-400 font-semibold">%</span>
@@ -1462,10 +1478,9 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Gantt Calendar View */}
+                {}
                 <div id="gantt-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }} className="flex-1 flex flex-col bg-[#0b0f19]/5 relative overflow-x-auto print:overflow-visible scrollbar-none">
                   
-                  {/* Header Scale Dates */}
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-100 border-slate-250'
                   }`}>
@@ -1489,7 +1504,6 @@ export default function App() {
                     })}
                   </div>
                   
-                  {/* Grid Timeline Map */}
                   <div className={`flex-1 min-w-max relative transition-all duration-200 ${
                     isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
                   }`}>
@@ -1501,7 +1515,6 @@ export default function App() {
                         return (
                           <div key={task.id} className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center transition-colors ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200/60'}`}>
                              
-                             {/* Auto-injected Transit mobilization days shown in yellow overlay */}
                              {task.assignedAsset && task.assignedAsset !== 'None' && (
                                <div 
                                  className="absolute h-5 bg-amber-500/25 border-y border-dashed border-amber-500/40 flex items-center justify-center text-[8px] font-extrabold text-amber-500 uppercase z-0 pointer-events-none"
@@ -1540,12 +1553,17 @@ export default function App() {
                                  
                                  <div className="flex gap-1.5 items-center">
                                    {conflict && <span className="bg-rose-600 text-white rounded px-1 text-[8px] font-extrabold animate-bounce">CLASH</span>}
-                                   <span className={`flex items-center gap-0.5 text-[8.5px] font-bold border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
+                                   <span className={`flex items-center gap-1 text-[8.5px] font-bold border px-1 py-0.5 rounded shadow-sm pointer-events-auto ${
                                      isDarkMode 
                                        ? 'bg-slate-900 border-slate-700 text-slate-300' 
                                        : 'bg-white border-slate-200 text-slate-700'
                                    }`}>
-                                     <UserPlus size={10}/> Crew
+                                     {task.assignedAsset !== 'None' && SHARED_ASSETS.find(a => a.key === task.assignedAsset) ? (
+                                       React.createElement(SHARED_ASSETS.find(a => a.key === task.assignedAsset).icon)
+                                     ) : (
+                                       <UserPlus size={10}/>
+                                     )}
+                                     Crew
                                    </span>
                                    {task.totalManpower > 0 && !isMobileViewport && (
                                      <span className={`hidden md:flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${
@@ -1562,34 +1580,56 @@ export default function App() {
                      })}
                   </div>
                   
-                  {/* Daily Load Workforce Chart */}
-                  <div className={`h-[80px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-slate-300'
+                  {}
+                  <div className={`h-[130px] min-h-[130px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-300'
                   }`}>
-                    <div className={`absolute left-3 top-2 sm:top-3 z-30 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2 py-1 rounded shadow border ${
-                      isDarkMode ? 'bg-[#0b0f19]/90 text-slate-300 border-slate-700' : 'bg-slate-50/90 text-slate-600 border-slate-300'
-                    }`}>
-                      <BarChart3 className="text-blue-500" size={12}/> Crew Loading Profile
+                    {/* Background Grid Guide Lines for Professional Engineering look */}
+                    <div className="absolute inset-x-0 bottom-0 top-0 pointer-events-none flex flex-col justify-between py-6 px-1 opacity-25 z-0">
+                      <div className="border-b border-dashed border-slate-500 w-full flex justify-between">
+                        <span className="text-[7.5px] font-mono pl-3 text-slate-400">Target mobilization limit (14 workers)</span>
+                        <span></span>
+                      </div>
+                      <div className="border-b border-dashed border-slate-600 w-full"></div>
                     </div>
+
+                    <div className={`absolute left-3 top-3 z-30 text-[9.5px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl shadow border ${
+                      isDarkMode ? 'bg-[#0b0f19] text-slate-300 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-300'
+                    }`}>
+                      <BarChart3 className="text-blue-500 animate-pulse" size={13}/> Crew Loading Profile
+                    </div>
+
                     {headerDays.map(day => {
                       const dayManpower = activeFlowTasks.reduce((sum, task) => {
                         if (day >= task.startDays && day < task.startDays + task.adjustedDuration) return sum + task.totalManpower;
                         return sum;
                       }, 0);
-                      const heightPercentage = maxManpowerVal > 0 ? (dayManpower / maxManpowerVal) * 105 : 0;
+                      
+                      // Capping maximum visible height dynamically to a safe percentage (65%) to avoid cutoff
+                      const maximumScaleCeiling = Math.max(maxManpowerVal, 16);
+                      const heightPercentage = (dayManpower / maximumScaleCeiling) * 65; 
+
                       return (
-                        <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2 relative group ${
+                        <div key={`mp-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2.5 relative group ${
                           isDarkMode ? 'border-slate-800/60' : 'border-slate-200'
                         }`}>
-                          <div 
-                            className={`w-5 rounded-t transition-all flex items-end justify-center ${
-                              dayManpower > 12 
-                                ? 'bg-rose-500/40 hover:bg-rose-500/65' 
-                                : (isDarkMode ? 'bg-indigo-950/70 hover:bg-indigo-900' : 'bg-indigo-200 hover:bg-indigo-300')
-                            }`} 
-                            style={{ height: `${heightPercentage * 0.55}%`, minHeight: dayManpower > 0 ? '4px' : '0' }} 
-                          />
-                          <span className={`text-[9.5px] font-mono font-bold mt-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{dayManpower > 0 ? dayManpower : '-'}</span>
+                          {dayManpower > 0 && (
+                            <div 
+                              className={`w-6 rounded-t-lg transition-all flex items-end justify-center z-10 ${
+                                dayManpower > 12 
+                                  ? 'bg-rose-500/50 hover:bg-rose-500/70 shadow-lg shadow-rose-500/10' 
+                                  : (isDarkMode ? 'bg-indigo-600/40 hover:bg-indigo-600/60' : 'bg-indigo-300 hover:bg-indigo-400')
+                              }`} 
+                              style={{ height: `${Math.max(4, heightPercentage)}%` }} 
+                            />
+                          )}
+                          <span className={`text-[10px] font-mono font-bold mt-1.5 z-10 ${
+                            dayManpower > 12 
+                              ? 'text-rose-400' 
+                              : (isDarkMode ? 'text-slate-300' : 'text-slate-700')
+                          }`}>
+                            {dayManpower > 0 ? dayManpower : '-'}
+                          </span>
                         </div>
                       );
                     })}
@@ -1599,7 +1639,6 @@ export default function App() {
               </div>
             )}
 
-            {/* 3. SAFETY CO-SIGN FLAGS REGISTER */}
             {isMobileViewport && mobileDisplayTab === 'qa' && (
               <div 
                 className="flex-1 overflow-y-auto space-y-4 pb-20 scrollbar-thin"
@@ -1608,7 +1647,7 @@ export default function App() {
                 <div className={`p-5 rounded-2xl border text-center ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-250'}`}>
                   <ShieldCheck className="mx-auto text-emerald-500 mb-3" size={32}/>
                   <h4 className="text-sm font-bold uppercase tracking-wider">QA/QC Hold Point Inspection Register</h4>
-                  <p className="text-xs text-slate-505 dark:text-slate-300 mt-2 leading-relaxed font-normal">
+                  <p className="text-xs text-slate-500 dark:text-slate-300 mt-2 leading-relaxed font-normal">
                     Tap any site card below to inspect parameters, check checklist gates, and co-sign approvals.
                   </p>
                 </div>
@@ -1634,8 +1673,7 @@ export default function App() {
 
           </div>
 
-          {/* PROJECT METRICS FOOTER OVERVIEW */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-505 dark:text-slate-400 font-semibold tracking-wide shrink-0 border-t pt-4 border-slate-800/40">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide shrink-0 border-t pt-4 border-slate-800/40">
              <span className="flex items-center gap-1.5"><Info size={14}/> Citicore Master cloud mother database linked.</span>
              <span className="flex items-center gap-3">
                <span>Global Completed: <strong className="text-blue-500 font-bold">{overallGlobalProgress}%</strong></span>
@@ -1646,7 +1684,7 @@ export default function App() {
         </div>
       </main>
 
-      {/* CORE INSPECTION CHECKLIST GATE MODAL */}
+      {}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -1655,7 +1693,6 @@ export default function App() {
             <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[90vh] transition-all duration-300 ${
               isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
             }`}>
-              {/* Header */}
               <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
                 <div>
                   <h3 className="text-sm sm:text-base font-bold flex items-center gap-2"><ClipboardCheck className="text-blue-500" size={18}/> Site Field Inspector Card</h3>
@@ -1666,7 +1703,6 @@ export default function App() {
               
               <div className="p-4 sm:p-6 overflow-y-auto flex-grow space-y-5 scrollbar-thin">
                 
-                {/* Duration modifiers */}
                 <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Configure Base Days & Percent Complete</h4>
                   <div className="grid grid-cols-2 gap-4">
@@ -1709,13 +1745,12 @@ export default function App() {
                             logActivityToCloud(`Task sequence: "${currentTaskEditing.task}" fully COMPLETED!`, 'success');
                           }
                         }}
-                        className="mt-3.5 w-full cursor-pointer accent-blue-500 text-blue-500 bg-slate-350 dark:bg-slate-800"
+                        className="mt-3.5 w-full cursor-pointer accent-blue-500 text-blue-500 bg-slate-300 dark:bg-slate-800"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Co-Sign inspection levels */}
                 <div className="space-y-2">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Co-Sign Inspector Status</h4>
                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -1744,7 +1779,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Logistics Asset Assignment dropdown inside field inspector */}
+                {/* Upgraded Asset Picker within Field Inspector Modal (solving image_6ec109.png logic) */}
                 <div className="space-y-2">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Shared Asset Allocation</h4>
                   <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row items-center justify-between gap-3`}>
@@ -1755,27 +1790,31 @@ export default function App() {
                         <p className="text-[10px] text-slate-400 font-normal">System verifies global cross-project availability automatically.</p>
                       </div>
                     </div>
-                    <select 
-                      value={currentTaskEditing.assignedAsset || 'None'}
-                      onChange={(e) => updateTask(currentTaskEditing.id, 'assignedAsset', e.target.value)}
-                      className={`px-3 py-2 rounded-xl border text-xs font-bold outline-none cursor-pointer ${
-                        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-350 text-slate-800'
-                      }`}
-                    >
-                      <option value="None">None (Manual Crew Labor Only)</option>
-                      {SHARED_ASSETS.map(asset => (
-                        <option key={asset.key} value={asset.key}>{asset.icon} {asset.label} ({asset.type})</option>
-                      ))}
-                    </select>
+                    <div className="relative min-w-[200px]">
+                      <select 
+                        value={currentTaskEditing.assignedAsset || 'None'}
+                        onChange={(e) => updateTask(currentTaskEditing.id, 'assignedAsset', e.target.value)}
+                        className={`pl-3 pr-8 py-2 rounded-xl border text-xs font-bold outline-none cursor-pointer appearance-none w-full ${
+                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-800'
+                        }`}
+                      >
+                        <option value="None">None (Manual Crew Labor Only)</option>
+                        {SHARED_ASSETS.map(asset => (
+                          <option key={asset.key} value={asset.key}>{asset.label} ({asset.type})</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-500">
+                        <ChevronDown size={14} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Checklist gates */}
                 <div className={`p-3.5 rounded-2xl border ${isDarkMode ? 'bg-[#0b0f19]/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5"><ListTodo className="text-blue-500" size={12}/> Engineering Sign-Off Steps</h4>
                   
                   {Object.keys(currentTaskEditing.checklist || {}).length === 0 ? (
-                    <p className="text-xs text-slate-505 italic font-normal">No checklist parameters set for this task class.</p>
+                    <p className="text-xs text-slate-500 italic font-normal">No checklist parameters set for this task class.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {Object.entries(currentTaskEditing.checklist).map(([name, completed]) => (
@@ -1829,7 +1868,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Dynamic Manpower adjustments */}
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Labor Crew Requirements ({laborProfile.toUpperCase()} Pool)</h4>
                   <div className="flex flex-wrap gap-2">
@@ -1850,7 +1888,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Worker names logging */}
                 <div className={`space-y-3 pt-3 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                   {activeRoles.filter(r => (parseInt(currentTaskEditing[r.key]) || 0) > 0).map(r => {
                     const inputs = [];
@@ -1863,7 +1900,7 @@ export default function App() {
                           onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
                           placeholder={`Enter name for ${r.fullName} #${i+1}...`}
                           className={`px-3 py-2 border rounded-xl text-xs font-semibold w-full outline-none ${
-                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-855 placeholder-slate-400'
+                            isDarkMode ? 'bg-[#0b0f19] border-slate-700 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-800 placeholder-slate-400'
                           }`}
                         />
                       );
@@ -1886,7 +1923,6 @@ export default function App() {
         );
       })()}
 
-      {/* BRANDING CONFIG MODAL */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 print:hidden">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#131c2e] text-slate-100' : 'bg-white text-slate-800'}`}>
@@ -1919,10 +1955,9 @@ export default function App() {
         </div>
       )}
 
-      {}
       {isNotificationPaneOpen && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 flex justify-end print:hidden">
-          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-250 text-slate-850'}`}>
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex justify-end print:hidden">
+          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-250 text-slate-800'}`}>
             <div className="space-y-4 overflow-y-auto">
               <div className="flex justify-between items-center border-b pb-3">
                 <div className="flex items-center gap-2">
@@ -1934,10 +1969,9 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Developer Test Trigger buttons to verify mobile notification */}
               <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
                 <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block">Notification Testbed</span>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-normal">Tap to trigger simulated cross-device notifications on your phone or laptop immediately.</p>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-normal">Tap to trigger simulated cross-device notifications immediately.</p>
                 <div className="flex gap-2">
                   <button 
                     onClick={() => {
@@ -1976,7 +2010,6 @@ export default function App() {
         </div>
       )}
 
-      {/* CREATE NEW PROJECT MODAL */}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
@@ -2001,7 +2034,6 @@ export default function App() {
         </div>
       )}
 
-      {/* CONFIRMATION OVERLAYS */}
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
@@ -2022,7 +2054,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ONBOARDING FLOW */}
       {showOnboarding && (
         <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl border shadow-2xl max-w-lg w-full overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-700' : 'bg-white border-slate-300'}`}>
@@ -2065,7 +2096,7 @@ export default function App() {
               <div className="flex justify-between items-center border-t mt-6 pt-4">
                 <button 
                   onClick={() => setShowOnboarding(false)} 
-                  className="text-xs font-semibold text-slate-505 uppercase hover:text-slate-300"
+                  className="text-xs font-semibold text-slate-500 uppercase hover:text-slate-300"
                 >
                   Skip Guide
                 </button>
