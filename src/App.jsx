@@ -7,7 +7,7 @@ import {
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
   Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer,
-  SlidersHorizontal, EyeOff, Check, Calendar, Trash, ChevronLeft
+  SlidersHorizontal, EyeOff, Check, Calendar, Trash, ChevronLeft, Phone, Play, RefreshCw, Send
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -37,7 +37,7 @@ try {
       };
   }
 } catch (e) {
-  // Silent fallback for compilation sandbox
+  // Silent fallback for sandbox environment compilation
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -71,7 +71,7 @@ const AssetIcons = {
     </svg>
   ),
   heavy: () => (
-    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4 h-4 text-blue-600 dark:text-blue-404" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 13.5v6H5v-6m14 0V9a2 2 0 00-2-2h-3m5 6.5H14m0 0V7m0 0h-4m0 0a2 2 0 00-2 2v4.5H5" />
       <circle cx="8" cy="19" r="2.5" />
       <circle cx="16" cy="19" r="2.5" />
@@ -124,7 +124,7 @@ const LABOR_PROFILES = {
     { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
     { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
     { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-202', icon: '⛓️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
     { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
     { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-100 border-rose-400 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
     { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
@@ -141,16 +141,27 @@ const LABOR_PROFILES = {
 };
 
 const INITIAL_TASKS = [
-  { id: 'T1', ref: '1.0', desc: 'Pre-Construction', task: 'Permit Processing & Mobilization', duration: 2, progress: 100, pm: 1, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Mobilization Permit': true, 'Office Container Set': true }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [] },
-  { id: 'T2', ref: '1.1', desc: 'Technical Survey', task: 'Geo-staking & Trenching Layout', duration: 1, progress: 100, pm: 1, se: 2, ee: 1, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Boundary Markers Laid': true, 'Topographical Crosscheck': true }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [] },
-  { id: 'T3', ref: '2.0', desc: 'Civil Works', task: '1.5m Depth Manual Cable Potholing', duration: 3, progress: 80, pm: 0, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Utility Clearance Received': true, 'Depth Level Checked': false }, assignedAsset: 'PC135', dailyLabor: [], assetAllocations: [] },
-  { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [] },
-  { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [] },
-  { id: 'T6', ref: '3.1', desc: 'Equipment Alignment', task: 'Main Circuit Breaker Structural Alignment', duration: 1, progress: 0, pm: 1, se: 2, ee: 2, so: 1, st: 0, cp: 1, ms: 0, el: 3, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'HOLD', checklist: { 'Plumbness Signed-Off': false, 'Contact Alignment Check': false }, assignedAsset: 'MVK01', dailyLabor: [], assetAllocations: [] },
-  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [] },
-  { id: 'T8', ref: '4.1', desc: 'Curing Period', task: '5-Day Continuous Pad Concrete Wet Curing (Hold)', duration: 5, progress: 0, pm: 0, se: 0, ee: 0, so: 1, st: 0, cp: 0, ms: 1, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Wet Sack Blanket Placed': false, 'Daily Water Log Checklist': false }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [] },
-  { id: 'T9', ref: '5.0', desc: 'Assembly & Splicing', task: 'MV Cable Terminations & Splicing', duration: 3, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 2, cp: 2, ms: 0, el: 4, lm: 2, cs: 3, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Cable Splicing Certified': false, 'High Potential Test Logged': false }, assignedAsset: 'FSA22', dailyLabor: [], assetAllocations: [] },
-  { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false }, assignedAsset: 'PIT99', dailyLabor: [], assetAllocations: [] },
+  { id: 'T1', ref: '1.0', desc: 'Pre-Construction', task: 'Permit Processing & Mobilization', duration: 2, progress: 100, pm: 1, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Mobilization Permit': true, 'Office Container Set': true }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [], subtasks: [
+    { id: 'S1_1', name: 'File Municipal Permits', status: 'COMPLETED', weight: 50 },
+    { id: 'S1_2', name: 'Erect Barrier Perimeter Fence', status: 'COMPLETED', weight: 50 }
+  ] },
+  { id: 'T2', ref: '1.1', desc: 'Technical Survey', task: 'Geo-staking & Trenching Layout', duration: 1, progress: 100, pm: 1, se: 2, ee: 1, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Boundary Markers Laid': true, 'Topographical Crosscheck': true }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [], subtasks: [
+    { id: 'S2_1', name: 'Establish GPS Benchmarks', status: 'COMPLETED', weight: 60 },
+    { id: 'S2_2', name: 'Cross-Verify Utility Lines', status: 'COMPLETED', weight: 40 }
+  ] },
+  { id: 'T3', ref: '2.0', desc: 'Civil Works', task: '1.5m Depth Manual Cable Potholing', duration: 3, progress: 80, pm: 0, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Utility Clearance Received': true, 'Depth Level Checked': false }, assignedAsset: 'PC135', dailyLabor: [], assetAllocations: [], subtasks: [
+    { id: 'S3_1', name: 'Pothole Quadrant A', status: 'COMPLETED', weight: 30 },
+    { id: 'S3_2', name: 'Pothole Quadrant B', status: 'COMPLETED', weight: 30 },
+    { id: 'S3_3', name: 'Soil Compaction Compliance', status: 'IN_PROGRESS', weight: 40 }
+  ] },
+  { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [], subtasks: [
+    { id: 'S4_1', name: 'Lay Copper Matting Grid', status: 'COMPLETED', weight: 50 },
+    { id: 'S4_2', name: 'Thermal CADWeld Bonding', status: 'IN_PROGRESS', weight: 50 }
+  ] },
+  { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false }, assignedAsset: 'None', dailyLabor: [], assetAllocations: [], subtasks: [
+    { id: 'S5_1', name: 'Tie Grade 60 Rebars', status: 'PENDING', weight: 40 },
+    { id: 'S5_2', name: 'Embed PVC Conduit Inlets', status: 'PENDING', weight: 60 }
+  ] }
 ];
 
 const getDailyLaborForTask = (task, neededLength) => {
@@ -187,7 +198,7 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
-  const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(false);
+  const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(true);
   const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
 
   const [laborProfile, setLaborProfile] = useState('electrical');
@@ -221,6 +232,17 @@ export default function App() {
 
   const [alertCenterAssetFilter, setAlertCenterAssetFilter] = useState('ALL');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const [simulatedTime, setSimulatedTime] = useState("08:00 AM");
+  const [showFourPMAuditModal, setShowFourPMAuditModal] = useState(false);
+  const [selectedAuditTaskId, setSelectedAuditTaskId] = useState(null);
+
+  const [phonePushAlert, setPhonePushAlert] = useState(null);
+
+  const [newSubtaskName, setNewSubtaskName] = useState('');
+  const [newSubtaskWeight, setNewSubtaskWeight] = useState(50);
+
+  const [selectedLedgerDay, setSelectedLedgerDay] = useState(0);
 
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
@@ -328,7 +350,8 @@ export default function App() {
         totalManpower: Math.round(totalManpowerAcrossDays / adjustedDuration), 
         progress: task.progress || 0,
         assignedAsset: task.assignedAsset || 'None',
-        assetAllocations: task.assetAllocations || []
+        assetAllocations: task.assetAllocations || [],
+        subtasks: task.subtasks || []
       };
     });
   }, [tasks, weatherFactor, laborProfile]);
@@ -455,12 +478,16 @@ export default function App() {
         if (valAStart < valBEnd && valAEnd > valBStart) {
           const assetName = customAssets.find(a => a.key === alloc.assetKey)?.label || alloc.assetKey;
           return {
+            id: other.id,
+            assetKey: alloc.assetKey,
             assetName,
             conflictProject: other.projectTitle,
+            conflictTaskId: other.taskId,
             conflictTaskName: other.taskName,
             conflictTaskRef: other.taskRef,
             conflictTime: `${other.startTime} - ${other.endTime}`,
-            date: alloc.absDateStr
+            date: alloc.absDateStr,
+            dayOffset: alloc.dayOffset
           };
         }
       }
@@ -494,6 +521,185 @@ export default function App() {
       if (conflict) return conflict;
     }
     return null;
+  };
+
+  const handleRescheduleLaterThatDay = (taskId, allocId) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updatedAllocs = (t.assetAllocations || []).map(alloc => {
+          if (alloc.id === allocId) {
+            // Shift baseline time to afternoon window
+            return { ...alloc, startTime: "13:00", endTime: "17:00" };
+          }
+          return alloc;
+        });
+        return { ...t, assetAllocations: updatedAllocs };
+      }
+      return t;
+    }));
+    playAlertSound();
+    triggerPhoneNotification(`Resolving Clash: ${activeFlowTasks.find(x => x.id === taskId)?.task} shifted to Afternoon.`);
+    showToast("Allocation moved to afternoon shift successfully.");
+  };
+
+  const handleRescheduleTomorrow = (taskId, allocId, extendTask) => {
+    let extendAmount = extendTask ? 1 : 0;
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updatedAllocs = (t.assetAllocations || []).map(alloc => {
+          if (alloc.id === allocId) {
+            return { ...alloc, dayOffset: alloc.dayOffset + 1 };
+          }
+          return alloc;
+        });
+        return { 
+          ...t, 
+          duration: t.duration + extendAmount,
+          assetAllocations: updatedAllocs 
+        };
+      }
+      return t;
+    }));
+    playAlertSound();
+    triggerPhoneNotification(`Resolving Clash: Allocated tomorrow. Sequence extended by ${extendAmount}d.`);
+    showToast(`Allocation shifted to tomorrow. ${extendTask ? 'Sequence duration extended.' : ''}`);
+  };
+
+  const advanceAllLedgerToolsBy3Days = (selectedDayOffset) => {
+    setTasks(prev => prev.map(task => {
+      if (task.assetAllocations && task.assetAllocations.length > 0) {
+        const updated = task.assetAllocations.map(alloc => {
+          if (alloc.dayOffset === selectedDayOffset) {
+            return { ...alloc, dayOffset: alloc.dayOffset + 3 };
+          }
+          return alloc;
+        });
+        return { ...task, assetAllocations: updated, duration: Math.max(task.duration, selectedDayOffset + 4) };
+      }
+      return task;
+    }));
+    playAlertSound();
+    triggerPhoneNotification(`Bulk Update: Tools on Day ${selectedDayOffset + 1} advanced by 3 days.`);
+    showToast(`Advanced bookings on Day ${selectedDayOffset + 1} by 3 days.`);
+  };
+
+  const triggerPhoneNotification = (msg) => {
+    setPhonePushAlert({
+      id: Date.now(),
+      title: "CITICORE Live Link Sync",
+      text: msg,
+      time: "Just now"
+    });
+    setTimeout(() => {
+      setPhonePushAlert(null);
+    }, 12000);
+  };
+
+  const forceTriggerFourPMAudit = () => {
+    setSimulatedTime("04:00 PM");
+    const activeTasks = activeFlowTasks.filter(t => t.progress < 100);
+    if (activeTasks.length > 0) {
+      setSelectedAuditTaskId(activeTasks[0].id);
+      setShowFourPMAuditModal(true);
+      playAlertSound();
+      triggerPhoneNotification("🕒 4:00 PM Compliance Audit Requested.");
+    } else {
+      showToast("All tasks are fully complete. No 4:00 PM audit needed!");
+    }
+  };
+
+  const submitFourPMAuditResponse = (taskId, completed, updatePercentage, rolloverOption) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        let finalProgress = completed ? 100 : Math.max(t.progress || 0, parseInt(updatePercentage) || 0);
+        let finalDuration = t.duration;
+        let finalSubtasks = [...(t.subtasks || [])];
+
+        if (rolloverOption === 'extend-day') {
+          finalDuration += 1;
+        }
+
+        // Auto-complete subtasks if task is completed
+        if (completed) {
+          finalSubtasks = finalSubtasks.map(st => ({ ...st, status: 'COMPLETED' }));
+        } else if (rolloverOption === 'subtask-rollover') {
+          // Carry over incomplete subtasks to a new subtask entry
+          const inProgressOnes = finalSubtasks.filter(st => st.status !== 'COMPLETED');
+          inProgressOnes.forEach(st => {
+            finalSubtasks.push({
+              id: `${st.id}-rollover`,
+              name: `[Rollover] ${st.name}`,
+              status: 'IN_PROGRESS',
+              weight: st.weight
+            });
+          });
+        }
+
+        return {
+          ...t,
+          progress: finalProgress,
+          duration: finalDuration,
+          subtasks: finalSubtasks
+        };
+      }
+      return t;
+    }));
+
+    setShowFourPMAuditModal(false);
+    playAlertSound();
+    triggerPhoneNotification(`Audit Signed off: progress set to ${completed ? 100 : updatePercentage}% with ${rolloverOption}.`);
+    showToast("Field progress report submitted to engineering registry.");
+  };
+
+  const handleAddSubtask = (taskId) => {
+    if (!newSubtaskName.trim()) return;
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const currentSub = t.subtasks ? [...t.subtasks] : [];
+        const nextSub = {
+          id: `sub-${Date.now()}`,
+          name: newSubtaskName,
+          status: 'IN_PROGRESS',
+          weight: parseInt(newSubtaskWeight) || 50
+        };
+        return { ...t, subtasks: [...currentSub, nextSub] };
+      }
+      return t;
+    }));
+    setNewSubtaskName('');
+    showToast("Subcategory parameter logged.");
+  };
+
+  const handleToggleSubtaskStatus = (taskId, subtaskId) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updated = (t.subtasks || []).map(sub => {
+          if (sub.id === subtaskId) {
+            const nextStatus = sub.status === 'COMPLETED' ? 'IN_PROGRESS' : 'COMPLETED';
+            return { ...sub, status: nextStatus };
+          }
+          return sub;
+        });
+
+        // Recalculate parent progress automatically based on subtask weights
+        const totalWeight = updated.reduce((sum, s) => sum + s.weight, 0);
+        const completedWeight = updated.reduce((sum, s) => sum + (s.status === 'COMPLETED' ? s.weight : 0), 0);
+        const autoProgress = totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : t.progress;
+
+        return { ...t, subtasks: updated, progress: autoProgress };
+      }
+      return t;
+    }));
+  };
+
+  const handleDeleteSubtask = (taskId, subtaskId) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return { ...t, subtasks: (t.subtasks || []).filter(sub => sub.id !== subtaskId) };
+      }
+      return t;
+    }));
+    showToast("Subcategory deleted.");
   };
 
   useEffect(() => {
@@ -1166,7 +1372,8 @@ export default function App() {
       checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false },
       assignedAsset: 'None',
       dailyLabor: [],
-      assetAllocations: []
+      assetAllocations: [],
+      subtasks: []
     }];
     setTasks(updatedTasks);
     showToast("New schedule row added.");
@@ -1351,13 +1558,13 @@ export default function App() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const sevenDaysLater = new Date(today);
-    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+    const textOffsetDate = new Date(today);
+    textOffsetDate.setDate(textOffsetDate.getDate() + 7);
 
     return allProjectsTasks.filter(task => {
-      const startsInWindow = task.absoluteStartDate >= today && task.absoluteStartDate <= sevenDaysLater;
-      const endsInWindow = task.absoluteEndDate >= today && task.absoluteEndDate <= sevenDaysLater;
-      const spansWindow = task.absoluteStartDate <= today && task.absoluteEndDate >= sevenDaysLater;
+      const startsInWindow = task.absoluteStartDate >= today && task.absoluteStartDate <= textOffsetDate;
+      const endsInWindow = task.absoluteEndDate >= today && task.absoluteEndDate <= textOffsetDate;
+      const spansWindow = task.absoluteStartDate <= today && task.absoluteEndDate >= textOffsetDate;
       
       if (activeForecastFilter === 'this-week') {
         return startsInWindow || endsInWindow || spansWindow;
@@ -1519,7 +1726,7 @@ export default function App() {
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black select-none ${
                       isDarkMode 
                         ? 'bg-[#131c2e] hover:bg-[#1e293b] text-white border-slate-700' 
-                        : 'bg-slate-100 hover:bg-slate-202 text-slate-800 border-slate-300 shadow-sm'
+                        : 'bg-slate-100 hover:bg-slate-202 text-slate-800 border-slate-303 shadow-sm'
                     }`}
                   >
                     <Folder className="text-blue-600 shrink-0" size={13}/>
@@ -1529,25 +1736,15 @@ export default function App() {
                     <ChevronDown className="text-slate-900 dark:text-slate-202 shrink-0" size={12}/>
                   </button>
 
-                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-202 dark:border-slate-800 px-2.5 py-1.5 rounded-xl">
-                    {isSavingCloud ? (
-                      <span className="flex items-center gap-1.5 text-[10px] text-blue-500 font-extrabold animate-pulse">
-                        <Loader2 size={11} className="animate-spin" />
-                        <span className="hidden sm:inline">Syncing...</span>
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1.5 text-[10px] text-emerald-600 font-extrabold">
-                        <CloudLightning size={11} className="animate-bounce" />
-                        <span className="hidden sm:inline">Live Synced</span>
-                      </span>
-                    )}
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-202 dark:border-slate-800 px-2.5 py-1.5 rounded-xl font-bold text-xs">
+                    🕒 simulated Time: <span className="text-blue-500 font-black">{simulatedTime}</span>
                   </div>
 
                   {isProjectDropdownOpen && (
                     <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-300 text-slate-900'
+                      isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-300 text-slate-900'
                     }`}>
-                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
+                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-404 border-b border-slate-800 uppercase mb-2">
                         Schedules Directory
                       </div>
                       <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
@@ -1560,7 +1757,7 @@ export default function App() {
                             }}
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-bold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
-                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-400 border border-blue-500 shadow-md' 
+                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-404 border border-blue-505 shadow-md' 
                                 : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-303 border border-transparent' : 'hover:bg-slate-100 text-slate-800 border border-slate-200')
                             }`}
                           >
@@ -1583,81 +1780,11 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      
-                      <div className="border-t border-slate-800 mt-2 pt-2">
-                        <button 
-                          onClick={() => {
-                            setShowCreateProjectModal(true);
-                            setIsProjectDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center justify-center gap-1 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all text-[10px] font-black uppercase tracking-wider shadow-md"
-                        >
-                          <Plus size={12}/> Create New Project
-                        </button>
-                      </div>
                     </div>
                   )}
-
-                  <div className="relative" ref={weatherDropdownRef}>
-                    <button
-                      onClick={() => setShowWeatherDropdown(!showWeatherDropdown)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black ${
-                        isDarkMode 
-                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-404 border-slate-700' 
-                          : 'bg-slate-100 hover:bg-slate-202 text-blue-800 border-slate-300'
-                      }`}
-                    >
-                      <span>
-                        {weatherFactor === 'sunny' ? '☀️ Sunny (Normal)' : weatherFactor === 'heavy_rain' ? '🌧️ Rain Delay' : '🌀 Typhoon Lock'}
-                      </span>
-                      <ChevronDown size={12} />
-                    </button>
-
-                    {showWeatherDropdown && (
-                      <div className={`absolute left-0 top-10 w-64 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150 ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-202 text-slate-955'
-                      }`}>
-                        <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-404 border-b border-slate-800 mb-2">
-                          Stochastic Weather State
-                        </div>
-                        {[
-                          { key: 'sunny', label: '☀️ Sunny (Normal 1.0x)', desc: 'Optimal progress condition' },
-                          { key: 'heavy_rain', label: '🌧️ Rain Delay (+35%)', desc: 'Precipitation buffer multiplier' },
-                          { key: 'typhoon', label: '🌀 Typhoon Lock (+80%)', desc: 'Severe weather safety hold' }
-                        ].map(weather => (
-                          <button
-                            key={weather.key}
-                            onClick={() => {
-                              setWeatherFactor(weather.key);
-                              setShowWeatherDropdown(false);
-                              logActivityToCloud(`Weather state updated to ${weather.key.toUpperCase()}`, 'warning');
-                            }}
-                            className={`w-full text-left p-2 rounded-xl flex items-center justify-between text-xs transition-all ${
-                              weatherFactor === weather.key 
-                                ? 'bg-blue-600/15 text-blue-404 border border-blue-500/30' 
-                                : 'hover:bg-slate-800 text-slate-303'
-                            }`}
-                          >
-                            <div>
-                              <span className="font-extrabold block">{weather.label}</span>
-                              <span className="text-[10px] text-slate-404 block">{weather.desc}</span>
-                            </div>
-                            {weatherFactor === weather.key && <Check size={14} className="text-blue-500" />}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
-            
-            <button 
-              onClick={() => setIsDarkMode(!isDarkMode)} 
-              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-slate-100 text-slate-900 border-slate-303'}`}
-            >
-              {isDarkMode ? <Sun size={15}/> : <Moon size={15}/>}
-            </button>
           </div>
 
           <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0 z-10">
@@ -1668,7 +1795,7 @@ export default function App() {
                 { id: 'gantt', label: 'GANTT', icon: BarChart3, color: 'from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/20' },
                 { id: 'weekly', label: 'OUTLOOK', icon: Clock, color: 'from-cyan-500 to-blue-600', shadow: 'shadow-cyan-500/20' },
                 { id: 'qa', label: 'QA', icon: ShieldCheck, color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
-                { id: 'logistics', label: 'LOGISTICS', icon: Truck, color: 'from-purple-600 to-violet-600', shadow: 'shadow-purple-500/20' }
+                { id: 'logistics', label: 'LOGISTICS SUMMARY', icon: Truck, color: 'from-purple-600 to-violet-600', shadow: 'shadow-purple-500/20' }
               ].map(tab => {
                 const IconComponent = tab.icon;
                 const isSelected = activePerspective === tab.id;
@@ -1690,171 +1817,44 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative">
-            <button 
-              onClick={() => setIsControlPanelOpen(!isControlPanelOpen)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border shadow-sm transition-all text-xs font-black uppercase tracking-wider ${
-                isControlPanelOpen
-                  ? 'bg-blue-600 border-blue-600 text-white' 
-                  : isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100 shadow-sm'
-              }`}
-              title="Site Control Center"
+          {}
+          <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative items-center">
+            <button
+              onClick={forceTriggerFourPMAudit}
+              className="bg-amber-600 hover:bg-amber-500 text-white font-black text-[11px] px-3.5 py-2 rounded-xl border border-amber-500 uppercase tracking-wider flex items-center gap-1.5 shadow"
+              title="Skip clock to 4:00 PM and prompt site status audits"
             >
-              <SlidersHorizontal size={13}/>
-              <span className="hidden sm:inline">Controls</span>
+              <Clock size={13} className="animate-pulse" />
+              <span>Simulate 4:00 PM Audit</span>
             </button>
 
-            <button 
-              onClick={() => {
-                setSoundEnabled(!soundEnabled);
-                showToast(soundEnabled ? "Audio alerts muted" : "Audio alerts enabled 🔊");
-              }} 
-              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-303 text-slate-800 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-600' : 'text-slate-505'}`} 
-            >
-              {soundEnabled ? <Volume2 size={14}/> : <VolumeX size={14}/>}
-            </button>
-
-            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-100'}`}>
-              <MessageSquareShare size={14}/>
-            </button>
-
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-100'}`}>
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-707 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-100'}`}>
               <Bell size={14}/>
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
               )}
             </button>
-            
-            <button 
-              onClick={() => setIsSettingsOpen(true)} 
-              className={`p-2 rounded-xl transition border shadow-sm cursor-pointer z-30 hover:scale-105 active:scale-95 ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-303 text-slate-800 hover:bg-slate-100'}`}
-              title="Interactive Project Settings"
-            >
-              <Settings size={14} className="animate-spin-slow text-slate-600 dark:text-slate-404" />
-            </button>
           </div>
         </div>
-
-        {isControlPanelOpen && (
-          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-202'}`}>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Crew Structuring Profile</span>
-              <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-202 border-slate-300'}`}>
-                <button 
-                  onClick={() => { setLaborProfile('civil'); showToast("Switched to Civil Crew"); }}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
-                    laborProfile === 'civil' 
-                      ? 'bg-amber-600 text-white shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
-                  }`}
-                >
-                  Civil 🏗️
-                </button>
-                <button 
-                  onClick={() => { setLaborProfile('electrical'); showToast("Switched to Electrical Crew ⚡"); }}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
-                    laborProfile === 'electrical' 
-                      ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
-                  }`}
-                >
-                  Electrical ⚡
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1 relative">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Base Launch Target</span>
-              <button
-                onClick={() => setShowCalendar(!showCalendar)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404' : 'bg-white border-slate-303 text-blue-800'
-                }`}
-              >
-                <Calendar size={14} />
-                <span>{projectStartDate}</span>
-              </button>
-
-              {showCalendar && renderPremiumCalendar()}
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Document Specs</span>
-              <button 
-                onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-                className={`px-3 py-2 rounded-xl border text-xs font-black flex items-center gap-1.5 ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-303 hover:bg-slate-100'
-                }`}
-              >
-                {isMetadataCollapsed ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}
-                <span>Header Details</span>
-              </button>
-            </div>
-
-            <div className="flex gap-2 ml-auto">
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-707' : 'bg-white text-slate-850 border-slate-303 shadow-sm'}`}>
-                {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
-              </button>
-              <button onClick={triggerSystemPrint} className="bg-slate-800 hover:bg-slate-705 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                <Printer size={13}/> Print
-              </button>
-            </div>
-          </div>
-        )}
       </header>
 
+      {}
       <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
-        <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
-
-          {!isMetadataCollapsed && (
-            <div id="gantt-export-zone" className={`rounded-2xl border p-4 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 animate-in slide-in-from-top-1 ${
-              isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
-            }`}>
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="w-full md:w-1/4 flex justify-start items-center">
-                  {logos.left ? <img src={logos.left} className="h-10 object-contain" alt="Left" /> : <CiticoreLogo isDarkMode={isDarkMode}/>}
-                </div>
-                <div className="w-full md:w-1/2 text-center flex flex-col">
-                  <input 
-                    value={docMetadata.projectName} 
-                    onChange={(e) => setDocMetadata({...docMetadata, projectName: e.target.value.toUpperCase()})}
-                    className={`text-center font-black text-sm tracking-tight bg-transparent uppercase border-b border-transparent focus:border-blue-500 outline-none w-full transition-colors ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
-                    placeholder="Project Name..."
-                  />
-                  <input 
-                    value={docMetadata.location} 
-                    onChange={(e) => setDocMetadata({...docMetadata, location: e.target.value})}
-                    className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-transparent border-none outline-none mt-1"
-                    placeholder="Location Hub..."
-                  />
-                </div>
-                <div className="w-full md:w-1/4 flex justify-end items-center">
-                  {logos.right ? <img src={logos.right} className="h-10 object-contain" alt="Right" /> : <MbvLogo isDarkMode={isDarkMode}/>}
-                </div>
+        <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0 relative">
+          
+          {/* Simulated phone push notification alert card */}
+          {phonePushAlert && (
+            <div className="fixed bottom-6 right-6 z-50 w-80 bg-slate-900/95 border-2 border-blue-500 text-white rounded-2xl shadow-2xl p-4 animate-bounce flex items-start gap-3">
+              <div className="bg-blue-600 p-2.5 rounded-xl"><Phone size={16} className="text-white" /></div>
+              <div className="flex-1 text-xs">
+                <span className="font-extrabold uppercase tracking-widest text-[9px] text-blue-404 block">{phonePushAlert.title}</span>
+                <p className="font-bold text-slate-100 leading-tight mt-1">{phonePushAlert.text}</p>
+                <span className="text-[10px] text-slate-500 block mt-1">{phonePushAlert.time}</span>
               </div>
-
-              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
-                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 font-bold">
-                  <span>Document No:</span>
-                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`} />
-                </div>
-                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1 font-bold">
-                  <span>Revision:</span>
-                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`} />
-                </div>
-                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1 font-bold">
-                  <span>Effective Date:</span>
-                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`} />
-                </div>
-                <div className="flex flex-col gap-1 pl-1 font-bold">
-                  <span>Base Launch:</span>
-                  <span className={`font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`}>{projectStartDate}</span>
-                </div>
-              </div>
+              <button onClick={() => setPhonePushAlert(null)} className="p-1 hover:bg-slate-800 rounded text-slate-400"><X size={14}/></button>
             </div>
           )}
 
-          {}
           {activePerspective === 'gantt' && (
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
@@ -1905,6 +1905,7 @@ export default function App() {
                 </div>
               </div>
 
+              {}
               <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-white border-slate-200'}`}>
                 
                 {isGanttSidebarVisible && (
@@ -1951,6 +1952,11 @@ export default function App() {
                             <span className={`font-black text-xs truncate leading-tight mt-1 ${isDarkMode ? 'text-slate-100' : 'text-slate-805'}`}>
                               {task.task}
                             </span>
+                            {task.subtasks && task.subtasks.length > 0 && (
+                              <span className="text-[9px] text-slate-400 font-bold block mt-0.5">
+                                📊 {task.subtasks.filter(s=>s.status==='COMPLETED').length}/{task.subtasks.length} Subtasks Done
+                              </span>
+                            )}
                           </div>
                           
                           <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40 text-slate-100' : 'border-slate-303 text-slate-805'}`}>
@@ -2115,6 +2121,7 @@ export default function App() {
             </div>
           )}
 
+          {}
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
@@ -2158,6 +2165,11 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {thisWeeksForecastList.map(item => {
                       const isOverdue = item.absoluteEndDate < new Date() && item.progress < 100;
+                      
+                      // Format explicit dates for display (e.g. "Jul 15 - Jul 17")
+                      const formattedStart = item.absoluteStartDate ? new Date(item.absoluteStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                      const formattedEnd = item.absoluteEndDate ? new Date(item.absoluteEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+
                       return (
                         <div
                           key={`${item.parentProjectId}-${item.id}`}
@@ -2193,10 +2205,10 @@ export default function App() {
                             </div>
 
                             <div className="space-y-2 mt-4 text-xs font-bold text-slate-404">
-                              <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Clock size={11}/> Dates</span>
-                                <span className="font-mono text-slate-850 dark:text-slate-303">
-                                  {item.absoluteStartDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - {item.absoluteEndDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+                              <div className="flex justify-between items-center text-[10px] bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-404"><Clock size={11} className="text-amber-500" /> DATES</span>
+                                <span className="font-mono text-white text-[11px] font-black">
+                                  {formattedStart} - {formattedEnd}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
@@ -2280,74 +2292,147 @@ export default function App() {
             </div>
           )}
 
+          {}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
-              <div className={`p-6 rounded-3xl border flex items-center justify-between ${
+              <div className={`p-6 rounded-3xl border flex flex-col lg:flex-row lg:items-center justify-between gap-4 ${
                 isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
               }`}>
                 <div>
                   <h3 className="text-sm font-black tracking-widest uppercase text-purple-700 dark:text-purple-404 flex items-center gap-1.5">
-                    <Truck size={16}/> Heavy Rig & Logistics Equipment Pool
+                    <Truck size={16}/> Daily Equipment Dispatch Ledger
                   </h3>
-                  <p className="text-xs text-slate-404 mt-1">Configure site machinery, mobilization buffers, and check overlapping booking clashes.</p>
+                  <p className="text-xs text-slate-400 mt-1">Review granular tool allocations daily. Reschedule bookings easily or shift day schedules forward.</p>
                 </div>
-                <button
-                  onClick={() => setIsAssetModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-505 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
-                >
-                  <Plus size={14}/> Add Asset
-                </button>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => setIsAssetModalOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-505 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Plus size={14}/> Add Asset Class
+                  </button>
+                </div>
               </div>
 
-              <div className="flex-grow overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {customAssets.map(asset => {
-                    const isAllocated = allAllocations.filter(a => a.assetKey === asset.key && a.projectId === activeProjectId);
-                    return (
-                      <div key={asset.key} className={`p-5 rounded-3xl border flex flex-col justify-between gap-4 ${
-                        isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
-                      }`}>
-                        <div className="flex items-center gap-3 justify-between">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 shrink-0">
-                              {renderAssetIcon(asset.key)}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="font-mono text-xs font-black text-blue-808 dark:text-blue-404 block">{asset.key}</span>
-                              <span className="text-xs font-black truncate block">{asset.label}</span>
-                            </div>
-                          </div>
-                          
-                          <button
-                            onClick={() => handleRemoveCustomAsset(asset.key)}
-                            className="p-1 text-slate-404 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg shrink-0 transition-all"
-                          >
-                            <Trash2 size={13}/>
-                          </button>
-                        </div>
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-grow overflow-hidden min-h-0">
+                {/* Ledger Left Selector Day Column */}
+                <div className="xl:col-span-4 bg-slate-900/50 rounded-2xl border border-slate-800 p-4 flex flex-col overflow-hidden">
+                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-3">Timeline Days Summary</h4>
+                  <div className="space-y-1.5 overflow-y-auto flex-grow pr-1">
+                    {Array.from({ length: 14 }).map((_, idx) => {
+                      const dayBookings = allAllocations.filter(a => {
+                        const d = new Date(projectStartDate);
+                        d.setDate(d.getDate() + idx);
+                        return a.absDateStr === d.toISOString().split('T')[0];
+                      });
 
-                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-404 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
-                          <div className="flex justify-between font-bold">
-                            <span>CLASS:</span>
-                            <span className="font-black text-slate-850 dark:text-slate-303">{asset.type}</span>
+                      const dObj = new Date(projectStartDate);
+                      dObj.setDate(dObj.getDate() + idx);
+                      const formattedDate = dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedLedgerDay(idx)}
+                          className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all ${
+                            selectedLedgerDay === idx
+                              ? 'bg-blue-600 border-blue-500 text-white shadow'
+                              : 'bg-slate-950/40 border-slate-800 hover:bg-slate-800 text-slate-200'
+                          }`}
+                        >
+                          <div className="text-xs">
+                            <span className="font-extrabold block">Day {idx + 1} ({formattedDate})</span>
                           </div>
-                          <div className="flex justify-between font-bold">
-                            <span>TRANSIT BUFFER:</span>
-                            <span className="font-black text-slate-850 dark:text-slate-303">{asset.defaultMobilizationDays} Days</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${selectedLedgerDay === idx ? 'bg-blue-700 text-white' : 'bg-slate-900 text-slate-300'}`}>
+                            {dayBookings.length} Bookings
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Ledger Right Dynamic summary portion with bulk operations */}
+                <div className="xl:col-span-8 bg-[#131c2e]/40 rounded-2xl border border-slate-800 p-4 flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4 shrink-0">
+                    <div>
+                      <h4 className="text-xs font-black text-slate-100 uppercase">Day {selectedLedgerDay + 1} Dispatch Schedule</h4>
+                      <p className="text-[10px] text-slate-400">Manage conflicting tools scheduled on this exact index.</p>
+                    </div>
+                    <button
+                      onClick={() => advanceAllLedgerToolsBy3Days(selectedLedgerDay)}
+                      className="bg-indigo-600/15 border border-indigo-500/25 hover:bg-indigo-600 text-indigo-300 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1"
+                    >
+                      <RefreshCw size={11} />
+                      <span>⏩ Advance All on Day {selectedLedgerDay + 1} by 3 Days</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 overflow-y-auto flex-grow pr-1">
+                    {(() => {
+                      const targetDate = new Date(projectStartDate);
+                      targetDate.setDate(targetDate.getDate() + selectedLedgerDay);
+                      const targetDateStr = targetDate.toISOString().split('T')[0];
+
+                      const dayBookings = allAllocations.filter(a => a.absDateStr === targetDateStr);
+                      if (dayBookings.length === 0) {
+                        return (
+                          <div className="h-full flex flex-col items-center justify-center text-center opacity-65 p-8">
+                            <Truck size={32} className="text-slate-500 mb-2" />
+                            <p className="text-xs font-black text-slate-400">No tools scheduled on this date.</p>
                           </div>
-                          <div className="flex justify-between font-bold">
-                            <span>DAILY RESERVATIONS:</span>
-                            <span className="font-black text-blue-808 dark:text-blue-404">{isAllocated.length} Slots</span>
+                        );
+                      }
+
+                      return dayBookings.map((alloc, idx) => {
+                        const conflict = checkLogisticalConflictForAllocation(alloc);
+                        return (
+                          <div key={idx} className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                            conflict 
+                              ? 'bg-amber-950/20 border-amber-600' 
+                              : 'bg-slate-900 border-slate-800'
+                          }`}>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-black text-blue-404">[{alloc.assetKey}]</span>
+                                <span className="text-xs font-bold text-slate-100">{alloc.taskName} ({alloc.projectTitle})</span>
+                              </div>
+                              <span className="text-[10px] text-slate-404 block mt-1">🕒 Planned Slot: {alloc.startTime} - {alloc.endTime}</span>
+                              
+                              {conflict && (
+                                <span className="text-[9px] bg-red-500/15 text-red-500 px-2 py-0.5 rounded font-bold inline-block mt-2">
+                                  ⚠️ Overlaps with "{conflict.conflictProject}" Sequence ({conflict.conflictTime})
+                                </span>
+                              )}
+                            </div>
+
+                            {conflict && (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  onClick={() => handleRescheduleLaterThatDay(alloc.taskId, alloc.id)}
+                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
+                                >
+                                  Shift to Afternoon
+                                </button>
+                                <button
+                                  onClick={() => handleRescheduleTomorrow(alloc.taskId, alloc.id, true)}
+                                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
+                                >
+                                  Shift Tomorrow + Extend
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      });
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
+          {}
           <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
             isDarkMode ? 'bg-[#131c2e]/90 border-blue-500/20' : 'bg-blue-50 border-blue-200'
           }`}>
@@ -2357,7 +2442,7 @@ export default function App() {
             >
               <div className="flex items-center gap-3">
                 <Bell className={`text-blue-500 shrink-0 ${isAlertCenterExpanded ? 'animate-bounce' : ''}`} size={16}/>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-400 flex items-center gap-2">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-404 flex items-center gap-2">
                   <span>Live Dispatch & Mobilization Alert Center</span>
                   <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">
                     {todayAllocations.length} Active Today
@@ -2373,7 +2458,7 @@ export default function App() {
                       value={alertCenterAssetFilter} 
                       onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
                       className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
-                        isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-404' : 'bg-white border-slate-303 text-blue-808 shadow-sm'
+                        isDarkMode ? 'bg-[#0f172a] border-slate-707 text-blue-404' : 'bg-white border-slate-303 text-blue-808 shadow-sm'
                       }`}
                     >
                       <option value="ALL">ALL VEHICLES / TOOLS</option>
@@ -2409,18 +2494,36 @@ export default function App() {
                       {todayAllocations.map((alloc, idx) => {
                         const conflict = checkLogisticalConflictForAllocation(alloc);
                         return (
-                          <span 
+                          <div 
                             key={idx} 
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-between w-full border ${
                               conflict 
                                 ? 'bg-red-500/10 border border-red-500 text-red-500 animate-pulse' 
                                 : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
                             }`}
                           >
-                            {renderAssetIcon(alloc.assetKey)}
-                            <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
-                            {conflict && <AlertTriangle size={11} className="text-rose-505 ml-1" />}
-                          </span>
+                            <div className="flex items-center gap-1.5">
+                              {renderAssetIcon(alloc.assetKey)}
+                              <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
+                            </div>
+
+                            {conflict && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleRescheduleLaterThatDay(alloc.taskId, alloc.id)}
+                                  className="bg-red-600 hover:bg-red-500 text-white text-[9px] px-2 py-0.5 rounded uppercase"
+                                >
+                                  reschedule 4 PM
+                                </button>
+                                <button
+                                  onClick={() => handleRescheduleTomorrow(alloc.taskId, alloc.id, true)}
+                                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[9px] px-2 py-0.5 rounded uppercase"
+                                >
+                                  tomorrow
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -2438,18 +2541,19 @@ export default function App() {
                       {tomorrowAllocations.map((alloc, idx) => {
                         const conflict = checkLogisticalConflictForAllocation(alloc);
                         return (
-                          <span 
+                          <div 
                             key={idx} 
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-between w-full border ${
                               conflict 
                                 ? 'bg-red-500/10 border border-red-500 text-red-500' 
                                 : 'bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-emerald-300'
                             }`}
                           >
-                            {renderAssetIcon(alloc.assetKey)}
-                            <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) ready for {alloc.taskRef} ({alloc.taskName})</span>
-                            {conflict && <AlertTriangle size={11} className="text-rose-505 ml-1" />}
-                          </span>
+                            <div className="flex items-center gap-1.5">
+                              {renderAssetIcon(alloc.assetKey)}
+                              <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) ready for {alloc.taskRef} ({alloc.taskName})</span>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
@@ -2463,10 +2567,415 @@ export default function App() {
       </main>
 
       {}
+      {activeTaskModal && (() => {
+        const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
+        if (!currentTaskEditing) return null;
+        
+        const currentDailyLabor = getDailyLaborForTask(currentTaskEditing, currentTaskEditing.adjustedDuration);
+        const dayLaborObj = currentDailyLabor[selectedDayIndex] || currentDailyLabor[0];
+
+        return (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300 animate-fade-in">
+            <div className={`rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border flex flex-col max-h-[92vh] transition-all duration-300 ${
+              isDarkMode 
+                ? 'bg-[#0f172a]/95 border-slate-800 text-white' 
+                : 'bg-white border-slate-303 text-slate-900'
+            }`}>
+              
+              <div className={`p-5 border-b flex justify-between items-center ${
+                isDarkMode 
+                  ? 'border-slate-800 bg-[#1e293b]/50' 
+                  : 'border-slate-202 bg-slate-100'
+              }`}>
+                <div className="text-left">
+                  <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <ClipboardCheck className="text-blue-500" size={16}/> 
+                    <span>Site Field Inspector Card</span>
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-white bg-blue-600 border border-blue-500 px-2 py-0.5 rounded-lg text-xs font-black tracking-wide">
+                      {currentTaskEditing.ref}
+                    </span>
+                    <span className="text-xs font-bold text-slate-400">
+                      {currentTaskEditing.task}
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setActiveTaskModal(null)} 
+                  className={`p-1.5 rounded-full border transition-colors ${
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-303 hover:bg-slate-202 text-slate-700'
+                  }`}
+                >
+                  <X size={16}/>
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
+                
+                {/* Carry over details segment */}
+                <div className={`p-5 rounded-2xl border ${
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                }`}>
+                  <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-slate-800">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
+                      Configure Sequence Details
+                    </h4>
+                    <button 
+                      onClick={() => {
+                        triggerTaskRemove(currentTaskEditing.id);
+                        setActiveTaskModal(null);
+                      }}
+                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-505 hover:text-rose-400 transition-colors"
+                    >
+                      <Trash2 size={12} />
+                      <span>Delete Sequence</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Ref Code</label>
+                      <input 
+                        type="text" 
+                        value={currentTaskEditing.ref || ''} 
+                        onChange={(e) => updateTask(currentTaskEditing.id, 'ref', e.target.value)}
+                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
+                        }`}
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Phase / Description Category</label>
+                      <input 
+                        type="text" 
+                        value={currentTaskEditing.desc || ''} 
+                        onChange={(e) => updateTask(currentTaskEditing.id, 'desc', e.target.value)}
+                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                    <div className="sm:col-span-8">
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Detailed Sequence Title</label>
+                      <input 
+                        type="text" 
+                        value={currentTaskEditing.task || ''} 
+                        onChange={(e) => updateTask(currentTaskEditing.id, 'task', e.target.value)}
+                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
+                        }`}
+                      />
+                    </div>
+                    <div className="sm:col-span-4">
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Compliance Status</label>
+                      <select 
+                        value={currentTaskEditing.qaStatus || 'PENDING'} 
+                        onChange={(e) => updateTask(currentTaskEditing.id, 'qaStatus', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer ${
+                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707' : 'bg-white text-slate-900 border-slate-303'
+                        }`}
+                      >
+                        <option value="PENDING">PENDING</option>
+                        <option value="HOLD">HOLD</option>
+                        <option value="APPROVED">APPROVED</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mt-4">
+                    <div className="sm:col-span-4">
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Baseline Days</label>
+                      <input 
+                        type="number" min="1" max="60"
+                        value={currentTaskEditing.duration || 1} 
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1;
+                          updateTask(currentTaskEditing.id, 'duration', val);
+                          setSelectedDayIndex(0);
+                        }}
+                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
+                          isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-303'
+                        }`}
+                      />
+                    </div>
+                    <div className="sm:col-span-8">
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Task Progress ({currentTaskEditing.progress || 0}%)</label>
+                      <input 
+                        type="range" min="0" max="100" step="5"
+                        value={currentTaskEditing.progress || 0}
+                        onChange={(e) => updateTask(currentTaskEditing.id, 'progress', parseInt(e.target.value) || 0)}
+                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-2"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {}
+                <div className={`p-5 rounded-2xl border ${
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                }`}>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5 mb-3">
+                    <ListTodo size={14} className="text-blue-500" />
+                    <span>Divisible Sub-Category Operations</span>
+                  </h4>
+
+                  <div className="flex gap-2.5 items-end mb-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                    <div className="flex-1">
+                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Subcategory / Subtask Name</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Bend rebar stirrups / Check spacing"
+                        value={newSubtaskName} 
+                        onChange={(e) => setNewSubtaskName(e.target.value)}
+                        className="w-full text-xs p-2 rounded-lg border bg-slate-900 border-slate-800 text-white outline-none"
+                      />
+                    </div>
+                    <div className="w-24">
+                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Weight (%)</label>
+                      <input 
+                        type="number" min="10" max="100"
+                        value={newSubtaskWeight} 
+                        onChange={(e) => setNewSubtaskWeight(e.target.value)}
+                        className="w-full text-xs p-2 rounded-lg border bg-slate-900 border-slate-800 text-white outline-none"
+                      />
+                    </div>
+                    <button 
+                      onClick={() => handleAddSubtask(currentTaskEditing.id)}
+                      className="bg-blue-600 hover:bg-blue-505 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider"
+                    >
+                      Add Sub
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {(currentTaskEditing.subtasks || []).map((sub) => (
+                      <div key={sub.id} className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={sub.status === 'COMPLETED'} 
+                            onChange={() => handleToggleSubtaskStatus(currentTaskEditing.id, sub.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-700 bg-slate-950 rounded cursor-pointer"
+                          />
+                          <span className={`text-xs font-bold ${sub.status === 'COMPLETED' ? 'line-through text-slate-505' : 'text-slate-100'}`}>
+                            {sub.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-mono text-slate-500 font-bold">Weight: {sub.weight}%</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${sub.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                            {sub.status}
+                          </span>
+                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-404 hover:text-rose-500">
+                            <X size={14}/>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {}
+                <div className={`p-5 rounded-2xl border ${
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                }`}>
+                  <div 
+                    onClick={() => setIsBookToolExpanded(!isBookToolExpanded)}
+                    className="flex justify-between items-center cursor-pointer select-none pb-2 border-b dark:border-slate-800 mb-3"
+                  >
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5">
+                      <Truck size={14} className="text-blue-500" />
+                      <span>Granular Tool Dispatches (Rescheduling resolution panel)</span>
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded font-black">
+                        {currentTaskEditing.assetAllocations?.length || 0} Scheduled
+                      </span>
+                      {isBookToolExpanded ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
+                    </div>
+                  </div>
+
+                  {isBookToolExpanded && (
+                    <div className="p-3.5 bg-slate-100 dark:bg-slate-900 border rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
+                      <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        addAssetAllocation(
+                          currentTaskEditing.id,
+                          formData.get('assetKey'),
+                          parseInt(formData.get('dayOffset')),
+                          formData.get('startTime'),
+                          formData.get('endTime')
+                        );
+                      }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-400 uppercase mb-1">Active Day</label>
+                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
+                            {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
+                              <option key={idx} value={idx}>Day {idx + 1}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Tool / Vehicle</label>
+                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
+                            {customAssets.map(a => (
+                              <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
+                          <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
+                          <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
+                        </div>
+                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider">
+                          Add dispatch
+                        </button>
+                      </form>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
+                      const conflict = checkLogisticalConflictForAllocation(alloc);
+                      return (
+                        <div key={i} className={`p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
+                          conflict 
+                            ? 'bg-rose-500/10 border-rose-500 text-rose-850 dark:text-rose-303' 
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100'
+                        }`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {renderAssetIcon(alloc.assetKey)}
+                              <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-404">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
+                            </div>
+                            <button 
+                              type="button" 
+                              onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
+                              className="text-slate-404 hover:text-rose-600 p-1"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+
+                          {conflict && (
+                            <div className="p-3 bg-slate-950 rounded-xl border border-rose-900/40 flex flex-col gap-2">
+                              <div className="flex items-center gap-1.5 text-[10px] text-rose-400">
+                                <AlertTriangle size={12} />
+                                <span>Overlap CLASH Detected with "{conflict.conflictProject}" sequence</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRescheduleLaterThatDay(currentTaskEditing.id, alloc.id)}
+                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase"
+                                >
+                                  Reschedule After That Time (13:00 - 17:00)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRescheduleTomorrow(currentTaskEditing.id, alloc.id, true)}
+                                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase"
+                                >
+                                  Reschedule Tomorrow (+1d Duration Extension)
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {}
+      {showFourPMAuditModal && (() => {
+        const auditTask = activeFlowTasks.find(t => t.id === selectedAuditTaskId);
+        if (!auditTask) return null;
+
+        return (
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 max-w-lg w-full">
+              <div className="flex justify-between items-start mb-4 border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-amber-505">
+                  <Clock className="animate-pulse" size={18} />
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-100">🕒 4:00 PM Daily Progress Audit</h3>
+                </div>
+                <button onClick={() => setShowFourPMAuditModal(false)} className="text-slate-400 hover:text-white"><X size={16}/></button>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  It is now past 4:00 PM. Site Engineers must verify field completions.
+                  Please update verified stats for:
+                </p>
+
+                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                  <span className="text-[10px] font-mono text-blue-404 font-extrabold">{auditTask.ref} - {auditTask.desc}</span>
+                  <h4 className="text-sm font-black text-white mt-1">{auditTask.task}</h4>
+                </div>
+
+                {auditTask.subtasks && auditTask.subtasks.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-black text-slate-400 block uppercase tracking-wide">Category Sub-tasks</span>
+                    {auditTask.subtasks.map(st => (
+                      <div key={st.id} className="text-[11px] flex justify-between bg-slate-950/40 p-2 rounded border border-slate-800">
+                        <span className="text-slate-300 font-semibold">{st.name}</span>
+                        <span className="text-amber-500 font-extrabold">{st.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-3 pt-3 border-t border-slate-800">
+                  <span className="text-[10px] font-black text-slate-400 block uppercase">Log Audit Actions</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => submitFourPMAuditResponse(auditTask.id, true, 100, 'none')}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors"
+                    >
+                      ✅ All Done Today
+                    </button>
+                    <button
+                      onClick={() => submitFourPMAuditResponse(auditTask.id, false, 80, 'extend-day')}
+                      className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors"
+                    >
+                      ❌ Extend By 1 Day
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => submitFourPMAuditResponse(auditTask.id, false, 50, 'subtask-rollover')}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider"
+                  >
+                    🔄 Rollover Incomplete Subtasks
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-303 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
           }`}>
             <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-202 bg-slate-100'}`}>
               <div>
@@ -2558,7 +3067,7 @@ export default function App() {
                             <span className="text-lg">{preset.emoji}</span>
                             <div className="text-left">
                               <span className="font-extrabold block">{preset.label}</span>
-                              <span className="text-[10px] text-slate-400 block">{preset.desc}</span>
+                              <span className="text-[10px] text-slate-404 block">{preset.desc}</span>
                             </div>
                           </button>
                         ))}
@@ -2595,455 +3104,7 @@ export default function App() {
         </div>
       )}
 
-      {activeTaskModal && (() => {
-        const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
-        if (!currentTaskEditing) return null;
-        
-        const currentDailyLabor = getDailyLaborForTask(currentTaskEditing, currentTaskEditing.adjustedDuration);
-        const dayLaborObj = currentDailyLabor[selectedDayIndex] || currentDailyLabor[0];
-
-        return (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300 animate-fade-in">
-            <div className={`rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border flex flex-col max-h-[92vh] transition-all duration-300 ${
-              isDarkMode 
-                ? 'bg-[#0f172a]/95 border-slate-800 text-white' 
-                : 'bg-white border-slate-303 text-slate-900'
-            }`}>
-              
-              <div className={`p-5 border-b flex justify-between items-center ${
-                isDarkMode 
-                  ? 'border-slate-800 bg-[#1e293b]/50' 
-                  : 'border-slate-202 bg-slate-100'
-              }`}>
-                <div className="text-left">
-                  <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                    <ClipboardCheck className="text-blue-500" size={16}/> 
-                    <span>Site Field Inspector Card</span>
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-white bg-blue-600 border border-blue-500 px-2 py-0.5 rounded-lg text-xs font-black tracking-wide">
-                      {currentTaskEditing.ref}
-                    </span>
-                    <span className="text-xs font-bold text-slate-400">
-                      {currentTaskEditing.task}
-                    </span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setActiveTaskModal(null)} 
-                  className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-303 hover:bg-slate-202 text-slate-700'
-                  }`}
-                >
-                  <X size={16}/>
-                </button>
-              </div>
-              
-              <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
-                
-                <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
-                }`}>
-                  <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-slate-800">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      Configure Sequence Details
-                    </h4>
-                    <button 
-                      onClick={() => {
-                        triggerTaskRemove(currentTaskEditing.id);
-                        setActiveTaskModal(null);
-                      }}
-                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-505 hover:text-rose-400 transition-colors"
-                    >
-                      <Trash2 size={12} />
-                      <span>Delete Sequence</span>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Ref Code</label>
-                      <input 
-                        type="text" 
-                        value={currentTaskEditing.ref || ''} 
-                        onChange={(e) => updateTask(currentTaskEditing.id, 'ref', e.target.value)}
-                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
-                        }`}
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Phase / Description Category</label>
-                      <input 
-                        type="text" 
-                        value={currentTaskEditing.desc || ''} 
-                        onChange={(e) => updateTask(currentTaskEditing.id, 'desc', e.target.value)}
-                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
-                        }`}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                    <div className="sm:col-span-8">
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Detailed Operational Sequence Title</label>
-                      <input 
-                        type="text" 
-                        value={currentTaskEditing.task || ''} 
-                        onChange={(e) => updateTask(currentTaskEditing.id, 'task', e.target.value)}
-                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
-                        }`}
-                      />
-                    </div>
-                    <div className="sm:col-span-4">
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Compliance Status</label>
-                      <div className="relative">
-                        <select 
-                          value={currentTaskEditing.qaStatus || 'PENDING'} 
-                          onChange={(e) => updateTask(currentTaskEditing.id, 'qaStatus', e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                            isDarkMode 
-                              ? 'bg-[#131c2e] text-white border-slate-707 [&_option]:bg-[#131c2e]' 
-                              : 'bg-white text-slate-900 border-slate-303 [&_option]:bg-white'
-                          }`}
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="HOLD">HOLD</option>
-                          <option value="APPROVED">APPROVED</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                          <ChevronDown size={14}/>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mt-4">
-                    <div className="sm:col-span-4">
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Duration (Baseline Days)</label>
-                      <input 
-                        type="number" min="1" max="60"
-                        value={currentTaskEditing.duration || 1} 
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value) || 1;
-                          updateTask(currentTaskEditing.id, 'duration', val);
-                          setSelectedDayIndex(0);
-                        }}
-                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303'
-                        }`}
-                      />
-                    </div>
-                    <div className="sm:col-span-8">
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Task Progress ({currentTaskEditing.progress || 0}%)</label>
-                      <input 
-                        type="range" min="0" max="100" step="5"
-                        value={currentTaskEditing.progress || 0}
-                        onChange={(e) => updateTask(currentTaskEditing.id, 'progress', parseInt(e.target.value) || 0)}
-                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-2"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
-                }`}>
-                  <div 
-                    onClick={() => setIsBookToolExpanded(!isBookToolExpanded)}
-                    className="flex justify-between items-center cursor-pointer select-none pb-2 border-b dark:border-slate-800 mb-3"
-                  >
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5">
-                      <Truck size={14} className="text-blue-500" />
-                      <span>Granular Tool Dispatches (Day & Time Bookings)</span>
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded font-black">
-                        {currentTaskEditing.assetAllocations?.length || 0} Scheduled
-                      </span>
-                      {isBookToolExpanded ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
-                    </div>
-                  </div>
-
-                  {isBookToolExpanded && (
-                    <div className="p-3.5 bg-slate-100 dark:bg-slate-900 border rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
-                      <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        addAssetAllocation(
-                          currentTaskEditing.id,
-                          formData.get('assetKey'),
-                          parseInt(formData.get('dayOffset')),
-                          formData.get('startTime'),
-                          formData.get('endTime')
-                        );
-                      }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
-                        <div>
-                          <label className="block text-[8px] font-black text-slate-400 uppercase mb-1">Active Day</label>
-                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
-                            {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
-                              <option key={idx} value={idx}>Day {idx + 1}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Tool / Vehicle</label>
-                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
-                            {customAssets.map(a => (
-                              <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
-                          <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
-                        </div>
-                        <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
-                          <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
-                        </div>
-                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider">
-                          Add dispatch
-                        </button>
-                      </form>
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
-                      const conflict = checkLogisticalConflictForAllocation(alloc);
-                      return (
-                        <div key={i} className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
-                          conflict 
-                            ? 'bg-rose-500/10 border-rose-500 animate-pulse text-rose-800 dark:text-rose-300' 
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100'
-                        }`}>
-                          <div className="flex items-center gap-2">
-                            {renderAssetIcon(alloc.assetKey)}
-                            <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-404">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {conflict && (
-                              <span className="text-[8px] font-black uppercase tracking-wider bg-rose-500 text-white px-1.5 py-0.5 rounded animate-bounce" title={`Overlaps with project "${conflict.conflictProject}" task "${conflict.conflictTaskName}"`}>
-                                Overlap CLASH
-                              </span>
-                            )}
-                            <button 
-                              type="button" 
-                              onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
-                              className="text-slate-400 hover:text-rose-600 p-1"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
-                }`}>
-                  <div className="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-800">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                      <ShieldCheck size={14} className="text-blue-500" />
-                      <span>Engineering Checklist Compliance Gates</span>
-                    </h4>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      placeholder="Add compliance criteria option..."
-                      value={newChecklistItemText}
-                      onChange={(e) => setNewChecklistItemText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addCustomChecklistItem(currentTaskEditing.id);
-                        }
-                      }}
-                      className={`flex-grow px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
-                        isDarkMode 
-                          ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' 
-                          : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600 shadow-inner'
-                      }`}
-                    />
-                    <button 
-                      type="button"
-                      onClick={() => addCustomChecklistItem(currentTaskEditing.id)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-505 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow"
-                    >
-                      <Plus size={14}/> Add Option
-                    </button>
-                  </div>
-
-                  <div className="space-y-2 mt-4">
-                    {Object.entries(currentTaskEditing.checklist || {}).map(([name, checked]) => (
-                      <label 
-                        key={name} 
-                        className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all ${
-                          checked 
-                            ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-800 dark:text-emerald-300' 
-                            : isDarkMode ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-[#1e293b]' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <input 
-                            type="checkbox" 
-                            checked={checked} 
-                            onChange={() => toggleChecklistItem(currentTaskEditing.id, name)}
-                            className="h-5 w-5 rounded border-slate-303 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                          />
-                          <span className="text-xs font-bold leading-none">{name}</span>
-                        </div>
-                        <button 
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            removeCustomChecklistItem(currentTaskEditing.id, name);
-                          }}
-                          className="p-1 text-slate-404 hover:text-rose-600 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
-                }`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
-                      Day-by-Day Manpower Allocations
-                    </h4>
-                    <span className="text-[10px] bg-blue-500/10 text-blue-404 px-2 py-0.5 rounded-lg border border-blue-505/20 font-mono">
-                      Active: Day {selectedDayIndex + 1} of {currentTaskEditing.adjustedDuration}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-1.5 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800">
-                    {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => {
-                      const dailyRolesObj = currentDailyLabor[idx] || {};
-                      const dayCrewCount = activeRoles.reduce((sum, role) => {
-                        const val = parseInt(dailyRolesObj[role.key]);
-                        return sum + (isNaN(val) ? 0 : val);
-                      }, 0);
-
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setSelectedDayIndex(idx)}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all border shrink-0 flex flex-col items-center gap-1 min-w-[70px] ${
-                            selectedDayIndex === idx
-                              ? 'bg-blue-600 text-white border-blue-505 shadow-md shadow-blue-500/10'
-                              : isDarkMode 
-                                ? 'bg-slate-900 border-slate-800 text-slate-404 hover:bg-slate-800 hover:text-white' 
-                                : 'bg-white border-slate-303 text-slate-700 hover:bg-slate-100'
-                          }`}
-                        >
-                          <span>Day {idx + 1}</span>
-                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-303'}`}>
-                            {dayCrewCount} Pax
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-5 space-y-5">
-                    <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-404">
-                      Labor Crew Requirements (Day {selectedDayIndex + 1})
-                    </h5>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {activeRoles.map(role => {
-                        const count = parseInt(dayLaborObj[role.key]) || 0;
-                        return (
-                          <div key={role.key} className={`p-3 rounded-xl border flex flex-col justify-between ${
-                            isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
-                          }`}>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs">{role.icon} {role.label}</span>
-                              <span className="text-xs font-black text-blue-600 dark:text-blue-404">
-                                {count}
-                              </span>
-                            </div>
-                            <div className="flex gap-1 mt-2.5">
-                              <button 
-                                type="button"
-                                onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1, selectedDayIndex)}
-                                className="flex-1 bg-slate-800 text-white hover:bg-slate-700 py-1 rounded-lg text-xs font-bold"
-                              >
-                                -
-                              </button>
-                              <button 
-                                type="button"
-                                onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
-                                className="flex-1 bg-blue-600 text-white hover:bg-blue-500 py-1 rounded-lg text-xs font-bold"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
-                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                        Field Identity Logs (Day {selectedDayIndex + 1})
-                      </h5>
-                      <div className="space-y-3">
-                        {activeRoles.map(role => {
-                          const limitCount = parseInt(dayLaborObj[role.key]) || 0;
-                          if (limitCount === 0) return null;
-                          return (
-                            <div key={`names-${role.key}`} className="space-y-1.5">
-                              <span className="text-[9px] font-black text-slate-404 uppercase tracking-widest block">
-                                {role.icon} {role.fullName} Identity logs
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {Array.from({ length: limitCount }).map((_, workerIdx) => {
-                                  const nameVal = (dayLaborObj.assigned?.[role.key]?.[workerIdx]) || '';
-                                  return (
-                                    <input
-                                      key={`${role.key}-${workerIdx}`}
-                                      type="text"
-                                      placeholder={`Enter name for ${role.fullName} #${workerIdx + 1}...`}
-                                      value={nameVal}
-                                      onChange={(e) => assignWorkerName(currentTaskEditing.id, role.key, workerIdx, e.target.value, selectedDayIndex)}
-                                      className={`w-full px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
-                                        isDarkMode 
-                                          ? 'bg-slate-900 border-slate-800 text-white focus:border-blue-500' 
-                                          : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600 shadow-inner'
-                                      }`}
-                                    />
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
+      {}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -3100,7 +3161,7 @@ export default function App() {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Citicore System Workspace Title</label>
+                <label className="block text-[10px] font-black uppercase text-slate-404 mb-1">Citicore System Workspace Title</label>
                 <input 
                   type="text" 
                   value={appTitle} 
