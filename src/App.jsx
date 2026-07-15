@@ -546,22 +546,46 @@ export default function App() {
         const taskStartDays = targetTaskWithFlow ? targetTaskWithFlow.startDays : 0;
         const newLocalDayOffset = Math.max(0, targetAbsDayOffset - taskStartDays);
 
-        const updatedAllocs = (t.assetAllocations || []).map(alloc => {
-          if (alloc.id === allocId) {
-            return { ...alloc, dayOffset: newLocalDayOffset, startTime: "08:00", endTime: "12:00" };
-          }
-          return alloc;
-        });
+        if (allocId.includes('-fb-')) {
+          // Dynamic fallback booking: convert to explicit bookings and apply the intelligent shift
+          const parts = allocId.split('-fb-');
+          const dayIdx = parts.length > 1 ? parseInt(parts[1]) : 0;
+          
+          const migrated = Array.from({ length: t.adjustedDuration || t.duration }).map((_, i) => ({
+            id: `alloc-migrated-${t.id}-${i}-${Date.now()}`,
+            assetKey: t.assignedAsset,
+            dayOffset: i === dayIdx ? newLocalDayOffset : i,
+            startTime: i === dayIdx ? "08:00" : "00:00",
+            endTime: i === dayIdx ? "12:00" : "23:59"
+          }));
 
-        // Automatically extend sequence timeline to encompass the new intelligent reservation day
-        const neededDuration = newLocalDayOffset + 1;
-        const updatedDuration = Math.max(t.duration, neededDuration);
+          const neededDuration = newLocalDayOffset + 1;
+          const updatedDuration = Math.max(t.duration, neededDuration);
 
-        return { 
-          ...t, 
-          duration: updatedDuration,
-          assetAllocations: updatedAllocs 
-        };
+          return {
+            ...t,
+            duration: updatedDuration,
+            assignedAsset: 'None',
+            assetAllocations: migrated
+          };
+        } else {
+          const updatedAllocs = (t.assetAllocations || []).map(alloc => {
+            if (alloc.id === allocId) {
+              return { ...alloc, dayOffset: newLocalDayOffset, startTime: "08:00", endTime: "12:00" };
+            }
+            return alloc;
+          });
+
+          // Automatically extend sequence timeline to encompass the new intelligent reservation day
+          const neededDuration = newLocalDayOffset + 1;
+          const updatedDuration = Math.max(t.duration, neededDuration);
+
+          return { 
+            ...t, 
+            duration: updatedDuration,
+            assetAllocations: updatedAllocs 
+          };
+        }
       }
       return t;
     }));
@@ -574,13 +598,33 @@ export default function App() {
   const handleRescheduleLaterThatDay = (taskId, allocId) => {
     setTasks(prev => prev.map(t => {
       if (t.id === taskId) {
-        const updatedAllocs = (t.assetAllocations || []).map(alloc => {
-          if (alloc.id === allocId) {
-            return { ...alloc, startTime: "13:00", endTime: "17:00" };
-          }
-          return alloc;
-        });
-        return { ...t, assetAllocations: updatedAllocs };
+        if (allocId.includes('-fb-')) {
+          // Fallback booking: Convert to explicit allocations, shifting the conflicting slot to afternoon
+          const parts = allocId.split('-fb-');
+          const dayIdx = parts.length > 1 ? parseInt(parts[1]) : 0;
+          
+          const migrated = Array.from({ length: t.adjustedDuration || t.duration }).map((_, i) => ({
+            id: `alloc-migrated-${t.id}-${i}-${Date.now()}`,
+            assetKey: t.assignedAsset,
+            dayOffset: i,
+            startTime: i === dayIdx ? "13:00" : "00:00",
+            endTime: i === dayIdx ? "17:00" : "23:59"
+          }));
+
+          return {
+            ...t,
+            assignedAsset: 'None',
+            assetAllocations: migrated
+          };
+        } else {
+          const updatedAllocs = (t.assetAllocations || []).map(alloc => {
+            if (alloc.id === allocId) {
+              return { ...alloc, startTime: "13:00", endTime: "17:00" };
+            }
+            return alloc;
+          });
+          return { ...t, assetAllocations: updatedAllocs };
+        }
       }
       return t;
     }));
@@ -593,17 +637,38 @@ export default function App() {
     let extendAmount = extendTask ? 1 : 0;
     setTasks(prev => prev.map(t => {
       if (t.id === taskId) {
-        const updatedAllocs = (t.assetAllocations || []).map(alloc => {
-          if (alloc.id === allocId) {
-            return { ...alloc, dayOffset: alloc.dayOffset + 1 };
-          }
-          return alloc;
-        });
-        return { 
-          ...t, 
-          duration: t.duration + extendAmount,
-          assetAllocations: updatedAllocs 
-        };
+        if (allocId.includes('-fb-')) {
+          // Fallback booking: Convert to explicit allocations, shifting conflicting slot to tomorrow
+          const parts = allocId.split('-fb-');
+          const dayIdx = parts.length > 1 ? parseInt(parts[1]) : 0;
+
+          const migrated = Array.from({ length: t.adjustedDuration || t.duration }).map((_, i) => ({
+            id: `alloc-migrated-${t.id}-${i}-${Date.now()}`,
+            assetKey: t.assignedAsset,
+            dayOffset: i === dayIdx ? i + 1 : i,
+            startTime: i === dayIdx ? "08:00" : "00:00",
+            endTime: i === dayIdx ? "12:00" : "23:59"
+          }));
+
+          return {
+            ...t,
+            duration: t.duration + extendAmount,
+            assignedAsset: 'None',
+            assetAllocations: migrated
+          };
+        } else {
+          const updatedAllocs = (t.assetAllocations || []).map(alloc => {
+            if (alloc.id === allocId) {
+              return { ...alloc, dayOffset: alloc.dayOffset + 1 };
+            }
+            return alloc;
+          });
+          return { 
+            ...t, 
+            duration: t.duration + extendAmount,
+            assetAllocations: updatedAllocs 
+          };
+        }
       }
       return t;
     }));
@@ -736,14 +801,37 @@ export default function App() {
     let canceledDay = 1;
     setTasks(prev => prev.map(t => {
       if (t.id === taskId) {
-        const currentAllocations = t.assetAllocations || [];
-        const targetAlloc = currentAllocations.find(a => a.id === allocId);
-        if (targetAlloc) {
-          canceledKey = targetAlloc.assetKey;
-          canceledDay = targetAlloc.dayOffset + 1;
+        if (allocId.includes('-fb-')) {
+          // Dynamic fallback booking: convert to explicit bookings and remove the selected day
+          canceledKey = t.assignedAsset;
+          const migrated = Array.from({ length: t.adjustedDuration || t.duration }).map((_, i) => ({
+            id: `alloc-migrated-${t.id}-${i}-${Date.now()}`,
+            assetKey: t.assignedAsset,
+            dayOffset: i,
+            startTime: "00:00",
+            endTime: "23:59"
+          }));
+
+          const parts = allocId.split('-fb-');
+          const dayIdx = parts.length > 1 ? parseInt(parts[1]) : 0;
+          canceledDay = dayIdx + 1;
+
+          const updated = migrated.filter((_, idx) => idx !== dayIdx);
+          return { 
+            ...t, 
+            assignedAsset: 'None', 
+            assetAllocations: updated 
+          };
+        } else {
+          const currentAllocations = t.assetAllocations || [];
+          const targetAlloc = currentAllocations.find(a => a.id === allocId);
+          if (targetAlloc) {
+            canceledKey = targetAlloc.assetKey;
+            canceledDay = targetAlloc.dayOffset + 1;
+          }
+          const updatedAllocs = currentAllocations.filter(a => a.id !== allocId);
+          return { ...t, assetAllocations: updatedAllocs };
         }
-        const updatedAllocs = currentAllocations.filter(a => a.id !== allocId);
-        return { ...t, assetAllocations: updatedAllocs };
       }
       return t;
     }));
@@ -2891,8 +2979,11 @@ export default function App() {
                   </div>
 
                   {isBookToolExpanded && (
-                    <div className="p-4 bg-slate-100 dark:bg-[#0c121f] border border-slate-300 dark:border-slate-800 rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
-                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest block mb-3">BOOK SHARED TOOL SLOT</span>
+                    <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#0c121f] dark:to-[#0f172a] border border-slate-300 dark:border-slate-800/80 rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150 shadow-inner">
+                      <span className="text-[10px] font-black text-slate-700 dark:text-blue-400 uppercase tracking-widest block mb-4 flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-blue-500 animate-pulse" />
+                        <span>BOOK SHARED TOOL SLOT</span>
+                      </span>
                       <form onSubmit={(e) => {
                         e.preventDefault();
                         const formData = new FormData(e.currentTarget);
@@ -2906,16 +2997,16 @@ export default function App() {
                       }} className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                         
                         <div>
-                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Active Day</label>
-                          <select name="dayOffset" className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-bold cursor-pointer outline-none focus:border-blue-500">
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1.5 text-left">Active Day</label>
+                          <select name="dayOffset" className="w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-[#111827] text-slate-800 dark:text-white border-slate-350 dark:border-slate-850 font-bold cursor-pointer outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all">
                             {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
                               <option key={idx} value={idx}>Day {idx + 1}</option>
                             ))}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Tool / Vehicle</label>
-                          <select name="assetKey" className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-bold cursor-pointer outline-none focus:border-blue-500">
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1.5 text-left">Tool / Vehicle</label>
+                          <select name="assetKey" className="w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-[#111827] text-slate-800 dark:text-white border-slate-350 dark:border-slate-850 font-bold cursor-pointer outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all">
                             {customAssets.map(a => (
                               <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
                             ))}
@@ -2923,33 +3014,33 @@ export default function App() {
                         </div>
                         
                         <div>
-                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Start Time</label>
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1.5 text-left">Start Time</label>
                           <input 
                             name="startTime" 
                             type="time" 
                             defaultValue="08:00" 
-                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
+                            className="w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-[#111827] text-slate-900 dark:text-white border-slate-350 dark:border-slate-850 font-mono font-bold outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all" 
                             required 
                           />
                         </div>
                         <div>
-                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">End Time</label>
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1.5 text-left">End Time</label>
                           <input 
                             name="endTime" 
                             type="time" 
                             defaultValue="17:00" 
-                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
+                            className="w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-[#111827] text-slate-900 dark:text-white border-slate-350 dark:border-slate-850 font-mono font-bold outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all" 
                             required 
                           />
                         </div>
-                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider shadow active:scale-95 transition-transform">
+                        <button type="submit" className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-550 hover:to-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
                           ADD DISPATCH
                         </button>
                       </form>
                     </div>
                   )}
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-3">
                     {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
                       const conflict = checkLogisticalConflictForAllocation(alloc);
                       const targetDate = new Date(projectStartDate);
@@ -2958,43 +3049,50 @@ export default function App() {
                       const recommendation = conflict ? findNextFreeSlot(alloc.assetKey, targetDateStr) : null;
 
                       return (
-                        <div key={i} className={`p-3 sm:p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
+                        <div key={i} className={`p-4 rounded-2xl border flex flex-col justify-between text-xs font-bold gap-3 transition-all duration-300 shadow-sm ${
                           conflict 
-                            ? 'bg-rose-500/10 border-rose-500 text-rose-800 dark:text-rose-200' 
-                            : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-100'
+                            ? 'bg-rose-500/5 dark:bg-rose-950/10 border-rose-400 dark:border-rose-900/50 text-rose-800 dark:text-rose-200' 
+                            : 'bg-white dark:bg-[#131c2e] border-slate-202 dark:border-slate-800/80 text-slate-800 dark:text-slate-100'
                         }`}>
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {renderAssetIcon(alloc.assetKey)}
-                              <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-400">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
+                            <div className="flex items-center gap-2.5">
+                              <span className="p-1.5 bg-blue-500/10 dark:bg-blue-550/15 rounded-lg text-blue-500">
+                                {renderAssetIcon(alloc.assetKey)}
+                              </span>
+                              <div>
+                                <span className="font-extrabold text-[11px] block">Day {alloc.dayOffset + 1} Assignment</span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono font-medium mt-0.5 block">
+                                  <span className="font-black text-blue-600 dark:text-blue-400">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}
+                                </span>
+                              </div>
                             </div>
                             
                             <button 
                               type="button" 
                               onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
-                              className="text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                              className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-all shrink-0"
                               title="Delete this tool booking"
                             >
-                              <X size={15} />
+                              <X size={14} />
                             </button>
                           </div>
 
                           {conflict && (
-                            <div className="p-3 bg-slate-950 rounded-xl border border-rose-900/40 flex flex-col gap-2">
-                              <div className="flex items-center gap-1.5 text-[10px] text-rose-404">
-                                <AlertTriangle size={12} />
+                            <div className="p-3.5 bg-slate-950/80 dark:bg-slate-950 rounded-xl border border-rose-500/20 flex flex-col gap-3">
+                              <div className="flex items-center gap-1.5 text-[10px] text-rose-400 font-black tracking-wide uppercase">
+                                <AlertTriangle size={12} className="text-rose-500 animate-bounce" />
                                 <span>Overlap CLASH Detected with "{conflict.conflictProject}" sequence</span>
                               </div>
 
                               {recommendation ? (
-                                <div className="p-2 bg-emerald-950/60 border border-emerald-500/20 rounded-lg flex items-center justify-between flex-wrap gap-2">
-                                  <span className="text-[10px] text-emerald-400">
-                                    👉 Next available free window: <span className="font-bold text-white">{recommendation.label}</span>
+                                <div className="p-2.5 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-xl flex items-center justify-between flex-wrap gap-2">
+                                  <span className="text-[10px] text-emerald-400 font-medium">
+                                    👉 Next available free window: <span className="font-black text-white">{recommendation.label}</span>
                                   </span>
                                   <button
                                     type="button"
                                     onClick={() => handleIntelligentReschedule(currentTaskEditing.id, alloc.id, recommendation.dateStr)}
-                                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] px-2.5 py-1 rounded font-black uppercase active:scale-95 transition-transform"
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] px-3 py-1 rounded-lg font-black uppercase tracking-wide active:scale-95 transition-transform shadow-md shadow-emerald-950/20"
                                   >
                                     Shift to {recommendation.label}
                                   </button>
@@ -3003,18 +3101,18 @@ export default function App() {
                                 <div className="text-[9px] text-slate-500 italic">Calculating alternative equipment windows...</div>
                               )}
 
-                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              <div className="flex flex-wrap items-center gap-2 mt-1">
                                 <button
                                   type="button"
                                   onClick={() => handleRescheduleLaterThatDay(currentTaskEditing.id, alloc.id)}
-                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase animate-none"
+                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[9.5px] px-3 py-1.5 rounded-lg font-black uppercase tracking-wide transition-all shadow-md active:scale-95"
                                 >
                                   Reschedule After That Time (13:00 - 17:00)
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleRescheduleTomorrow(currentTaskEditing.id, alloc.id, true)}
-                                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase animate-none"
+                                  className="bg-blue-600 hover:bg-blue-500 text-white text-[9.5px] px-3 py-1.5 rounded-lg font-black uppercase tracking-wide transition-all shadow-md active:scale-95"
                                 >
                                   Reschedule Tomorrow (+1d Duration Extension)
                                 </button>
