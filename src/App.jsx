@@ -7,7 +7,8 @@ import {
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
   Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer,
-  SlidersHorizontal, EyeOff, Check, Calendar, Trash, ChevronLeft, Phone, Play, RefreshCw, Send
+  SlidersHorizontal, EyeOff, Check, Calendar, Trash, ChevronLeft, Phone, Play, RefreshCw, Send,
+  Cpu, Wifi, Lock, Unlock, Database
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -37,7 +38,7 @@ try {
       };
   }
 } catch (e) {
-  // Silent fallback for sandbox environment compilation
+  // Fallback for isolated compilation sandbox
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -200,6 +201,7 @@ export default function App() {
 
   const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(true);
   const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
+  const [isManpowerMatrixExpanded, setIsManpowerMatrixExpanded] = useState(true);
 
   const [laborProfile, setLaborProfile] = useState('electrical');
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
@@ -233,17 +235,20 @@ export default function App() {
   const [alertCenterAssetFilter, setAlertCenterAssetFilter] = useState('ALL');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Clock variables: real-time live clock toggling
+  const [clockMode, setClockMode] = useState('live'); // 'live' or 'simulated'
   const [simulatedTime, setSimulatedTime] = useState("08:00 AM");
+  const [liveSystemTime, setLiveSystemTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  
   const [showFourPMAuditModal, setShowFourPMAuditModal] = useState(false);
   const [selectedAuditTaskId, setSelectedAuditTaskId] = useState(null);
 
   const [phonePushAlert, setPhonePushAlert] = useState(null);
-
   const [newSubtaskName, setNewSubtaskName] = useState('');
   const [newSubtaskWeight, setNewSubtaskWeight] = useState(50);
-
   const [selectedLedgerDay, setSelectedLedgerDay] = useState(0);
 
+  // Handle scrolling synchronization
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
       isSyncingRightScroll.current = false;
@@ -268,10 +273,10 @@ export default function App() {
 
   const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'info', text: 'Centralized Mother Link Synced with Citicore DB Cloud.', time: 'Just now' },
-    { id: 2, type: 'warning', text: 'Transit buffer auto-calculated for PC135 Excavator (+1 Day).', time: '5m ago' },
-    { id: 3, type: 'alert', text: 'Conflict Flag: Fusion Splicer Alpha overlaps Quezon and Pagbilao dates.', time: '12m ago' },
-    { id: 4, type: 'success', text: 'Engr. Ana Approved Pre-Construction coordinates for T1.', time: '1h ago' }
+    { id: 1, type: 'info', text: 'Centralized Live Sync Connected with Citicore DB Cloud.', time: 'Just now' },
+    { id: 2, type: 'warning', text: 'Transit buffer automatically calculated for PC135 Excavator (+1 Day).', time: '5m ago' },
+    { id: 3, type: 'alert', text: 'Conflict Warning: Primary Injection Tester overlaps on Day 3.', time: '12m ago' },
+    { id: 4, type: 'success', text: 'Engr. Ana approved initial Pre-Construction mobilization bounds.', time: '1h ago' }
   ]);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -301,7 +306,7 @@ export default function App() {
     projectName: "CITICORE SOLAR PHASE 3B",
     location: "Quezon Substation Hub",
     docNo: "DOC-CIT-MBV-901",
-    revision: "01",
+    revision: "02",
     date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
   });
 
@@ -316,12 +321,30 @@ export default function App() {
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
 
+  // Live system clock monitor
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      const currentFormattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLiveSystemTime(currentFormattedTime);
+
+      // Automated check: if it strikes exactly 4:00 PM (16:00:00) in live mode, fire the compliance audit
+      if (clockMode === 'live' && now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() === 0) {
+        setSimulatedTime("04:00 PM");
+        forceTriggerFourPMAudit();
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [clockMode, tasks]);
+
   const fetchWeatherDelayMultiplier = () => {
     if (weatherFactor === "heavy_rain") return 1.35;
     if (weatherFactor === "typhoon") return 1.8;
     return 1.0;
   };
 
+  // Perform operational sequence calculations
   const flowSchedule = useCallback(() => {
     let currentStartDay = 0;
     const multiplier = fetchWeatherDelayMultiplier();
@@ -359,6 +382,35 @@ export default function App() {
   const activeFlowTasks = flowSchedule();
   const totalDays = activeFlowTasks.reduce((acc, curr) => acc + curr.adjustedDuration, 0) || 1;
   const headerDays = Array.from({ length: totalDays + 3 }, (_, i) => i);
+
+  // Calculate daily breakdown metrics for the Matrix panel view
+  const calculateManpowerBreakdownPerDay = useCallback(() => {
+    const matrix = {};
+    const roles = LABOR_PROFILES[laborProfile];
+
+    roles.forEach(role => {
+      matrix[role.key] = Array(headerDays.length).fill(0);
+    });
+
+    headerDays.forEach(day => {
+      activeFlowTasks.forEach(task => {
+        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
+          const dayIdx = day - task.startDays;
+          const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
+          if (currentDayLabor) {
+            roles.forEach(role => {
+              const count = parseInt(currentDayLabor[role.key]) || 0;
+              matrix[role.key][day] += count;
+            });
+          }
+        }
+      });
+    });
+
+    return matrix;
+  }, [activeFlowTasks, headerDays, laborProfile]);
+
+  const manpowerBreakdownMatrix = calculateManpowerBreakdownPerDay();
 
   const compileAllProjectAllocations = useCallback(() => {
     const allocations = [];
@@ -528,7 +580,6 @@ export default function App() {
       if (t.id === taskId) {
         const updatedAllocs = (t.assetAllocations || []).map(alloc => {
           if (alloc.id === allocId) {
-            // Shift baseline time to afternoon window
             return { ...alloc, startTime: "13:00", endTime: "17:00" };
           }
           return alloc;
@@ -538,7 +589,7 @@ export default function App() {
       return t;
     }));
     playAlertSound();
-    triggerPhoneNotification(`Resolving Clash: ${activeFlowTasks.find(x => x.id === taskId)?.task} shifted to Afternoon.`);
+    triggerPhoneNotification(`Resolving clash: ${activeFlowTasks.find(x => x.id === taskId)?.task} shifted to afternoon.`);
     showToast("Allocation moved to afternoon shift successfully.");
   };
 
@@ -561,7 +612,7 @@ export default function App() {
       return t;
     }));
     playAlertSound();
-    triggerPhoneNotification(`Resolving Clash: Allocated tomorrow. Sequence extended by ${extendAmount}d.`);
+    triggerPhoneNotification(`Resolving clash: shifted tomorrow. Sequence extended by ${extendAmount}d.`);
     showToast(`Allocation shifted to tomorrow. ${extendTask ? 'Sequence duration extended.' : ''}`);
   };
 
@@ -602,7 +653,7 @@ export default function App() {
       setSelectedAuditTaskId(activeTasks[0].id);
       setShowFourPMAuditModal(true);
       playAlertSound();
-      triggerPhoneNotification("🕒 4:00 PM Compliance Audit Requested.");
+      triggerPhoneNotification("🕒 4:00 PM Compliance Audit Triggered.");
     } else {
       showToast("All tasks are fully complete. No 4:00 PM audit needed!");
     }
@@ -619,11 +670,9 @@ export default function App() {
           finalDuration += 1;
         }
 
-        // Auto-complete subtasks if task is completed
         if (completed) {
           finalSubtasks = finalSubtasks.map(st => ({ ...st, status: 'COMPLETED' }));
         } else if (rolloverOption === 'subtask-rollover') {
-          // Carry over incomplete subtasks to a new subtask entry
           const inProgressOnes = finalSubtasks.filter(st => st.status !== 'COMPLETED');
           inProgressOnes.forEach(st => {
             finalSubtasks.push({
@@ -681,7 +730,6 @@ export default function App() {
           return sub;
         });
 
-        // Recalculate parent progress automatically based on subtask weights
         const totalWeight = updated.reduce((sum, s) => sum + s.weight, 0);
         const completedWeight = updated.reduce((sum, s) => sum + (s.status === 'COMPLETED' ? s.weight : 0), 0);
         const autoProgress = totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : t.progress;
@@ -1194,7 +1242,7 @@ export default function App() {
       projectName: newProjectName.toUpperCase(),
       location: "Active Construction Zone",
       docNo: "DOC-CIT-MBV-" + Math.floor(100 + Math.random() * 900),
-      revision: "01",
+      revision: "02",
       date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
     });
 
@@ -1679,6 +1727,12 @@ export default function App() {
           -webkit-overflow-scrolling: touch;
         }
 
+        /* Prevent low contrast values on input pickers (fixes image_ee75e4.png styling issues) */
+        input[type="time"]::-webkit-calendar-picker-indicator {
+          filter: ${isDarkMode ? 'invert(1)' : 'none'};
+          cursor: pointer;
+        }
+
         select, input {
           -webkit-appearance: none;
           appearance: none;
@@ -1736,15 +1790,39 @@ export default function App() {
                     <ChevronDown className="text-slate-900 dark:text-slate-202 shrink-0" size={12}/>
                   </button>
 
-                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-202 dark:border-slate-800 px-2.5 py-1.5 rounded-xl font-bold text-xs">
-                    🕒 simulated Time: <span className="text-blue-500 font-black">{simulatedTime}</span>
+                  {/* Refined Time Picker Indicator & Clock Mode Selector (fixes image_ee7662.png elements) */}
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-202 dark:border-slate-800 px-3 py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0">
+                    <Clock size={13} className="text-blue-500" />
+                    <button 
+                      onClick={() => setClockMode(m => m === 'live' ? 'simulated' : 'live')}
+                      className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded transition-all ${
+                        clockMode === 'live' ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-600/10 text-amber-400 border border-amber-500/20'
+                      }`}
+                      title="Click to toggle between real-world clock sync and simulated audit testing"
+                    >
+                      {clockMode === 'live' ? '● Live System' : '⚙ Simulated'}
+                    </button>
+                    <span className="text-slate-900 dark:text-white font-black font-mono">
+                      {clockMode === 'live' ? liveSystemTime : simulatedTime}
+                    </span>
                   </div>
 
+                  {/* Multi-Device Live Sync Pulse Indicator badge */}
+                  <div className="hidden xl:flex items-center gap-1.5 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase text-blue-600 dark:text-blue-400">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <Wifi size={11} />
+                    <span>Live-Link Sync Connected</span>
+                  </div>
+
+                  {/* Interactive schedules select lists (Fixes contrast issues in image_ee7242.png by changing to dark blue/white themes) */}
                   {isProjectDropdownOpen && (
                     <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-300 text-slate-900'
+                      isDarkMode ? 'bg-[#111827] border-slate-707 text-slate-100' : 'bg-white border-slate-300 text-slate-900'
                     }`}>
-                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-404 border-b border-slate-800 uppercase mb-2">
+                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
                         Schedules Directory
                       </div>
                       <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
@@ -1755,14 +1833,14 @@ export default function App() {
                               handleSwitchProject(proj.id);
                               setIsProjectDropdownOpen(false);
                             }}
-                            className={`flex items-center justify-between p-2 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                            className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
-                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-404 border border-blue-505 shadow-md' 
-                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-303 border border-transparent' : 'hover:bg-slate-100 text-slate-800 border border-slate-200')
+                                ? 'bg-blue-600 text-white border border-blue-500 shadow-md font-black' 
+                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-200 border border-transparent' : 'hover:bg-slate-100 text-slate-850 border border-slate-200')
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-505'} size={12}/>
+                              <Folder className={activeProjectId === proj.id ? 'text-white' : 'text-slate-500'} size={13}/>
                               <span className="truncate">{proj.title}</span>
                             </div>
                             {proj.id !== 'master-schedule' && (
@@ -1772,7 +1850,7 @@ export default function App() {
                                   handleDeleteProject(proj.id);
                                   setIsProjectDropdownOpen(false);
                                 }}
-                                className="p-1 text-slate-600 hover:text-rose-600 rounded transition-colors shrink-0"
+                                className={`p-1 rounded transition-colors shrink-0 ${activeProjectId === proj.id ? 'text-white/85 hover:text-red-200' : 'text-slate-500 hover:text-rose-600'}`}
                               >
                                 <Trash2 size={12}/>
                               </button>
@@ -1817,12 +1895,20 @@ export default function App() {
             </div>
           </div>
 
-          {}
           <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative items-center">
+            {/* Highly discoverable main header actions */}
+            <button
+              onClick={addTask}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-[11px] px-3.5 py-2 rounded-xl border border-blue-500 uppercase tracking-wider flex items-center gap-1.5 shadow shadow-blue-500/25 transition-all"
+            >
+              <Plus size={13} />
+              <span>Add Task</span>
+            </button>
+
             <button
               onClick={forceTriggerFourPMAudit}
               className="bg-amber-600 hover:bg-amber-500 text-white font-black text-[11px] px-3.5 py-2 rounded-xl border border-amber-500 uppercase tracking-wider flex items-center gap-1.5 shadow"
-              title="Skip clock to 4:00 PM and prompt site status audits"
+              title="Manual testing bypass: skip clock to 4:00 PM to evaluate compliance flows"
             >
               <Clock size={13} className="animate-pulse" />
               <span>Simulate 4:00 PM Audit</span>
@@ -1842,7 +1928,6 @@ export default function App() {
       <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0 relative">
           
-          {/* Simulated phone push notification alert card */}
           {phonePushAlert && (
             <div className="fixed bottom-6 right-6 z-50 w-80 bg-slate-900/95 border-2 border-blue-500 text-white rounded-2xl shadow-2xl p-4 animate-bounce flex items-start gap-3">
               <div className="bg-blue-600 p-2.5 rounded-xl"><Phone size={16} className="text-white" /></div>
@@ -1870,7 +1955,7 @@ export default function App() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
                       isDarkMode 
                         ? 'bg-[#0f172a] border-slate-700 text-white focus:border-blue-500' 
-                        : 'bg-slate-100 border-slate-303 text-slate-800 focus:border-blue-600'
+                        : 'bg-slate-100 border-slate-303 text-slate-808 focus:border-blue-600'
                     }`}
                   />
                   
@@ -1879,12 +1964,20 @@ export default function App() {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                       isGanttSidebarVisible 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                        : 'bg-slate-202 dark:bg-slate-800 border-slate-303 dark:border-slate-707 text-blue-800 dark:text-blue-404 hover:bg-slate-300'
+                        : 'bg-slate-202 dark:bg-slate-800 border-slate-303 dark:border-slate-707 text-blue-808 dark:text-blue-404 hover:bg-slate-300'
                     }`}
                     style={{ minWidth: '105px' }}
                   >
                     {isGanttSidebarVisible ? <EyeOff size={14}/> : <Eye size={14}/>}
                     <span>{isGanttSidebarVisible ? 'Hide List' : 'Show List'}</span>
+                  </button>
+
+                  <button
+                    onClick={addTask}
+                    className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1 shadow-md"
+                  >
+                    <Plus size={14}/>
+                    <span className="hidden sm:inline">Add Task Parameter</span>
                   </button>
                 </div>
                 
@@ -1896,7 +1989,7 @@ export default function App() {
                       className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-404 hover:text-white' : 'bg-white border-slate-303 text-slate-800 hover:bg-slate-100')
+                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-404 hover:text-white' : 'bg-white border-slate-303 text-slate-808 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1905,7 +1998,7 @@ export default function App() {
                 </div>
               </div>
 
-              {}
+              {/* Central Gantt Grid workspace */}
               <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-white border-slate-200'}`}>
                 
                 {isGanttSidebarVisible && (
@@ -1967,7 +2060,7 @@ export default function App() {
                     </div>
 
                     <div className="h-[64px] p-2 flex items-center border-t border-slate-303 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-707 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-808">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-707 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-808 hover:border-blue-500 transition-colors">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
@@ -2080,10 +2173,15 @@ export default function App() {
                     })}
                   </div>
 
+                  {/* RESTORED & COMPREHENSIVELY ENHANCED MANPOWER LOADING HISTOGRAM HIST */}
                   <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
                     isDarkMode ? 'bg-[#0b0f19] border-slate-800' : 'bg-slate-202 border-slate-303'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
+                    <div className="absolute left-3 top-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2 py-1 rounded-lg text-[9px] font-black uppercase text-blue-400">
+                      <BarChart3 size={11} />
+                      <span>Workforce Loading per Day</span>
+                    </div>
                     {headerDays.map(day => {
                       const dayManpower = activeFlowTasks.reduce((sum, task) => {
                         if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
@@ -2122,6 +2220,81 @@ export default function App() {
           )}
 
           {}
+          {/* PERSISTENT MANPOWER ALLOCATION MATRIX SHEET (RESTORES DETAILED VALUES BY ROLE) */}
+          {activePerspective === 'gantt' && (
+            <div className={`border rounded-3xl overflow-hidden transition-all duration-300 relative ${
+              isDarkMode ? 'bg-[#131c2e]/90 border-slate-800' : 'bg-white border-slate-222 shadow-md'
+            }`}>
+              <div 
+                onClick={() => setIsManpowerMatrixExpanded(!isManpowerMatrixExpanded)}
+                className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 select-none"
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="text-blue-500" size={15} />
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-800 dark:text-blue-400">
+                    Interactive Daily Manpower Allocation Matrix ({laborProfile.toUpperCase()} Profile)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                  <button 
+                    onClick={() => setLaborProfile(p => p === 'electrical' ? 'civil' : 'electrical')}
+                    className="text-[9px] font-black uppercase px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow"
+                  >
+                    Switch to {laborProfile === 'electrical' ? 'Civil' : 'Electrical'}
+                  </button>
+                  <button 
+                    onClick={() => setIsManpowerMatrixExpanded(!isManpowerMatrixExpanded)}
+                    className="p-1 text-slate-400 hover:text-white"
+                  >
+                    {isManpowerMatrixExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              {isManpowerMatrixExpanded && (
+                <div className="border-t border-slate-800/80 overflow-x-auto scrollbar-thin">
+                  <div className="min-w-max p-4" style={{ width: `${(headerDays.length * 56) + 180}px` }}>
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-800 text-[10px] uppercase font-black tracking-widest text-slate-500">
+                          <th className="w-[180px] pb-2 font-black">Labor Category Role</th>
+                          {headerDays.map(day => (
+                            <th key={`mh-${day}`} className="w-[56px] text-center pb-2 font-black font-mono">Day {day + 1}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activeRoles.map(role => (
+                          <tr key={role.key} className="border-b border-slate-800/40 hover:bg-slate-900/20">
+                            <td className="py-2 flex items-center gap-2 font-bold text-slate-300">
+                              <span className="text-sm">{role.icon}</span>
+                              <span className="font-extrabold text-[11px]">{role.label}</span>
+                              <span className="text-[9px] text-slate-500 font-normal">({role.fullName})</span>
+                            </td>
+                            {headerDays.map(day => {
+                              const count = manpowerBreakdownMatrix[role.key]?.[day] || 0;
+                              return (
+                                <td key={`mc-${role.key}-${day}`} className="py-2 text-center">
+                                  <span className={`px-1.5 py-0.5 rounded font-mono font-black text-[10px] ${
+                                    count > 0 
+                                      ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
+                                      : 'text-slate-600'
+                                  }`}>
+                                    {count > 0 ? count : '-'}
+                                  </span>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
@@ -2166,7 +2339,6 @@ export default function App() {
                     {thisWeeksForecastList.map(item => {
                       const isOverdue = item.absoluteEndDate < new Date() && item.progress < 100;
                       
-                      // Format explicit dates for display (e.g. "Jul 15 - Jul 17")
                       const formattedStart = item.absoluteStartDate ? new Date(item.absoluteStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
                       const formattedEnd = item.absoluteEndDate ? new Date(item.absoluteEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
 
@@ -2292,7 +2464,6 @@ export default function App() {
             </div>
           )}
 
-          {}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col lg:flex-row lg:items-center justify-between gap-4 ${
@@ -2315,7 +2486,6 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-grow overflow-hidden min-h-0">
-                {/* Ledger Left Selector Day Column */}
                 <div className="xl:col-span-4 bg-slate-900/50 rounded-2xl border border-slate-800 p-4 flex flex-col overflow-hidden">
                   <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-3">Timeline Days Summary</h4>
                   <div className="space-y-1.5 overflow-y-auto flex-grow pr-1">
@@ -2352,7 +2522,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Ledger Right Dynamic summary portion with bulk operations */}
                 <div className="xl:col-span-8 bg-[#131c2e]/40 rounded-2xl border border-slate-800 p-4 flex flex-col overflow-hidden">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4 shrink-0">
                     <div>
@@ -2613,7 +2782,6 @@ export default function App() {
               
               <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
                 
-                {/* Carry over details segment */}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2714,7 +2882,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2725,13 +2892,13 @@ export default function App() {
 
                   <div className="flex gap-2.5 items-end mb-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
                     <div className="flex-1">
-                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Subcategory / Subtask Name</label>
+                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Subtask Name</label>
                       <input 
                         type="text" 
                         placeholder="e.g. Bend rebar stirrups / Check spacing"
                         value={newSubtaskName} 
                         onChange={(e) => setNewSubtaskName(e.target.value)}
-                        className="w-full text-xs p-2 rounded-lg border bg-slate-900 border-slate-800 text-white outline-none"
+                        className="w-full text-xs p-2 rounded-lg border bg-slate-900 border-slate-800 text-white outline-none animate-none"
                       />
                     </div>
                     <div className="w-24">
@@ -2761,7 +2928,7 @@ export default function App() {
                             onChange={() => handleToggleSubtaskStatus(currentTaskEditing.id, sub.id)}
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-700 bg-slate-950 rounded cursor-pointer"
                           />
-                          <span className={`text-xs font-bold ${sub.status === 'COMPLETED' ? 'line-through text-slate-505' : 'text-slate-100'}`}>
+                          <span className={`text-xs font-bold ${sub.status === 'COMPLETED' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                             {sub.name}
                           </span>
                         </div>
@@ -2770,7 +2937,7 @@ export default function App() {
                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${sub.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                             {sub.status}
                           </span>
-                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-404 hover:text-rose-500">
+                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-400 hover:text-rose-500">
                             <X size={14}/>
                           </button>
                         </div>
@@ -2779,7 +2946,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {}
+                {/* Granular Tool Dispatches scheduler inputs (Fixes visual bugs in image_ee75e4.png by replacing with custom premium pickers) */}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2829,15 +2996,29 @@ export default function App() {
                             ))}
                           </select>
                         </div>
+                        
+                        {/* High fidelity input layouts (cleans up image_ee75e4.png browser-native visual elements) */}
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
-                          <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
+                          <input 
+                            name="startTime" 
+                            type="time" 
+                            defaultValue="08:00" 
+                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono outline-none shadow-sm" 
+                            required 
+                          />
                         </div>
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
-                          <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
+                          <input 
+                            name="endTime" 
+                            type="time" 
+                            defaultValue="17:00" 
+                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono outline-none shadow-sm" 
+                            required 
+                          />
                         </div>
-                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider">
+                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider shadow">
                           Add dispatch
                         </button>
                       </form>
@@ -2850,8 +3031,8 @@ export default function App() {
                       return (
                         <div key={i} className={`p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
                           conflict 
-                            ? 'bg-rose-500/10 border-rose-500 text-rose-850 dark:text-rose-303' 
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100'
+                            ? 'bg-rose-500/10 border-rose-500 text-rose-800 dark:text-rose-200' 
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-808 dark:text-slate-100'
                         }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -2861,7 +3042,7 @@ export default function App() {
                             <button 
                               type="button" 
                               onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
-                              className="text-slate-404 hover:text-rose-600 p-1"
+                              className="text-slate-400 hover:text-rose-600 p-1"
                             >
                               <X size={14} />
                             </button>
@@ -2910,9 +3091,9 @@ export default function App() {
 
         return (
           <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 max-w-lg w-full">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 max-w-lg w-full animate-bounce-short">
               <div className="flex justify-between items-start mb-4 border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 text-amber-505">
+                <div className="flex items-center gap-2 text-amber-500">
                   <Clock className="animate-pulse" size={18} />
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-100">🕒 4:00 PM Daily Progress Audit</h3>
                 </div>
@@ -2943,24 +3124,24 @@ export default function App() {
                 )}
 
                 <div className="space-y-3 pt-3 border-t border-slate-800">
-                  <span className="text-[10px] font-black text-slate-400 block uppercase">Log Audit Actions</span>
+                  <span className="text-[10px] font-black text-slate-404 block uppercase">Log Audit Actions</span>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => submitFourPMAuditResponse(auditTask.id, true, 100, 'none')}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors"
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors shadow-md shadow-emerald-500/20"
                     >
                       ✅ All Done Today
                     </button>
                     <button
                       onClick={() => submitFourPMAuditResponse(auditTask.id, false, 80, 'extend-day')}
-                      className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors"
+                      className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors shadow-md shadow-rose-500/20"
                     >
                       ❌ Extend By 1 Day
                     </button>
                   </div>
                   <button
                     onClick={() => submitFourPMAuditResponse(auditTask.id, false, 50, 'subtask-rollover')}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider"
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider border border-slate-700"
                   >
                     🔄 Rollover Incomplete Subtasks
                   </button>
@@ -3017,7 +3198,7 @@ export default function App() {
                         value={newAssetType}
                         onChange={(e) => setNewAssetType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-900 border-slate-303 [&_option]:bg-white'
+                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707' : 'bg-white text-slate-900 border-slate-303'
                         }`}
                       >
                         <option value="Heavy Equipment">Heavy Equipment</option>
@@ -3094,7 +3275,7 @@ export default function App() {
 
                 <button 
                   onClick={handleAddCustomAsset}
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider"
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-505 text-white font-bold text-xs uppercase tracking-wider shadow"
                 >
                   Register Custom Asset
                 </button>
@@ -3104,7 +3285,6 @@ export default function App() {
         </div>
       )}
 
-      {}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -3125,13 +3305,13 @@ export default function App() {
               <div className="flex gap-2">
                 <button 
                   onClick={() => setShowCreateProjectModal(false)}
-                  className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                  className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-750"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleCreateNewProject}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                  className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow"
                 >
                   Create
                 </button>
@@ -3153,7 +3333,7 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setIsSettingsOpen(false)} 
-                className="p-1.5 rounded hover:bg-slate-202 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-100"
+                className="p-1.5 rounded hover:bg-slate-202 dark:hover:bg-slate-800 text-slate-404 hover:text-slate-100"
               >
                 <X size={16} />
               </button>
@@ -3226,7 +3406,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={() => setIsSettingsOpen(false)}
-                  className="ml-auto px-5 py-2 bg-blue-600 hover:bg-blue-505 text-white rounded-xl text-xs font-bold"
+                  className="ml-auto px-5 py-2 bg-blue-600 hover:bg-blue-505 text-white rounded-xl text-xs font-bold shadow"
                 >
                   Save & Apply
                 </button>
@@ -3246,13 +3426,13 @@ export default function App() {
             <div className="flex gap-2">
               <button 
                 onClick={() => setProjectToDelete(null)}
-                className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-750"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmDeleteProject}
-                className="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                className="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow"
               >
                 Delete
               </button>
@@ -3302,7 +3482,7 @@ export default function App() {
                         </div>
                         <button 
                           onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))} 
-                          className="text-slate-404 hover:text-slate-600"
+                          className="text-slate-400 hover:text-slate-600"
                         >
                           <X size={12} />
                         </button>
