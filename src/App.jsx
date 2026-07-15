@@ -38,7 +38,7 @@ try {
       };
   }
 } catch (e) {
-  // Sandbox environment fallback safely handles omissions
+  // Safe fallback for sandbox runtime
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -48,7 +48,7 @@ const db = app ? getFirestore(app) : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 
 const CiticoreLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 sm:h-9 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-6 sm:h-9 w-auto">
     <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#2563eb" />
     <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#06b6d4" />
     <text x="50" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill={isDarkMode ? "#60a5fa" : "#1e3a8a"} letterSpacing="-0.03em">CITICORE</text>
@@ -57,7 +57,7 @@ const CiticoreLogo = ({ isDarkMode }) => (
 );
 
 const MbvLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 sm:h-9 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-6 sm:h-9 w-auto">
     <rect x="10" y="5" width="35" height="35" rx="8" fill="#1e293b" stroke="#2563eb" strokeWidth="2" />
     <path d="M27 10 L19 23 L26 23 L23 33 L32 19 L25 19 Z" fill="#06b6d4" />
     <text x="55" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill="#2563eb" letterSpacing="-0.03em">MBV ELECTRIC</text>
@@ -125,7 +125,7 @@ const LABOR_PROFILES = {
     { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
     { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
     { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-202', icon: '⛓️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
     { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
     { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-100 border-rose-400 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
     { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
@@ -195,10 +195,9 @@ export default function App() {
   const [activePerspective, setActivePerspective] = useState('gantt');
   const [isGanttSidebarVisible, setIsGanttSidebarVisible] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [mobileTab, setMobileTab] = useState('list'); // New view controller: 'list' or 'gantt' to solve 748607690_1549596790201689_5710727974408244119_n.jpg clipping
 
   const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(false);
-  const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
+  const [isBookToolExpanded, setIsBookToolExpanded] = useState(true);
   const [laborProfile, setLaborProfile] = useState('electrical');
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -353,6 +352,7 @@ export default function App() {
   const compileAllProjectAllocations = useCallback(() => {
     const allocations = [];
 
+    // Local project allocations
     activeFlowTasks.forEach(task => {
       const taskStartOffset = task.startDays;
       const taskDuration = task.adjustedDuration;
@@ -398,6 +398,7 @@ export default function App() {
       }
     });
 
+    // Foreign project allocations
     allProjectsTasks.forEach(otherTask => {
       if (otherTask.parentProjectId === activeProjectId) return;
 
@@ -465,6 +466,7 @@ export default function App() {
         const valBStart = shB * 60 + smB;
         const valBEnd = ehB * 60 + emB;
 
+        // Overlap verification math
         if (valAStart < valBEnd && valAEnd > valBStart) {
           const assetName = customAssets.find(a => a.key === alloc.assetKey)?.label || alloc.assetKey;
           return {
@@ -472,7 +474,7 @@ export default function App() {
             assetKey: alloc.assetKey,
             assetName,
             conflictProject: other.projectTitle,
-            conflictTaskId: other.conflictTaskId || other.taskId,
+            conflictTaskId: other.taskId,
             conflictTaskName: other.taskName,
             conflictTaskRef: other.taskRef,
             conflictTime: `${other.startTime} - ${other.endTime}`,
@@ -651,6 +653,47 @@ export default function App() {
       return t;
     }));
     showToast("Subcategory deleted.");
+  };
+
+  const addAssetAllocation = (taskId, assetKey, dayOffset, startTime, endTime) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const currentAllocations = t.assetAllocations || [];
+        const nextAlloc = {
+          id: `alloc-${Date.now()}`,
+          assetKey,
+          dayOffset,
+          startTime,
+          endTime
+        };
+        const updatedAllocs = [...currentAllocations, nextAlloc];
+        return { ...t, assetAllocations: updatedAllocs };
+      }
+      return t;
+    }));
+    logActivityToCloud(`Created new booking for equipment [${assetKey}] on Day ${dayOffset + 1}`, "success");
+    showToast(`Shared tool reservation added on Day ${dayOffset + 1}`);
+  };
+
+  const removeAssetAllocation = (taskId, allocId) => {
+    let canceledKey = 'Asset';
+    let canceledDay = 1;
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const currentAllocations = t.assetAllocations || [];
+        const targetAlloc = currentAllocations.find(a => a.id === allocId);
+        if (targetAlloc) {
+          canceledKey = targetAlloc.assetKey;
+          canceledDay = targetAlloc.dayOffset + 1;
+        }
+        const updatedAllocs = currentAllocations.filter(a => a.id !== allocId);
+        return { ...t, assetAllocations: updatedAllocs };
+      }
+      return t;
+    }));
+    // Crucial: Fire immediate cloud sync/log alert to notify other concurrent projects/users!
+    logActivityToCloud(`⚠️ Booking Release Notice: [${canceledKey}] reservation for Day ${canceledDay} has been CANCELED / RELEASED.`, "alert");
+    showToast(`Shared tool reservation removed.`);
   };
 
   useEffect(() => {
@@ -1369,9 +1412,9 @@ export default function App() {
     
     if (isDarkMode) {
       if (hasConflict) return 'bg-amber-950/20 border-amber-500/20 hover:bg-amber-950/30';
-      if (isHold) return 'bg-rose-950/20 border-rose-900/30 hover:bg-rose-950/30';
-      if (isApproved) return 'bg-[#0f2d20]/30 border-emerald-900/30 hover:bg-[#0f2d20]/45 text-emerald-100';
-      return index % 2 === 0 ? 'bg-[#0b101f] border-slate-900 hover:bg-slate-900/10' : 'bg-[#080b14] border-slate-900 hover:bg-[#0b101f]/10';
+      if (isHold) return 'bg-rose-950/20 border-rose-900/20 hover:bg-rose-950/30';
+      if (isApproved) return 'bg-[#0f2d20]/25 border-emerald-900/20 hover:bg-[#0f2d20]/35 text-emerald-100';
+      return index % 2 === 0 ? 'bg-[#0b101f] border-slate-900/60 hover:bg-slate-900/10' : 'bg-[#080b14] border-slate-900/60 hover:bg-[#0b101f]/10';
     } else {
       if (hasConflict) return 'bg-amber-50 border-amber-300 hover:bg-amber-100/60';
       if (isHold) return 'bg-rose-50 border-rose-300 hover:bg-rose-100/60';
@@ -1420,7 +1463,7 @@ export default function App() {
             <div className="hidden sm:block h-8 w-px bg-slate-800" />
             <MbvLogo isDarkMode={true} />
           </div>
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-blue-404 font-bold tracking-wider uppercase">
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-blue-400 font-bold tracking-wider uppercase">
             <Loader2 className="animate-spin text-blue-500" size={18} />
             <span>Synchronizing with Citicore DB Cloud...</span>
           </div>
@@ -1449,11 +1492,6 @@ export default function App() {
           cursor: pointer;
         }
 
-        select, input {
-          -webkit-appearance: none;
-          appearance: none;
-        }
-
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: ${isDarkMode ? 'rgba(15, 23, 42, 0.1)' : '#cbd5e1'}; }
         ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#334155' : '#94a3b8'}; border-radius: 4px; }
@@ -1463,21 +1501,63 @@ export default function App() {
           background-image: 
             linear-gradient(to right, rgba(148, 163, 184, 0.25) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
-          background-size: 56px 100%, 100% 68px;
+          background-size: 56px 100%, 100% 64px;
         }
         
         .gantt-grid-dark {
           background-image: 
-            linear-gradient(to right, rgba(71, 85, 105, 0.15) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(71, 85, 105, 0.15) 1px, transparent 1px);
-          background-size: 56px 100%, 100% 68px;
+            linear-gradient(to right, rgba(71, 85, 105, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(71, 85, 105, 0.1) 1px, transparent 1px);
+          background-size: 56px 100%, 100% 64px;
         }
 
-        /* Landscape height responsive compression variables (742001332_1037671298843665_6548863071110779362_n.jpg) */
-        @media (max-height: 560px) {
-          header { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
-          main { padding: 0.5rem !important; }
-          .gantt-panel-card { border-radius: 12px !important; }
+        @media (max-height: 580px) {
+          header {
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+          }
+          header .logo-container svg {
+            height: 1.5rem !important;
+          }
+          header .live-clock-badge {
+            display: none !important;
+          }
+          .main-panel-container {
+            padding: 0.25rem !important;
+          }
+          .controls-panel-row {
+            padding: 0.35rem !important;
+          }
+          .controls-panel-row input {
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+            max-width: 140px !important;
+          }
+          .task-header-row {
+            height: 32px !important;
+            min-height: 32px !important;
+          }
+          .task-body-row {
+            height: 48px !important;
+            min-height: 48px !important;
+          }
+          .task-title-text {
+            font-size: 10px !important;
+            line-height: 1.1 !important;
+          }
+          .task-category-text {
+            display: none !important;
+          }
+          .gantt-bar-element {
+            height: 28px !important;
+          }
+          .workforce-histogram-panel {
+            height: 60px !important;
+          }
+          .alert-tray-header {
+            padding-top: 0.35rem !important;
+            padding-bottom: 0.35rem !important;
+          }
         }
       `}} />
 
@@ -1485,7 +1565,7 @@ export default function App() {
       <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#090d16] border-slate-900' : 'bg-white border-slate-202'}`}>
         <div className="px-3 py-2 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
           <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10 w-full md:w-auto">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 logo-container">
               <div className="bg-[#111827] p-1.5 sm:p-2 rounded-xl border border-slate-800 text-white shrink-0 shadow-lg">
                 <LayoutDashboard size={16} className="text-blue-500 sm:w-[18px] sm:h-[18px]"/>
               </div>
@@ -1500,26 +1580,17 @@ export default function App() {
                     <span className="truncate max-w-[80px] sm:max-w-[200px]">
                       {projectList.find(p => p.id === activeProjectId)?.title || 'Switch...'}
                     </span>
-                    <ChevronDown className="text-slate-400 shrink-0" size={11}/>
+                    <ChevronDown className="text-slate-404 shrink-0" size={11}/>
                   </button>
 
-                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111827] border border-slate-202 dark:border-slate-800 px-2.5 py-1 sm:py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0">
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111827] border border-slate-202 dark:border-slate-800 px-2.5 py-1 sm:py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0 live-clock-badge">
                     <Clock size={12} className="text-blue-500" />
-                    <span className="hidden xs:inline text-[8px] font-black uppercase px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-404 border border-emerald-500/20">
+                    <span className="hidden xs:inline text-[8px] font-black uppercase px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                       Live
                     </span>
                     <span className="text-slate-800 dark:text-white font-black font-mono text-[10px] sm:text-xs">
                       {liveSystemTime}
                     </span>
-                  </div>
-
-                  <div className="hidden sm:flex items-center gap-1 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] font-black uppercase text-blue-600 dark:text-blue-400">
-                    <span className="relative flex h-1.5 w-1.5 shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                    </span>
-                    <Wifi size={10} />
-                    <span>Live Sync</span>
                   </div>
 
                   {isProjectDropdownOpen && (
@@ -1580,7 +1651,6 @@ export default function App() {
             </div>
           </div>
 
-          {}
           <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-3 px-3 md:mx-0 md:px-0 z-10">
             <div className={`flex items-center gap-1 border p-1 rounded-2xl whitespace-nowrap shadow-md bg-opacity-90 ${
               isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-slate-100 border-slate-202'
@@ -1600,10 +1670,10 @@ export default function App() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 group ${
                       isSelected 
                         ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.02]` 
-                        : 'text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
+                        : 'text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
-                    <IconComponent size={12} className={`${isSelected ? 'text-white' : 'text-slate-404 group-hover:scale-105 transition-transform'}`} />
+                    <IconComponent size={12} className={`${isSelected ? 'text-white' : 'text-slate-400 group-hover:scale-105 transition-transform'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -1612,6 +1682,17 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative items-center">
+            {}
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2.5 rounded-xl transition border shadow-sm ${
+                isDarkMode ? 'bg-[#111827] border-slate-800 text-amber-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+              title="Toggle Light / Dark Theme"
+            >
+              {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+
             <button
               onClick={addTask}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs px-3.5 py-1.5 sm:py-2 rounded-xl border border-blue-500/30 uppercase tracking-wider flex items-center gap-1 shadow shadow-blue-500/20 transition-all"
@@ -1631,15 +1712,14 @@ export default function App() {
       </header>
 
       {}
-      <main className="flex-1 overflow-y-auto lg:overflow-hidden p-2 sm:p-4 md:p-6 relative flex flex-col min-h-0">
+      <main className="flex-1 overflow-y-auto lg:overflow-hidden p-2 sm:p-4 md:p-6 relative flex flex-col min-h-0 main-panel-container">
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-3 sm:gap-4 flex-1 min-h-0 relative">
 
           {/* GANTT VIEW PERSPECTIVE */}
           {activePerspective === 'gantt' && (
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
-              {/* Controls bar */}
-              <div className={`p-2 sm:p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
+              <div className={`p-2 sm:p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 controls-panel-row ${
                 isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202 shadow-sm'
               }`}>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1">
@@ -1683,10 +1763,10 @@ export default function App() {
                     <button
                       key={tag}
                       onClick={() => setFilterStatusTag(tag)}
-                      className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-wider transition-all border ${
+                      className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-wider tracking-widest transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#111827] border-slate-850 text-slate-404 hover:text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
+                          : (isDarkMode ? 'bg-[#111827] border-slate-850 text-slate-400 hover:text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1695,39 +1775,21 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Adaptive mobile viewport segmented tab switch to resolve 748607690_1549596790201689_5710727974408244119_n.jpg */}
-              {isMobileViewport && (
-                <div className="flex border rounded-xl overflow-hidden p-1 bg-slate-100 dark:bg-slate-900/40 border-slate-202 dark:border-slate-850 shrink-0">
-                  <button 
-                    onClick={() => setMobileTab('list')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${mobileTab === 'list' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 dark:text-slate-404'}`}
-                  >
-                    Spreadsheet Parameters
-                  </button>
-                  <button 
-                    onClick={() => setMobileTab('gantt')}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${mobileTab === 'gantt' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 dark:text-slate-404'}`}
-                  >
-                    Interactive Timeline
-                  </button>
-                </div>
-              )}
-
-              {/* Master Split Grid */}
-              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'}`}>
+              {}
+              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#0a0f18] border-slate-900/60' : 'bg-white border-slate-202'}`}>
                 
-                {/* SPREADSHEET TABLE COLUMN */}
-                {(!isMobileViewport || mobileTab === 'list') && isGanttSidebarVisible && (
-                  <div className={`flex w-full lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
+                {/* 1. LEFT COLUMN: STICKY TASK SPREADSHEET */}
+                {isGanttSidebarVisible && (
+                  <div className={`flex w-[125px] xs:w-[155px] sm:w-[240px] md:w-[320px] lg:w-[38%] xl:w-[32%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
                     isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'
                   }`}>
                     
-                    <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-black text-[9px] flex items-center uppercase tracking-widest border-b transition-colors ${
+                    <div className={`p-2 font-black text-[9px] flex items-center uppercase tracking-widest border-b transition-colors task-header-row h-[36px] min-h-[36px] ${
                       isDarkMode ? 'bg-[#080d15] border-slate-900 text-slate-400' : 'bg-slate-100 border-slate-202 text-slate-800'
                     }`}>
-                      <span className="w-8 text-center font-black">Ref</span>
-                      <span className="flex-grow px-2 truncate font-black">Work Description</span>
-                      <span className="w-10 text-center shrink-0 font-black">Days</span>
+                      <span className="w-6 sm:w-8 text-center font-black">Ref</span>
+                      <span className="flex-grow px-2 truncate font-black text-left">Work Description</span>
+                      <span className="w-8 sm:w-10 text-center shrink-0 font-black hidden xs:inline">Days</span>
                     </div>
 
                     <div 
@@ -1743,196 +1805,194 @@ export default function App() {
                             setActiveTaskModal(task.id);
                             setSelectedDayIndex(0);
                           }}
-                          className={`h-[68px] min-h-[68px] max-h-[68px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
+                          className={`flex items-center text-xs group transition-all border-b cursor-pointer task-body-row h-[64px] min-h-[64px] ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-600 dark:text-blue-404">
+                          <div className="w-6 sm:w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400">
                             {task.ref}
                           </div>
                           
-                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
+                          <div className={`flex-grow h-full flex flex-col justify-center px-1.5 sm:px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-900/60' : 'border-slate-202'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="font-black text-[8px] text-blue-600 dark:text-blue-404 uppercase tracking-wider block truncate text-left">
+                              <span className="font-black text-[7.5px] sm:text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-wider block truncate text-left task-category-text">
                                 {task.desc}
                               </span>
-                              <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
+                              <span className={`px-1 py-0.5 rounded text-[6px] sm:text-[7px] font-black uppercase tracking-wider shrink-0 hidden sm:inline ${getBadgeStyle(task.qaStatus)}`}>
                                 {task.qaStatus}
                               </span>
                             </div>
-                            <span className={`font-bold text-xs truncate leading-tight mt-1 text-left ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                            <span className={`font-bold text-[11px] sm:text-xs truncate leading-tight mt-0.5 sm:mt-1 text-left task-title-text ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
                               {task.task}
                             </span>
-                            {task.subtasks && task.subtasks.length > 0 && (
-                              <span className="text-[9px] text-slate-404 font-bold block mt-0.5 text-left">
-                                📊 {task.subtasks.filter(s=>s.status==='COMPLETED').length}/{task.subtasks.length} Subtasks Done
-                              </span>
-                            )}
                           </div>
                           
-                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-900 text-slate-100' : 'border-slate-202 text-slate-800'}`}>
+                          <div className={`w-8 sm:w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono hidden xs:flex ${isDarkMode ? 'border-slate-900/60 text-slate-100' : 'border-slate-202 text-slate-800'}`}>
                             {task.duration}d
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="h-[64px] p-2 flex items-center border-t border-slate-202 dark:border-slate-900 sticky bottom-0 z-20 shrink-0 bg-transparent">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-404 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
-                         <Plus size={12}/> Add Task Parameter
+                    <div className="p-2 flex items-center border-t border-slate-202 dark:border-slate-900 sticky bottom-0 z-20 shrink-0 bg-transparent task-body-row h-[52px] min-h-[52px]">
+                       <button onClick={addTask} className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-404 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
+                         <Plus size={11}/> Add Task Parameter
                        </button>
                     </div>
                   </div>
                 )}
 
-                {/* TIMELINE TIMELINE GRID */}
-                {(!isMobileViewport || mobileTab === 'gantt') && (
-                  <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
-                    
-                    <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${
-                      isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-slate-100 border-slate-202'
-                    }`}
-                    style={{ width: `${headerDays.length * 56}px` }}>
-                      {headerDays.map(day => {
-                        const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
-                        const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
-                        
-                        const currentAbsoluteDate = new Date(projectStartDate);
-                        currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
-                        const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
+                {/* 2. RIGHT COLUMN: SCROLLABLE GANTT TIMELINE WITH SYNCED GRID HEIGHTS */}
+                <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
+                  
+                  <div className={`flex min-w-max sticky top-0 z-20 border-b transition-colors task-header-row h-[36px] min-h-[36px] ${
+                    isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-slate-100 border-slate-202'
+                  }`}
+                  style={{ width: `${headerDays.length * 56}px` }}>
+                    {headerDays.map(day => {
+                      const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
+                      const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
+                      
+                      const currentAbsoluteDate = new Date(projectStartDate);
+                      currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
+                      const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
 
-                        const activeAllocationsOnDay = allAllocations.filter(a => a.absDateStr === currentAbsDateStr);
+                      const activeAllocationsOnDay = allAllocations.filter(a => a.absDateStr === currentAbsDateStr);
 
-                        return (
-                          <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
-                            isDarkMode 
-                              ? `border-slate-900/60 ${isSatSun ? 'bg-slate-950/20' : ''}` 
-                              : `border-slate-202 ${isSatSun ? 'bg-slate-202' : ''}`
-                          }`}>
-                            <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                            <span className="text-[8px] font-bold text-slate-404 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
-                            
-                            {activeAllocationsOnDay.length > 0 && (
-                              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-500/10 px-1 py-0.5 rounded-full border border-blue-500/20">
-                                {activeAllocationsOnDay.map((alloc, idx) => (
-                                  <span key={idx} title={`${alloc.assetKey} (${alloc.startTime}-${alloc.endTime})`} className="text-[7.5px] leading-none shrink-0">
-                                    {customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'case' ? '🧳' : 
-                                     customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'lightning' ? '⚡' : 
-                                     customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'tester' ? '📊' : '🚚'}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    <div 
-                      ref={rightScrollRef}
-                      onScroll={handleRightScroll}
-                      className={`flex-grow relative overflow-y-auto overflow-x-hidden scrollbar-none ${
-                        isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
-                      }`}
-                      style={{ 
-                        scrollbarWidth: 'none', 
-                        msOverflowStyle: 'none',
-                        width: `${headerDays.length * 56}px`
-                      }}
-                    >
-                      {filteredTasks.map((task) => {
-                        const conflict = checkAssetConflict(task);
-                        return (
-                          <div 
-                            key={task.id} 
-                            className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}
-                            style={{ width: `${headerDays.length * 56}px` }}
-                          >
-                            {headerDays.map(day => {
-                              const currentAbsoluteDate = new Date(projectStartDate);
-                              currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
-                              const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
-
-                              const isToolInUseThisDay = allAllocations.some(a => a.taskId === task.id && a.projectId === activeProjectId && a.absDateStr === currentAbsDateStr);
-                              if (isToolInUseThisDay) {
-                                return (
-                                  <div 
-                                    key={`bg-day-${day}`}
-                                    className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10"
-                                    style={{ left: `${day * 56}px` }}
-                                  />
-                                );
-                              }
-                              return null;
-                            })}
-
-                            <div 
-                              onClick={() => {
-                                setActiveTaskModal(task.id);
-                                setSelectedDayIndex(0);
-                              }}
-                              className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.01] hover:shadow-xl z-10 ${
-                                conflict 
-                                  ? 'from-amber-600 to-amber-700 border-amber-500 text-white shadow-amber-500/10'
-                                  : task.qaStatus === 'HOLD' 
-                                    ? 'from-rose-600 to-rose-700 border-rose-500 text-white animate-pulse shadow-rose-500/10' 
-                                    : task.qaStatus === 'APPROVED' 
-                                      ? 'from-emerald-600 to-emerald-700 border-emerald-500 text-white shadow-emerald-500/10' 
-                                      : 'from-blue-600 to-blue-700 border-blue-500 text-white shadow-blue-500/10'
-                              } bg-gradient-to-r`}
-                              style={{ left: `${(task.startDays) * 56 + 4}px`, width: `${(task.adjustedDuration * 56) - 8}px` }}
-                            >
-                              <div className="absolute top-0 left-0 h-full bg-slate-950/20" style={{ width: `${task.progress || 0}%` }} />
-                              <span className="truncate px-3 font-black text-[9px] relative z-10 flex items-center gap-1.5 text-white">
-                                <span>{task.ref}</span>
-                                <span className="opacity-100">{task.task}</span>
-                              </span>
+                      return (
+                        <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
+                          isDarkMode 
+                            ? `border-slate-900/60 ${isSatSun ? 'bg-slate-950/20' : ''}` 
+                            : `border-slate-202 ${isSatSun ? 'bg-slate-202' : ''}`
+                        }`}>
+                          <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
+                          <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                          
+                          {activeAllocationsOnDay.length > 0 && (
+                            <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-500/10 px-1 py-0.5 rounded-full border border-blue-500/20">
+                              {activeAllocationsOnDay.map((alloc, idx) => (
+                                <span key={idx} title={`${alloc.assetKey} (${alloc.startTime}-${alloc.endTime})`} className="text-[7.5px] leading-none shrink-0">
+                                  {customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'case' ? '🧳' : 
+                                   customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'lightning' ? '⚡' : 
+                                   customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'tester' ? '📊' : '🚚'}
+                                </span>
+                              ))}
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
-                      isDarkMode ? 'bg-[#030712] border-slate-900' : 'bg-slate-100 border-slate-202'
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div 
+                    ref={rightScrollRef}
+                    onScroll={handleRightScroll}
+                    className={`flex-grow relative overflow-y-auto overflow-x-hidden scrollbar-none ${
+                      isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
                     }`}
-                    style={{ width: `${headerDays.length * 56}px` }}>
-                      <div className="absolute left-3 top-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2 py-1 rounded-lg text-[9px] font-black uppercase text-blue-400">
-                        <BarChart3 size={11} />
-                        <span>Workforce Loading per Day</span>
-                      </div>
-                      {headerDays.map(day => {
-                        const dayManpower = activeFlowTasks.reduce((sum, task) => {
-                          if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
-                            const dayIdx = day - task.startDays;
-                            const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
-                            if (currentDayLabor) {
-                              return sum + activeRoles.reduce((roleSum, role) => {
-                                const val = parseInt(currentDayLabor[role.key]);
-                                return roleSum + (isNaN(val) ? 0 : val);
-                              }, 0);
+                    style={{ 
+                      scrollbarWidth: 'none', 
+                      msOverflowStyle: 'none',
+                      width: `${headerDays.length * 56}px`
+                    }}
+                  >
+                    {filteredTasks.map((task) => {
+                      const conflict = checkAssetConflict(task);
+                      return (
+                        <div 
+                          key={task.id} 
+                          className={`border-b relative flex items-center task-body-row h-[64px] min-h-[64px] ${isDarkMode ? 'border-slate-900/60' : 'border-slate-202'}`}
+                          style={{ width: `${headerDays.length * 56}px` }}
+                        >
+                          {headerDays.map(day => {
+                            const currentAbsoluteDate = new Date(projectStartDate);
+                            currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
+                            const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
+
+                            const isToolInUseThisDay = allAllocations.some(a => a.taskId === task.id && a.projectId === activeProjectId && a.absDateStr === currentAbsDateStr);
+                            if (isToolInUseThisDay) {
+                              return (
+                                <div 
+                                  key={`bg-day-${day}`}
+                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10"
+                                  style={{ left: `${day * 56}px` }}
+                                />
+                              );
                             }
-                          }
-                          return sum;
-                        }, 0);
-                        const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
-                        return (
-                          <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
-                            {dayManpower > 0 && (
-                              <div 
-                                className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-500 animate-pulse' : 'bg-blue-600'}`}
-                                style={{ height: `${Math.max(4, heightPercentage)}%` }}
-                              />
-                            )}
-                            <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-404'}`}>
-                              {dayManpower > 0 ? dayManpower : '-'}
+                            return null;
+                          })}
+
+                          {/* GANTT BAR ELEMENT */}
+                          <div 
+                            onClick={() => {
+                              setActiveTaskModal(task.id);
+                              setSelectedDayIndex(0);
+                            }}
+                            className={`absolute rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.01] hover:shadow-xl z-10 gantt-bar-element ${
+                              conflict 
+                                ? 'from-amber-600 to-amber-700 border-amber-500 text-white shadow-amber-500/10 animate-pulse'
+                                : task.qaStatus === 'HOLD' 
+                                  ? 'from-rose-600 to-rose-700 border-rose-500 text-white animate-pulse shadow-rose-500/10' 
+                                  : task.qaStatus === 'APPROVED' 
+                                    ? 'from-emerald-600 to-emerald-700 border-emerald-500 text-white shadow-emerald-500/10' 
+                                    : 'from-blue-600 to-blue-700 border-blue-500 text-white shadow-blue-500/10'
+                            } bg-gradient-to-r`}
+                            style={{ 
+                              left: `${(task.startDays) * 56 + 4}px`, 
+                              width: `${(task.adjustedDuration * 56) - 8}px`,
+                              height: '36px'
+                            }}
+                          >
+                            <div className="absolute top-0 left-0 h-full bg-slate-950/20" style={{ width: `${task.progress || 0}%` }} />
+                            <span className="truncate px-3 font-black text-[9px] relative z-10 flex items-center gap-1.5 text-white">
+                              {conflict && <AlertTriangle size={12} className="text-amber-300 animate-bounce" />}
+                              <span>{task.ref}</span>
+                              <span className="opacity-100">{task.task}</span>
                             </span>
                           </div>
-                        );
-                      })}
-                    </div>
-
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
 
+                  <div className={`border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors workforce-histogram-panel ${
+                    isDarkMode ? 'bg-[#030712] border-slate-900' : 'bg-slate-100 border-slate-202'
+                  }`}
+                  style={{ width: `${headerDays.length * 56}px`, height: '100px' }}>
+                    <div className="absolute left-3 top-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase text-blue-400">
+                      <BarChart3 size={10} />
+                      <span>WORKFORCE LOADING PER DAY</span>
+                    </div>
+                    {headerDays.map(day => {
+                      const dayManpower = activeFlowTasks.reduce((sum, task) => {
+                        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
+                          const dayIdx = day - task.startDays;
+                          const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
+                          if (currentDayLabor) {
+                            return sum + activeRoles.reduce((roleSum, role) => {
+                              const val = parseInt(currentDayLabor[role.key]);
+                              return roleSum + (isNaN(val) ? 0 : val);
+                            }, 0);
+                          }
+                        }
+                        return sum;
+                      }, 0);
+                      const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
+                      return (
+                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-2 ${isDarkMode ? 'border-slate-900/60' : 'border-slate-202'}`}>
+                          {dayManpower > 0 && (
+                            <div 
+                              className={`w-3.5 rounded-t-sm transition-all ${dayManpower > 12 ? 'bg-rose-500 animate-pulse' : 'bg-blue-600'}`}
+                              style={{ height: `${Math.max(4, heightPercentage)}%` }}
+                            />
+                          )}
+                          <span className={`text-[8.5px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-404'}`}>
+                            {dayManpower > 0 ? dayManpower : '-'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </div>
               </div>
             </div>
           )}
@@ -1947,7 +2007,7 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-500">
                     <CalendarDays size={16} /> 7-Day Cross-Project Outlook Forecast
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
+                  <p className="text-xs text-slate-404 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
                 </div>
                 
                 <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-slate-100 border-slate-300'}`}>
@@ -1972,7 +2032,7 @@ export default function App() {
 
               {thisWeeksForecastList.length === 0 ? (
                 <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-800 text-center">
-                  <CalendarDays size={40} className="text-slate-600 mb-2"/>
+                  <CalendarDays size={40} className="text-slate-650 mb-2"/>
                   <h4 className="text-xs font-black uppercase text-slate-404">No Operations Scheduled Inside this Forecast cycle</h4>
                   <p className="text-xs text-slate-500 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
                 </div>
@@ -2072,7 +2132,7 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase text-emerald-500 flex items-center gap-1.5">
                     <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
+                  <p className="text-xs text-slate-404 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
               </div>
 
@@ -2118,7 +2178,7 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase text-purple-500 flex items-center gap-1.5">
                     <Truck size={16}/> Daily Equipment Dispatch Ledger
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">Review granular tool allocations daily. Reschedule bookings easily or shift day schedules forward.</p>
+                  <p className="text-xs text-slate-404 mt-1">Review granular tool allocations daily. Reschedule bookings easily or shift day schedules forward.</p>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
@@ -2133,7 +2193,7 @@ export default function App() {
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-grow overflow-hidden min-h-0">
                 
                 <div className="xl:col-span-4 bg-[#0a0f18] rounded-2xl border border-slate-900 p-4 flex flex-col overflow-hidden">
-                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-3 text-left">Timeline Days Summary</h4>
+                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-404 mb-3 text-left">Timeline Days Summary</h4>
                   <div className="space-y-1.5 overflow-y-auto flex-grow pr-1">
                     {Array.from({ length: 14 }).map((_, idx) => {
                       const dayBookings = allAllocations.filter(a => {
@@ -2176,7 +2236,7 @@ export default function App() {
                     </div>
                     <button
                       onClick={() => advanceAllLedgerToolsBy3Days(selectedLedgerDay)}
-                      className="bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600 text-indigo-404 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 transition-all"
+                      className="bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600 text-indigo-400 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 transition-all"
                     >
                       <RefreshCw size={11} />
                       <span>⏩ Advance All on Day {selectedLedgerDay + 1} by 3 Days</span>
@@ -2204,7 +2264,7 @@ export default function App() {
                         return (
                           <div key={idx} className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 text-left ${
                             conflict 
-                              ? 'bg-amber-950/10 border-amber-600/50' 
+                              ? 'bg-amber-950/20 border-amber-500/50' 
                               : 'bg-[#111827] border-slate-900'
                           }`}>
                             <div>
@@ -2248,19 +2308,18 @@ export default function App() {
           )}
 
           {}
-          {/* Resolved alignment/overlapping shown in 748607690_1549596790201689_5710727974408244119_n.jpg */}
           <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
             isDarkMode ? 'bg-[#0a0f18] border-blue-500/10' : 'bg-blue-50/50 border-blue-202'
           }`}>
             <div 
               onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 sm:px-5 sm:py-3.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors select-none"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors select-none alert-tray-header"
             >
               <div className="flex items-center gap-3">
-                <Bell className={`text-blue-500 shrink-0 ${isAlertCenterExpanded ? 'animate-bounce' : ''}`} size={16}/>
+                <Bell className={`text-blue-500 shrink-0 ${isAlertCenterExpanded ? 'animate-bounce' : ''}`} size={15}/>
                 <div className="flex flex-wrap items-center gap-2">
                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-404">
-                    Live Dispatch & Mobilization Alert Center
+                    LIVE DISPATCH & MOBILIZATION ALERT CENTER
                   </h4>
                   <span className="text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20 whitespace-nowrap">
                     {todayAllocations.length} Active Today
@@ -2270,13 +2329,13 @@ export default function App() {
               
               <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-slate-404 uppercase hidden sm:inline">Filter:</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase hidden sm:inline">Filter:</span>
                   <div className="relative">
                     <select 
                       value={alertCenterAssetFilter} 
                       onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
                       className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
-                        isDarkMode ? 'bg-[#111827] border-slate-850 text-blue-404' : 'bg-white border-slate-300 text-blue-855 shadow-sm'
+                        isDarkMode ? 'bg-[#111827] border-slate-850 text-blue-404' : 'bg-white border-slate-300 text-blue-800 shadow-sm'
                       }`}
                     >
                       <option value="ALL">ALL VEHICLES / TOOLS</option>
@@ -2317,7 +2376,7 @@ export default function App() {
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex flex-col sm:flex-row items-stretch sm:items-center justify-between w-full border gap-2 ${
                               conflict 
                                 ? 'bg-red-500/10 border border-red-500 text-red-500' 
-                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-350'
+                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
                             }`}
                           >
                             <div className="flex items-center gap-1.5 min-w-0">
@@ -2363,8 +2422,8 @@ export default function App() {
                             key={idx} 
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-between w-full border ${
                               conflict 
-                                ? 'bg-red-500/10 border border-red-500 text-red-500' 
-                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-805 dark:text-emerald-300'
+                                ? 'bg-red-500/10 border border-red-500 text-red-500 animate-pulse' 
+                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-emerald-300'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -2408,13 +2467,13 @@ export default function App() {
                 <div className="text-left min-w-0">
                   <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest flex items-center gap-2">
                     <ClipboardCheck className="text-blue-500" size={15}/> 
-                    <span className="truncate">Site Field Inspector Card</span>
+                    <span className="truncate">SITE FIELD INSPECTOR CARD</span>
                   </h3>
                   <div className="flex items-center gap-2 mt-1.5 min-w-0">
                     <span className="text-white bg-blue-600 border border-blue-500 px-1.5 py-0.5 rounded-lg text-[10px] sm:text-xs font-black tracking-wide shrink-0">
                       {currentTaskEditing.ref}
                     </span>
-                    <span className="text-xs font-bold text-slate-400 truncate">
+                    <span className="text-xs font-bold text-slate-404 truncate">
                       {currentTaskEditing.task}
                     </span>
                   </div>
@@ -2503,23 +2562,51 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mt-3">
-                    <div className="sm:col-span-4">
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Baseline Days</label>
-                      <input 
-                        type="number" min="1" max="60"
-                        value={currentTaskEditing.duration || 1} 
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value) || 1;
-                          updateTask(currentTaskEditing.id, 'duration', val);
-                          setSelectedDayIndex(0);
-                        }}
-                        className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-300'
-                        }`}
-                      />
+                  {}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mt-4">
+                    
+                    {/* BASELINE DAYS - HIGH CONTRAST EASY NUMERIC CHANGE */}
+                    <div className="sm:col-span-5 flex flex-col justify-start">
+                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1.5">Baseline Days</label>
+                      <div className="flex items-center gap-2 bg-[#0d1424] p-1 rounded-xl border border-slate-700">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const val = Math.max(1, (currentTaskEditing.duration || 1) - 1);
+                            updateTask(currentTaskEditing.id, 'duration', val);
+                            setSelectedDayIndex(0);
+                          }}
+                          className="w-8 h-8 rounded-lg bg-[#1a2333] hover:bg-slate-700 flex items-center justify-center text-xs font-black text-red-400 hover:text-white transition-all active:scale-95"
+                        >
+                          <Minus size={13} />
+                        </button>
+                        
+                        <input 
+                          type="number" min="1" max="60"
+                          value={currentTaskEditing.duration || 1} 
+                          onChange={(e) => {
+                            const val = Math.max(1, parseInt(e.target.value) || 1);
+                            updateTask(currentTaskEditing.id, 'duration', val);
+                            setSelectedDayIndex(0);
+                          }}
+                          className="w-full text-center bg-transparent border-none text-white text-sm font-black outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const val = (currentTaskEditing.duration || 1) + 1;
+                            updateTask(currentTaskEditing.id, 'duration', val);
+                            setSelectedDayIndex(0);
+                          }}
+                          className="w-8 h-8 rounded-lg bg-[#1a2333] hover:bg-slate-700 flex items-center justify-center text-xs font-black text-emerald-400 hover:text-white transition-all active:scale-95"
+                        >
+                          <Plus size={13} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="sm:col-span-8">
+
+                    <div className="sm:col-span-7 flex flex-col justify-center">
                       <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Task Progress ({currentTaskEditing.progress || 0}%)</label>
                       <input 
                         type="range" min="0" max="100" step="5"
@@ -2531,7 +2618,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Day Stagger Crews */}
                 <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2578,17 +2664,17 @@ export default function App() {
                                 <button
                                   type="button"
                                   onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1, selectedDayIndex)}
-                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-440 hover:text-white transition-all"
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-400 hover:text-white transition-all"
                                 >
                                   -
                                 </button>
                                 <span className="w-8 text-center text-xs font-black font-mono text-white">
                                   {count}
-                                </span>
+                                tap</span>
                                 <button
                                   type="button"
                                   onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
-                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-440 hover:text-white transition-all"
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-400 hover:text-white transition-all"
                                 >
                                   +
                                 </button>
@@ -2607,7 +2693,7 @@ export default function App() {
                                       placeholder={`Assign name for ${role.fullName} #${workerIdx + 1}`}
                                       value={assignedName}
                                       onChange={(e) => assignWorkerName(currentTaskEditing.id, role.key, workerIdx, e.target.value, selectedDayIndex)}
-                                      className="w-full px-2.5 py-1 text-[10.5px] font-bold border rounded-lg bg-[#070a12] border-slate-800 text-slate-202 focus:border-blue-500 outline-none transition-colors"
+                                      className="w-full px-2.5 py-1 text-[10.5px] font-bold border rounded-lg bg-[#070a12] border-slate-800 text-slate-200 focus:border-blue-500 outline-none transition-colors"
                                     />
                                   );
                                 })}
@@ -2620,7 +2706,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Subtask checklist */}
                 <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2685,7 +2770,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Logistics scheduling panel inside modal */}
+                {}
                 <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2706,8 +2791,8 @@ export default function App() {
                   </div>
 
                   {isBookToolExpanded && (
-                    <div className="p-3.5 bg-slate-100 dark:bg-slate-900 border rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
-                      <span className="text-[9px] font-bold text-slate-500 dark:text-slate-404 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
+                    <div className="p-4 bg-slate-100 dark:bg-[#0c121f] border border-slate-300 dark:border-slate-800 rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
+                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest block mb-3">BOOK SHARED TOOL SLOT</span>
                       <form onSubmit={(e) => {
                         e.preventDefault();
                         const formData = new FormData(e.currentTarget);
@@ -2718,18 +2803,20 @@ export default function App() {
                           formData.get('startTime'),
                           formData.get('endTime')
                         );
-                      }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
+                      }} className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+                        
+                        {/* HIGH CONTRAST SELECTS / INPUTS FOR BOOKINGS (Fixing visibility issue from image_21cc61.png) */}
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Active Day</label>
-                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Active Day</label>
+                          <select name="dayOffset" className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-bold cursor-pointer outline-none focus:border-blue-500">
                             {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
                               <option key={idx} value={idx}>Day {idx + 1}</option>
                             ))}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Tool / Vehicle</label>
-                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Tool / Vehicle</label>
+                          <select name="assetKey" className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-bold cursor-pointer outline-none focus:border-blue-500">
                             {customAssets.map(a => (
                               <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
                             ))}
@@ -2737,32 +2824,33 @@ export default function App() {
                         </div>
                         
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Start Time</label>
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Start Time</label>
                           <input 
                             name="startTime" 
                             type="time" 
                             defaultValue="08:00" 
-                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
+                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-850 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
                             required 
                           />
                         </div>
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">End Time</label>
+                          <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">End Time</label>
                           <input 
                             name="endTime" 
                             type="time" 
                             defaultValue="17:00" 
-                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
+                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-855 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
                             required 
                           />
                         </div>
-                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider shadow">
-                          Add dispatch
+                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider shadow active:scale-95 transition-transform">
+                          ADD DISPATCH
                         </button>
                       </form>
                     </div>
                   )}
 
+                  {}
                   <div className="space-y-1.5">
                     {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
                       const conflict = checkLogisticalConflictForAllocation(alloc);
@@ -2770,19 +2858,22 @@ export default function App() {
                         <div key={i} className={`p-3 sm:p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
                           conflict 
                             ? 'bg-rose-500/10 border-rose-500 text-rose-800 dark:text-rose-200' 
-                            : 'bg-white dark:bg-slate-900 border-slate-202 dark:border-slate-800 text-slate-800 dark:text-slate-100'
+                            : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-100'
                         }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {renderAssetIcon(alloc.assetKey)}
-                              <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-404">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
+                              <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-400">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
                             </div>
+                            
+                            {/* ROBUST DELETION TRIGGER (Fixing remove booking issue from image_21cc64.png) */}
                             <button 
                               type="button" 
                               onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
-                              className="text-slate-404 hover:text-rose-500 p-1"
+                              className="text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                              title="Delete this tool booking"
                             >
-                              <X size={14} />
+                              <X size={15} />
                             </button>
                           </div>
 
@@ -2822,7 +2913,7 @@ export default function App() {
         );
       })()}
 
-      {/* Shared Asset Pool Registration modal */}
+      {}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
@@ -2899,7 +2990,7 @@ export default function App() {
 
                     {showAssetIconDropdown && (
                       <div className={`absolute left-0 mt-1 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in max-h-60 overflow-y-auto ${
-                        isDarkMode ? 'bg-[#111827] border-slate-800 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
+                        isDarkMode ? 'bg-[#111827] border-slate-800 text-slate-200' : 'bg-white border-slate-202 text-slate-900'
                       }`}>
                         {LOGISTICAL_ASSET_PRESETS.map(preset => (
                           <button
@@ -2955,7 +3046,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Create Project modal */}
+      {}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -2992,7 +3083,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Delete Project verification modal */}
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -3018,7 +3108,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Global notifications panel */}
+      {}
       {isNotificationPaneOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationPaneOpen(false)} />
