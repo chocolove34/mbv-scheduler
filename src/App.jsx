@@ -37,7 +37,7 @@ try {
       };
   }
 } catch (e) {
-  // Silent fallback for sandbox compile environments
+  // Silent fallback for compile frameworks
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -47,7 +47,7 @@ const db = app ? getFirestore(app) : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 
 const CiticoreLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 w-auto select-none">
     <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#2563eb" />
     <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#06b6d4" />
     <text x="50" y="24" fontFamily="'Inter', sans-serif" fontWeight="900" fontSize="13" fill={isDarkMode ? "#f8fafc" : "#0f172a"} letterSpacing="-0.03em">CITICORE</text>
@@ -56,7 +56,7 @@ const CiticoreLogo = ({ isDarkMode }) => (
 );
 
 const MbvLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 w-auto select-none">
     <rect x="10" y="5" width="35" height="35" rx="6" fill="#1e293b" stroke="#2563eb" strokeWidth="1.5" />
     <path d="M27 12 L19 23 L26 23 L23 31 L32 19 L25 19 Z" fill="#06b6d4" />
     <text x="55" y="24" fontFamily="'Inter', sans-serif" fontWeight="900" fontSize="13" fill="#2563eb" letterSpacing="-0.03em">MBV ELECTRIC</text>
@@ -66,7 +66,7 @@ const MbvLogo = ({ isDarkMode }) => (
 
 const AssetIcons = {
   None: () => (
-    <svg className="w-4.5 h-4.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4.5 h-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
     </svg>
   ),
@@ -284,7 +284,7 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold shadow-inner transition-all duration-200 outline-none ${
           isDarkMode 
             ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 text-blue-400 hover:text-blue-300' 
-            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
+            : 'bg-white hover:bg-slate-55 border-slate-200 text-slate-800'
         }`}
       >
         <span className="flex items-center gap-2">
@@ -415,7 +415,7 @@ const PremiumWeatherSelector = ({ value, onChange, isDarkMode }) => {
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold transition-all duration-200 outline-none ${
           isDarkMode 
             ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 text-slate-200 shadow-inner' 
-            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-sm'
+            : 'bg-white hover:bg-slate-55 border-slate-200 text-slate-800 shadow-sm'
         }`}
       >
         <span className="flex items-center gap-2">
@@ -448,7 +448,7 @@ const PremiumWeatherSelector = ({ value, onChange, isDarkMode }) => {
                     ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' 
                     : isDarkMode 
                       ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' 
-                      : 'hover:bg-slate-50 text-slate-755 border border-transparent'
+                      : 'hover:bg-slate-55 text-slate-755 border border-transparent'
                 }`}
               >
                 <span className={`text-sm py-0.5 px-1.5 rounded-md ${state.color.split(' ')[1]} ${state.color.split(' ')[0]}`}>
@@ -500,7 +500,7 @@ const PremiumAssetPresetSelector = ({ value, onChange, isDarkMode }) => {
         className={`w-full flex items-center justify-between px-3 py-2 border rounded-xl text-xs font-bold transition-all duration-200 outline-none ${
           isDarkMode 
             ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 text-slate-100 shadow-inner' 
-            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-900 shadow-sm'
+            : 'bg-white hover:bg-slate-55 border-slate-200 text-slate-900 shadow-sm'
         }`}
       >
         <span className="flex items-center gap-2">
@@ -531,7 +531,7 @@ const PremiumAssetPresetSelector = ({ value, onChange, isDarkMode }) => {
                     ? 'bg-blue-600/10 text-blue-400 border border-blue-500/25' 
                     : isDarkMode 
                       ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' 
-                      : 'hover:bg-slate-50 text-slate-800 border border-transparent'
+                      : 'hover:bg-slate-55 text-slate-800 border border-transparent'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -1433,7 +1433,7 @@ export default function App() {
       if (hasConflict) return 'bg-amber-50/80 border-amber-300 hover:bg-amber-100/80 text-amber-900';
       if (isHold) return 'bg-rose-50/80 border-rose-300 hover:bg-rose-100/80 text-rose-900';
       if (isApproved) return 'bg-emerald-50/80 border-emerald-300 hover:bg-emerald-100/80 text-emerald-900';
-      return index % 2 === 0 ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-slate-50 border-slate-200 hover:bg-slate-100';
+      return index % 2 === 0 ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-slate-55 border-slate-202 hover:bg-slate-100';
     }
   };
 
@@ -1537,7 +1537,8 @@ export default function App() {
         }
       `}} />
 
-      <header className={`border-b z-20 shrink-0 transition-colors ${isDarkMode ? 'bg-[#0f172a]/95 border-slate-800/80 backdrop-blur-md' : 'bg-white/95 border-slate-200/80 backdrop-blur-md'}`}>
+      {}
+      <header className={`border-b z-40 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a]/95 border-slate-800/80 backdrop-blur-md' : 'bg-white/95 border-slate-200/80 backdrop-blur-md'}`}>
         <div className="px-4 py-2 sm:px-6 sm:py-3 flex flex-col gap-2 sm:gap-3">
           
           <div className="flex items-center justify-between gap-3">
@@ -1582,7 +1583,7 @@ export default function App() {
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
                                 ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-md' 
-                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-50 text-slate-750 border border-slate-200')
+                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-55 text-slate-750 border border-slate-200')
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
@@ -1626,7 +1627,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* UPGRADED NAVIGATION TABS (Ref: image_df054e.png) */}
+            {/* UPGRADED NAVIGATION TABS (Resolving image_df054e.png with vector premium designs) */}
             <div className="flex items-center justify-center flex-1 max-w-lg mx-2">
               <div className={`flex items-center gap-1 border p-1 rounded-2xl w-full justify-between transition-colors shadow-inner ${
                 isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-slate-100 border-slate-200/80'
@@ -1683,7 +1684,7 @@ export default function App() {
                 
                 {isUtilityMenuOpen && (
                   <div className={`absolute right-0 top-10 w-48 rounded-2xl shadow-2xl border p-2 z-50 flex flex-col gap-1 ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-200 shadow-[#000]/60 bg-opacity-95' : 'bg-white border-slate-200 text-slate-805'
                   }`}>
                     <button 
                       onClick={() => { setSoundEnabled(!soundEnabled); setIsUtilityMenuOpen(false); }} 
@@ -1791,7 +1792,8 @@ export default function App() {
         )}
       </header>
 
-      <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
+      {}
+      <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0 z-10">
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
           {!isMetadataCollapsed && (
@@ -1857,7 +1859,7 @@ export default function App() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
                       isDarkMode 
                         ? 'bg-[#080d1a] border-slate-800 text-white focus:border-blue-500' 
-                        : 'bg-slate-100 border-slate-200 text-slate-800 focus:border-blue-500'
+                        : 'bg-slate-100 border-slate-202 text-slate-800 focus:border-blue-500'
                     }`}
                   />
                   
@@ -1892,6 +1894,7 @@ export default function App() {
                 </div>
               </div>
 
+              {/* STABILIZING TIMELINE HEADERS UNDER POPUPS (Correcting image_df7cb1.png overlap) */}
               <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-white border-slate-200'}`}>
                 
                 {isGanttSidebarVisible && (
@@ -1922,7 +1925,7 @@ export default function App() {
                             {task.ref}
                           </div>
                           
-                          <div className={`flex-grow h-full flex flex-col justify-center px-2 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                          <div className={`flex-grow h-full flex flex-col justify-center px-2 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-202'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="font-bold text-[8px] text-blue-400 uppercase tracking-wider block truncate">
                                 {task.desc}
@@ -1936,7 +1939,7 @@ export default function App() {
                             </span>
                           </div>
                           
-                          <div className={`w-10 h-full border-l flex items-center justify-center font-bold text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                          <div className={`w-10 h-full border-l flex items-center justify-center font-bold text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40' : 'border-slate-202'}`}>
                             {task.duration}d
                           </div>
                         </div>
@@ -1953,7 +1956,8 @@ export default function App() {
 
                 <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin">
                   
-                  <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
+                  {/* ADJUSTED STICKY TIMELINE Z-INDEX to z-10 SO IT RENDERS BELOW HEADER POPUPS */}
+                  <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-10 border-b transition-colors ${
                     isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-slate-100 border-slate-200'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
@@ -1990,7 +1994,7 @@ export default function App() {
                       return (
                         <div 
                           key={task.id} 
-                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}
+                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-202'}`}
                           style={{ width: `${headerDays.length * 56}px` }}
                         >
                           <div 
@@ -2017,8 +2021,9 @@ export default function App() {
                     })}
                   </div>
 
-                  <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
-                    isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-200 border-slate-200'
+                  {/* STABILIZING TIMELINE HISTOGRAM Z-INDEX to z-10 SO IT RENDERS BELOW HEADER POPUPS */}
+                  <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-10 transition-colors ${
+                    isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-200 border-slate-202'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
@@ -2029,7 +2034,7 @@ export default function App() {
                       0);
                       const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
                       return (
-                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-202'}`}>
                           {dayManpower > 0 && (
                             <div 
                               className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-600 shadow-md shadow-rose-500/10' : 'bg-blue-600 shadow-md shadow-blue-500/10'}`}
@@ -2109,7 +2114,7 @@ export default function App() {
                           }`}
                         >
                           <div>
-                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800/80' : 'border-slate-200'}`}>
+                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800/80' : 'border-slate-202'}`}>
                               <div className="min-w-0 flex-1">
                                 <span className="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName || "SUBSTATION SCHEDULER"}
@@ -2141,7 +2146,7 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800/80' : 'border-slate-200'}`}>
+                          <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800/80' : 'border-slate-202'}`}>
                             <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-400">
                               <span>PROGRESS COMPLETE</span>
                               <span className="text-slate-200">{item.progress || 0}%</span>
@@ -2152,7 +2157,7 @@ export default function App() {
                           </div>
 
                           {isOverdue && (
-                            <div className="mt-1 p-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
+                            <div className="mt-1 p-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-450 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
                               <AlertTriangle size={12} />
                               <span>OVERDUE BY COMPLIANCE BUFFER LIMITS</span>
                             </div>
@@ -2185,7 +2190,7 @@ export default function App() {
                     key={`qa-${task.id}`}
                     onClick={() => setActiveTaskModal(task.id)}
                     className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      isDarkMode ? 'bg-[#0f172a]/80 hover:bg-[#1e293b] border-slate-800/80 text-slate-200' : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm text-slate-805'
+                      isDarkMode ? 'bg-[#0f172a]/80 hover:bg-[#1e293b] border-slate-800/80 text-slate-200' : 'bg-white border-slate-202 hover:border-slate-300 hover:shadow-sm text-slate-805'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -2233,7 +2238,7 @@ export default function App() {
                     const isAllocated = activeFlowTasks.filter(t => t.assignedAsset === asset.key);
                     return (
                       <div key={asset.key} className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 ${
-                        isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-white border-slate-200'
+                        isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-white border-slate-202'
                       }`}>
                         <div className="flex items-center gap-3 justify-between">
                           <div className="flex items-center gap-3 min-w-0">
@@ -2298,10 +2303,11 @@ export default function App() {
         </div>
       </main>
 
+      {}
       {customConfirmConfig && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl border p-6 w-full max-w-sm flex flex-col gap-4 shadow-2xl transition-all ${
-            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-2xl' : 'bg-white border-slate-200 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-2xl' : 'bg-white border-slate-202 text-slate-900'
           }`}>
             <div className="flex items-center gap-3 text-rose-500">
               <AlertCircle size={24}/>
@@ -2333,9 +2339,9 @@ export default function App() {
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
-            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-202 text-slate-900'
           }`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-202 bg-slate-50'}`}>
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-500" size={14}/> Logistics Pool Registry</h3>
               </div>
@@ -2343,7 +2349,7 @@ export default function App() {
             </div>
 
             <div className="p-5 overflow-y-auto space-y-6">
-              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-202'} space-y-4`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Asset Code (Unique Key)</label>
@@ -2352,7 +2358,7 @@ export default function App() {
                       placeholder="e.g. CRN50, HVBT1"
                       value={newAssetCode}
                       onChange={(e) => setNewAssetCode(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-202 text-slate-900'}`}
                     />
                   </div>
                   <div>
@@ -2362,7 +2368,7 @@ export default function App() {
                       placeholder="e.g. 50-Ton Crawler Crane"
                       value={newAssetName}
                       onChange={(e) => setNewAssetName(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-202 text-slate-900'}`}
                     />
                   </div>
                 </div>
@@ -2375,7 +2381,7 @@ export default function App() {
                         value={newAssetType}
                         onChange={(e) => setNewAssetType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#0f172a] text-white border-slate-800 [&_option]:bg-[#0f172a]' : 'bg-white text-slate-900 border-slate-200 [&_option]:bg-white'
+                          isDarkMode ? 'bg-[#0f172a] text-white border-slate-800 [&_option]:bg-[#0f172a]' : 'bg-white text-slate-900 border-slate-202 [&_option]:bg-white'
                         }`}
                       >
                         <option value="Heavy Equipment">Heavy Equipment</option>
@@ -2404,7 +2410,7 @@ export default function App() {
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#0f172a] text-white border-slate-800' : 'bg-white text-slate-900 border-slate-200'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#0f172a] text-white border-slate-800' : 'bg-white text-slate-900 border-slate-202'}`}
                     />
                   </div>
                 </div>
@@ -2427,6 +2433,7 @@ export default function App() {
         </div>
       )}
 
+      {}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -2435,13 +2442,13 @@ export default function App() {
             <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[90vh] transition-all duration-300 ${
               isDarkMode 
                 ? 'bg-[#0f172a] border-slate-800 text-white shadow-[#01040a]' 
-                : 'bg-white border-slate-200 text-slate-900'
+                : 'bg-white border-slate-202 text-slate-900'
             }`}>
               
               <div className={`p-5 border-b flex justify-between items-center shrink-0 ${
                 isDarkMode 
                   ? 'border-slate-800 bg-[#080d1a]/80' 
-                  : 'border-slate-200 bg-slate-50'
+                  : 'border-slate-202 bg-slate-50'
               }`}>
                 <div className="text-left">
                   <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
@@ -2460,7 +2467,7 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
                   className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-750 text-slate-400' : 'border-slate-200 hover:bg-slate-100 text-slate-700'
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-750 text-slate-400' : 'border-slate-202 hover:bg-slate-100 text-slate-700'
                   }`}
                 >
                   <X size={16}/>
@@ -2470,7 +2477,7 @@ export default function App() {
               <div className="p-6 overflow-y-auto flex-grow space-y-6">
                 
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-50 border-slate-200'
+                  isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
                     Configure Base Days & Percent Complete
@@ -2490,7 +2497,7 @@ export default function App() {
                           className={`w-9 h-9 rounded-xl border flex items-center justify-center font-black text-lg transition-colors ${
                             isDarkMode 
                               ? 'bg-[#1e293b] border-slate-800 hover:bg-slate-800 text-slate-200' 
-                              : 'bg-white border-slate-200 hover:bg-slate-202 text-slate-900'
+                              : 'bg-white border-slate-202 hover:bg-slate-202 text-slate-900'
                           }`}
                         >
                           -
@@ -2506,7 +2513,7 @@ export default function App() {
                           className={`w-9 h-9 rounded-xl border flex items-center justify-center font-black text-lg transition-colors ${
                             isDarkMode 
                               ? 'bg-[#1e293b] border-slate-800 hover:bg-slate-800 text-slate-200' 
-                              : 'bg-white border-slate-200 hover:bg-slate-202 text-slate-900'
+                              : 'bg-white border-slate-202 hover:bg-slate-202 text-slate-900'
                           }`}
                         >
                           +
@@ -2610,7 +2617,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* UPGRADED CHECKLIST COMPLIANCE SECTION WITH DYNAMIC INLINE INPUT (Ref: image_df04e9.png) */}
+                {/* UPGRADED CHECKLIST COMPLIANCE SECTION WITH INLINE DYNAMIC INPUT (Ref: image_df04e9.png) */}
                 <div className={`p-5 rounded-3xl border ${
                   isDarkMode ? 'bg-[#080d1a] border-slate-800/85' : 'bg-slate-55 border-slate-202'
                 }`}>
@@ -2682,7 +2689,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => deleteChecklistItem(currentTaskEditing.id, name)}
-                            className="p-1 text-slate-500 hover:text-rose-550 rounded-lg transition-colors ml-2"
+                            className="p-1 text-slate-550 hover:text-rose-550 rounded-lg transition-colors ml-2"
                             title="Remove Parameter"
                           >
                             <Trash2 size={13}/>
@@ -2755,6 +2762,7 @@ export default function App() {
         );
       })()}
 
+      {}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#0f172a] text-slate-100 border-slate-800' : 'bg-white text-slate-900 border-slate-202'}`}>
