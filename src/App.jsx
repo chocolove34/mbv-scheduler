@@ -38,7 +38,7 @@ try {
       };
   }
 } catch (e) {
-  // Sandbox environment fallback
+  // Sandbox environment fallback safely handles omissions
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -48,7 +48,7 @@ const db = app ? getFirestore(app) : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 
 const CiticoreLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 sm:h-9 w-auto">
     <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#2563eb" />
     <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#06b6d4" />
     <text x="50" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill={isDarkMode ? "#60a5fa" : "#1e3a8a"} letterSpacing="-0.03em">CITICORE</text>
@@ -57,7 +57,7 @@ const CiticoreLogo = ({ isDarkMode }) => (
 );
 
 const MbvLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 sm:h-9 w-auto">
     <rect x="10" y="5" width="35" height="35" rx="8" fill="#1e293b" stroke="#2563eb" strokeWidth="2" />
     <path d="M27 10 L19 23 L26 23 L23 33 L32 19 L25 19 Z" fill="#06b6d4" />
     <text x="55" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill="#2563eb" letterSpacing="-0.03em">MBV ELECTRIC</text>
@@ -125,7 +125,7 @@ const LABOR_PROFILES = {
     { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
     { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
     { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-202', icon: '⛓️' },
     { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
     { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-100 border-rose-400 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
     { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
@@ -192,50 +192,83 @@ const getDailyLaborForTask = (task, neededLength) => {
 export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading');
-  
   const [activePerspective, setActivePerspective] = useState('gantt');
   const [isGanttSidebarVisible, setIsGanttSidebarVisible] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [mobileTab, setMobileTab] = useState('list'); // New view controller: 'list' or 'gantt' to solve 748607690_1549596790201689_5710727974408244119_n.jpg clipping
 
-  const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(true);
+  const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(false);
   const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
-
   const [laborProfile, setLaborProfile] = useState('electrical');
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [activeVisualNotification, setActiveVisualNotification] = useState(null);
   const sessionStartTimeRef = useRef(Date.now());
-
   const leftScrollRef = useRef(null);
   const rightScrollRef = useRef(null);
   const isSyncingLeftScroll = useRef(false);
   const isSyncingRightScroll = useRef(false);
-
   const [allProjectsTasks, setAllProjectsTasks] = useState([]);
   const [isForecastLoading, setIsForecastLoading] = useState(false);
   const [activeForecastFilter, setActiveForecastFilter] = useState('this-week');
-
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarViewDate, setCalendarViewDate] = useState(new Date());
-  
   const [showAssetIconDropdown, setShowAssetIconDropdown] = useState(false);
   const assetDropdownRef = useRef(null);
-
   const [newChecklistItemText, setNewChecklistItemText] = useState('');
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-
   const [alertCenterAssetFilter, setAlertCenterAssetFilter] = useState('ALL');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
   const [liveSystemTime, setLiveSystemTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   const [phonePushAlert, setPhonePushAlert] = useState(null);
-
   const [newSubtaskName, setNewSubtaskName] = useState('');
   const [newSubtaskWeight, setNewSubtaskWeight] = useState(50);
-
   const [selectedLedgerDay, setSelectedLedgerDay] = useState(0);
+  const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
+  
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'info', text: 'Centralized Live Sync Connected with Citicore DB Cloud.', time: 'Just now' },
+    { id: 2, type: 'warning', text: 'Transit buffer automatically calculated for PC135 Excavator (+1 Day).', time: '5m ago' },
+    { id: 3, type: 'alert', text: 'Conflict Warning: Primary Injection Tester overlaps on Day 3.', time: '12m ago' },
+    { id: 4, type: 'success', text: 'Engr. Ana approved initial Pre-Construction mobilization bounds.', time: '1h ago' }
+  ]);
+
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('mbv_dark_mode') !== 'false';
+  });
+
+  const [projectList, setProjectList] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState('master-schedule');
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [customAssets, setCustomAssets] = useState(DEFAULT_SHARED_ASSETS);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [newAssetCode, setNewAssetCode] = useState('');
+  const [newAssetName, setNewAssetName] = useState('');
+  const [newAssetType, setNewAssetType] = useState('Heavy Equipment');
+  const [newAssetIconPreset, setNewAssetIconPreset] = useState('heavy');
+  const [newAssetMobDays, setNewAssetMobDays] = useState(1);
+  const [assetValidationWarning, setAssetValidationWarning] = useState('');
+  const [projectStartDate, setProjectStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [appTitle, setAppTitle] = useState("Citicore 100MW Solar Grid");
+  const [appSubtitle, setAppSubtitle] = useState("Site Operations & Verification Hub");
+  const [weatherFactor, setWeatherFactor] = useState("sunny");
+  const [logos, setLogos] = useState({ left: '', right: '' });
+  const [docMetadata, setDocMetadata] = useState({
+    projectName: "CITICORE SOLAR PHASE 3B",
+    location: "Quezon Substation Hub",
+    docNo: "DOC-CIT-MBV-901",
+    revision: "02",
+    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+  });
+
+  const [toastMessage, setToastMessage] = useState('');
+  const [activeTaskModal, setActiveTaskModal] = useState(null);
+  const [isSavingCloud, setIsSavingCloud] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [filterSearchQuery, setFilterSearchQuery] = useState('');
+  const [filterStatusTag, setFilterStatusTag] = useState('ALL');
+
+  const activeRoles = LABOR_PROFILES[laborProfile] || LABOR_PROFILES.electrical;
 
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
@@ -258,58 +291,6 @@ export default function App() {
       leftScrollRef.current.scrollTop = e.target.scrollTop;
     }
   };
-
-  const [isNotificationPaneOpen, setIsNotificationPaneOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'info', text: 'Centralized Live Sync Connected with Citicore DB Cloud.', time: 'Just now' },
-    { id: 2, type: 'warning', text: 'Transit buffer automatically calculated for PC135 Excavator (+1 Day).', time: '5m ago' },
-    { id: 3, type: 'alert', text: 'Conflict Warning: Primary Injection Tester overlaps on Day 3.', time: '12m ago' },
-    { id: 4, type: 'success', text: 'Engr. Ana approved initial Pre-Construction mobilization bounds.', time: '1h ago' }
-  ]);
-
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('mbv_dark_mode') !== 'false';
-  });
-
-  const [projectList, setProjectList] = useState([]);
-  const [activeProjectId, setActiveProjectId] = useState('master-schedule');
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
-  
-  const [customAssets, setCustomAssets] = useState(DEFAULT_SHARED_ASSETS);
-  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
-  const [newAssetCode, setNewAssetCode] = useState('');
-  const [newAssetName, setNewAssetName] = useState('');
-  const [newAssetType, setNewAssetType] = useState('Heavy Equipment');
-  const [newAssetIconPreset, setNewAssetIconPreset] = useState('heavy');
-  const [newAssetMobDays, setNewAssetMobDays] = useState(1);
-  const [assetValidationWarning, setAssetValidationWarning] = useState('');
-
-  const [projectStartDate, setProjectStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [appTitle, setAppTitle] = useState("Citicore 100MW Solar Grid");
-  const [appSubtitle, setAppSubtitle] = useState("Site Operations & Verification Hub");
-  const [weatherFactor, setWeatherFactor] = useState("sunny");
-  
-  const [logos, setLogos] = useState({ left: '', right: '' });
-  const [docMetadata, setDocMetadata] = useState({
-    projectName: "CITICORE SOLAR PHASE 3B",
-    location: "Quezon Substation Hub",
-    docNo: "DOC-CIT-MBV-901",
-    revision: "02",
-    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
-  });
-
-  const [toastMessage, setToastMessage] = useState('');
-  const [activeTaskModal, setActiveTaskModal] = useState(null);
-  const [isSavingCloud, setIsSavingCloud] = useState(false);
-
-  const [projectToDelete, setProjectToDelete] = useState(null);
-  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-
-  const [filterSearchQuery, setFilterSearchQuery] = useState('');
-  const [filterStatusTag, setFilterStatusTag] = useState('ALL');
-
-  const activeRoles = LABOR_PROFILES[laborProfile] || LABOR_PROFILES.electrical;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -857,23 +838,6 @@ export default function App() {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const copyToClipboard = (text) => {
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text);
-    } else {
-        let textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-99999px";
-        textArea.style.top = "-99999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try { document.execCommand('copy'); } catch (err) {}
-        textArea.remove();
-    }
-  };
-
   const showToast = useCallback((message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(''), 4000);
@@ -1389,87 +1353,6 @@ export default function App() {
       return t;
     }));
   };
-  
-  const toggleChecklistItem = (taskId, itemName) => {
-    setTasks(prevTasks => prevTasks.map(t => {
-      if (t.id === taskId) {
-        const currentChecklist = { ...(t.checklist || {}) };
-        currentChecklist[itemName] = !currentChecklist[itemName];
-        
-        const stateStr = currentChecklist[itemName] ? "APPROVED" : "PENDING";
-        logActivityToCloud(`Checklist: "${itemName}" marked as ${stateStr}`, 'success');
-        
-        return { ...t, checklist: currentChecklist };
-      }
-      return t;
-    }));
-  };
-
-  const addCustomChecklistItem = (taskId) => {
-    if (!newChecklistItemText.trim()) return;
-    setTasks(tasks.map(t => {
-      if (t.id === taskId) {
-        const currentChecklist = { ...(t.checklist || {}) };
-        currentChecklist[newChecklistItemText.trim()] = false;
-        logActivityToCloud(`Added customized checklist criteria: "${newChecklistItemText.trim()}"`, 'info');
-        return { ...t, checklist: currentChecklist };
-      }
-      return t;
-    }));
-    setNewChecklistItemText('');
-    showToast("Checklist criteria added!");
-  };
-
-  const removeCustomChecklistItem = (taskId, itemName) => {
-    setTasks(tasks.map(t => {
-      if (t.id === taskId) {
-        const currentChecklist = { ...(t.checklist || {}) };
-        delete currentChecklist[itemName];
-        logActivityToCloud(`Removed checklist criteria: "${itemName}"`, 'alert');
-        return { ...t, checklist: currentChecklist };
-      }
-      return t;
-    }));
-    showToast("Checklist criteria removed.");
-  };
-
-  const addAssetAllocation = (taskId, assetKey, dayOffset, startTime, endTime) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id === taskId) {
-        const currentAllocs = t.assetAllocations ? [...t.assetAllocations] : [];
-        const newAlloc = {
-          id: `${t.id}-alloc-${Date.now()}`,
-          assetKey,
-          dayOffset: parseInt(dayOffset) || 0,
-          startTime: startTime || "08:00",
-          endTime: endTime || "17:00"
-        };
-        
-        const isDuplicate = currentAllocs.some(a => a.assetKey === assetKey && a.dayOffset === newAlloc.dayOffset && a.startTime === newAlloc.startTime);
-        if (isDuplicate) {
-          showToast("A dispatch matching these values already exists on this sequence.");
-          return t;
-        }
-
-        const updated = [...currentAllocs, newAlloc];
-        showToast("Logistical slot assigned successfully.");
-        return { ...t, assetAllocations: updated };
-      }
-      return t;
-    }));
-  };
-
-  const removeAssetAllocation = (taskId, allocId) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id === taskId) {
-        const currentAllocs = t.assetAllocations ? [...t.assetAllocations] : [];
-        const updated = currentAllocs.filter(a => a.id !== allocId);
-        showToast("Allocation slot removed.");
-        return { ...t, assetAllocations: updated };
-      }
-      return t;
-    }));
-  };
 
   const filteredTasks = activeFlowTasks.filter(t => {
     const searchMatch = t.task.toLowerCase().includes(filterSearchQuery.toLowerCase()) || 
@@ -1528,6 +1411,24 @@ export default function App() {
 
   const thisWeeksForecastList = getThisWeeksForecastTasks();
 
+  if (view === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-[#030712] text-slate-100 p-4">
+        <div className="flex flex-col items-center gap-6 animate-pulse text-center">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <CiticoreLogo isDarkMode={true} />
+            <div className="hidden sm:block h-8 w-px bg-slate-800" />
+            <MbvLogo isDarkMode={true} />
+          </div>
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-blue-404 font-bold tracking-wider uppercase">
+            <Loader2 className="animate-spin text-blue-500" size={18} />
+            <span>Synchronizing with Citicore DB Cloud...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#030712] text-slate-100' : 'bg-[#f8fafc] text-slate-900'}`}>
       
@@ -1571,47 +1472,54 @@ export default function App() {
             linear-gradient(to bottom, rgba(71, 85, 105, 0.15) 1px, transparent 1px);
           background-size: 56px 100%, 100% 68px;
         }
+
+        /* Landscape height responsive compression variables (742001332_1037671298843665_6548863071110779362_n.jpg) */
+        @media (max-height: 560px) {
+          header { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+          main { padding: 0.5rem !important; }
+          .gantt-panel-card { border-radius: 12px !important; }
+        }
       `}} />
 
       {}
       <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#090d16] border-slate-900' : 'bg-white border-slate-202'}`}>
-        <div className="px-4 py-3 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
-          <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10">
-            <div className="flex items-center gap-2">
-              <div className="bg-[#111827] p-2 rounded-xl border border-slate-800 text-white shrink-0 shadow-lg">
-                <LayoutDashboard size={18} className="text-blue-500"/>
+        <div className="px-3 py-2 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
+          <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10 w-full md:w-auto">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="bg-[#111827] p-1.5 sm:p-2 rounded-xl border border-slate-800 text-white shrink-0 shadow-lg">
+                <LayoutDashboard size={16} className="text-blue-500 sm:w-[18px] sm:h-[18px]"/>
               </div>
               
               <div className="flex flex-col min-w-0" ref={dropdownRef}>
-                <div className="relative flex items-center gap-2">
+                <div className="relative flex items-center gap-1.5 sm:gap-2">
                   <button
                     onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-[#111827] text-white border-slate-800 hover:bg-[#1a2333] transition-all text-xs font-black select-none"
+                    className="flex items-center gap-1 sm:gap-2 px-2.5 py-1 sm:py-1.5 rounded-xl border bg-[#111827] text-white border-slate-800 hover:bg-[#1a2333] transition-all text-xs font-black select-none max-w-[120px] sm:max-w-none"
                   >
-                    <Folder className="text-blue-500 shrink-0" size={13}/>
-                    <span className="truncate max-w-[120px] sm:max-w-[220px]">
-                      {projectList.find(p => p.id === activeProjectId)?.title || 'Switch Project...'}
+                    <Folder className="text-blue-500 shrink-0" size={12}/>
+                    <span className="truncate max-w-[80px] sm:max-w-[200px]">
+                      {projectList.find(p => p.id === activeProjectId)?.title || 'Switch...'}
                     </span>
-                    <ChevronDown className="text-slate-400 shrink-0" size={12}/>
+                    <ChevronDown className="text-slate-400 shrink-0" size={11}/>
                   </button>
 
-                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111827] border border-slate-202 dark:border-slate-800 px-3 py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0">
-                    <Clock size={13} className="text-blue-500" />
-                    <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      ● Live System Time
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111827] border border-slate-202 dark:border-slate-800 px-2.5 py-1 sm:py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0">
+                    <Clock size={12} className="text-blue-500" />
+                    <span className="hidden xs:inline text-[8px] font-black uppercase px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-404 border border-emerald-500/20">
+                      Live
                     </span>
-                    <span className="text-slate-800 dark:text-white font-black font-mono">
+                    <span className="text-slate-800 dark:text-white font-black font-mono text-[10px] sm:text-xs">
                       {liveSystemTime}
                     </span>
                   </div>
 
-                  <div className="hidden xl:flex items-center gap-1.5 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase text-blue-600 dark:text-blue-400">
-                    <span className="relative flex h-2 w-2 shrink-0">
+                  <div className="hidden sm:flex items-center gap-1 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] font-black uppercase text-blue-600 dark:text-blue-400">
+                    <span className="relative flex h-1.5 w-1.5 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                     </span>
-                    <Wifi size={11} />
-                    <span>Real-Time Sync Connected</span>
+                    <Wifi size={10} />
+                    <span>Live Sync</span>
                   </div>
 
                   {isProjectDropdownOpen && (
@@ -1673,8 +1581,8 @@ export default function App() {
           </div>
 
           {}
-          <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0 z-10">
-            <div className={`flex items-center gap-1.5 border p-1 rounded-2xl whitespace-nowrap shadow-md bg-opacity-90 ${
+          <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-3 px-3 md:mx-0 md:px-0 z-10">
+            <div className={`flex items-center gap-1 border p-1 rounded-2xl whitespace-nowrap shadow-md bg-opacity-90 ${
               isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-slate-100 border-slate-202'
             }`}>
               {[
@@ -1689,13 +1597,13 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => setActivePerspective(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 group ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 group ${
                       isSelected 
                         ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.02]` 
-                        : 'text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                        : 'text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
-                    <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-400 group-hover:scale-105 transition-transform'}`} />
+                    <IconComponent size={12} className={`${isSelected ? 'text-white' : 'text-slate-404 group-hover:scale-105 transition-transform'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -1706,16 +1614,16 @@ export default function App() {
           <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative items-center">
             <button
               onClick={addTask}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs px-4 py-2 rounded-xl border border-blue-500/30 uppercase tracking-wider flex items-center gap-1.5 shadow shadow-blue-500/20 transition-all"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs px-3.5 py-1.5 sm:py-2 rounded-xl border border-blue-500/30 uppercase tracking-wider flex items-center gap-1 shadow shadow-blue-500/20 transition-all"
             >
-              <Plus size={13} />
+              <Plus size={12} />
               <span>Add Task</span>
             </button>
 
             <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#111827] border-slate-800 text-slate-300 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-50'}`}>
-              <Bell size={14}/>
+              <Bell size={13}/>
               {notifications.length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
               )}
             </button>
           </div>
@@ -1723,60 +1631,51 @@ export default function App() {
       </header>
 
       {}
-      <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
-        <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0 relative">
-          
-          {phonePushAlert && (
-            <div className="fixed bottom-6 right-6 z-50 w-80 bg-[#0f172a] border-2 border-blue-500 text-white rounded-2xl shadow-2xl p-4 flex items-start gap-3">
-              <div className="bg-blue-600 p-2.5 rounded-xl"><Phone size={16} className="text-white" /></div>
-              <div className="flex-1 text-xs">
-                <span className="font-extrabold uppercase tracking-widest text-[9px] text-blue-400 block">{phonePushAlert.title}</span>
-                <p className="font-bold text-slate-100 leading-tight mt-1">{phonePushAlert.text}</p>
-                <span className="text-[10px] text-slate-500 block mt-1">{phonePushAlert.time}</span>
-              </div>
-              <button onClick={() => setPhonePushAlert(null)} className="p-1 hover:bg-slate-850 rounded text-slate-400"><X size={14}/></button>
-            </div>
-          )}
+      <main className="flex-1 overflow-y-auto lg:overflow-hidden p-2 sm:p-4 md:p-6 relative flex flex-col min-h-0">
+        <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-3 sm:gap-4 flex-1 min-h-0 relative">
 
+          {/* GANTT VIEW PERSPECTIVE */}
           {activePerspective === 'gantt' && (
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
-              <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
+              {/* Controls bar */}
+              <div className={`p-2 sm:p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
                 isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202 shadow-sm'
               }`}>
-                <div className="flex items-center gap-3 flex-1 justify-between sm:justify-start">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1">
                   <input 
                     type="text" 
                     placeholder="Search active project sequences..."
                     value={filterSearchQuery}
                     onChange={(e) => setFilterSearchQuery(e.target.value)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border outline-none w-full sm:max-w-xs transition-colors ${
                       isDarkMode 
                         ? 'bg-[#111827] border-slate-800 text-white focus:border-blue-500' 
                         : 'bg-slate-100 border-slate-300 text-slate-800 focus:border-blue-600'
                     }`}
                   />
                   
-                  <button
-                    onClick={() => setIsGanttSidebarVisible(!isGanttSidebarVisible)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
-                      isGanttSidebarVisible 
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                        : 'bg-slate-200 dark:bg-[#111827] border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                    }`}
-                    style={{ minWidth: '105px' }}
-                  >
-                    {isGanttSidebarVisible ? <EyeOff size={14}/> : <Eye size={14}/>}
-                    <span>{isGanttSidebarVisible ? 'Hide List' : 'Show List'}</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsGanttSidebarVisible(!isGanttSidebarVisible)}
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
+                        isGanttSidebarVisible 
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                          : 'bg-slate-200 dark:bg-[#111827] border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {isGanttSidebarVisible ? <EyeOff size={12}/> : <Eye size={12}/>}
+                      <span>{isGanttSidebarVisible ? 'Hide List' : 'Show List'}</span>
+                    </button>
 
-                  <button
-                    onClick={addTask}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1 shadow-md"
-                  >
-                    <Plus size={14}/>
-                    <span className="hidden sm:inline">Add Task</span>
-                  </button>
+                    <button
+                      onClick={addTask}
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-xl flex items-center gap-1 shadow-md"
+                    >
+                      <Plus size={12}/>
+                      <span>Add Task</span>
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="flex gap-1 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
@@ -1784,10 +1683,10 @@ export default function App() {
                     <button
                       key={tag}
                       onClick={() => setFilterStatusTag(tag)}
-                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
+                      className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-wider transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#111827] border-slate-850 text-slate-400 hover:text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
+                          : (isDarkMode ? 'bg-[#111827] border-slate-850 text-slate-404 hover:text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1796,11 +1695,30 @@ export default function App() {
                 </div>
               </div>
 
-              {}
+              {/* Adaptive mobile viewport segmented tab switch to resolve 748607690_1549596790201689_5710727974408244119_n.jpg */}
+              {isMobileViewport && (
+                <div className="flex border rounded-xl overflow-hidden p-1 bg-slate-100 dark:bg-slate-900/40 border-slate-202 dark:border-slate-850 shrink-0">
+                  <button 
+                    onClick={() => setMobileTab('list')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${mobileTab === 'list' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 dark:text-slate-404'}`}
+                  >
+                    Spreadsheet Parameters
+                  </button>
+                  <button 
+                    onClick={() => setMobileTab('gantt')}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${mobileTab === 'gantt' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 dark:text-slate-404'}`}
+                  >
+                    Interactive Timeline
+                  </button>
+                </div>
+              )}
+
+              {/* Master Split Grid */}
               <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'}`}>
                 
-                {isGanttSidebarVisible && (
-                  <div className={`flex w-[60%] sm:w-[50%] md:w-[40%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
+                {/* SPREADSHEET TABLE COLUMN */}
+                {(!isMobileViewport || mobileTab === 'list') && isGanttSidebarVisible && (
+                  <div className={`flex w-full lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
                     isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'
                   }`}>
                     
@@ -1827,13 +1745,13 @@ export default function App() {
                           }}
                           className={`h-[68px] min-h-[68px] max-h-[68px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-600 dark:text-blue-400">
+                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-600 dark:text-blue-404">
                             {task.ref}
                           </div>
                           
                           <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="font-black text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-wider block truncate text-left">
+                              <span className="font-black text-[8px] text-blue-600 dark:text-blue-404 uppercase tracking-wider block truncate text-left">
                                 {task.desc}
                               </span>
                               <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
@@ -1858,166 +1776,168 @@ export default function App() {
                     </div>
 
                     <div className="h-[64px] p-2 flex items-center border-t border-slate-202 dark:border-slate-900 sticky bottom-0 z-20 shrink-0 bg-transparent">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-404 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
                   </div>
                 )}
 
-                {}
-                <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
-                  
-                  <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${
-                    isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-slate-100 border-slate-202'
-                  }`}
-                  style={{ width: `${headerDays.length * 56}px` }}>
-                    {headerDays.map(day => {
-                      const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
-                      const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
-                      
-                      const currentAbsoluteDate = new Date(projectStartDate);
-                      currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
-                      const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
-
-                      const activeAllocationsOnDay = allAllocations.filter(a => a.absDateStr === currentAbsDateStr);
-
-                      return (
-                        <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
-                          isDarkMode 
-                            ? `border-slate-900/60 ${isSatSun ? 'bg-slate-950/20' : ''}` 
-                            : `border-slate-202 ${isSatSun ? 'bg-slate-202' : ''}`
-                        }`}>
-                          <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
-                          
-                          {activeAllocationsOnDay.length > 0 && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-500/10 px-1 py-0.5 rounded-full border border-blue-500/20">
-                              {activeAllocationsOnDay.map((alloc, idx) => (
-                                <span key={idx} title={`${alloc.assetKey} (${alloc.startTime}-${alloc.endTime})`} className="text-[7.5px] leading-none shrink-0">
-                                  {customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'case' ? '🧳' : 
-                                   customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'lightning' ? '⚡' : 
-                                   customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'tester' ? '📊' : '🚚'}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  
-                  <div 
-                    ref={rightScrollRef}
-                    onScroll={handleRightScroll}
-                    className={`flex-grow relative overflow-y-auto overflow-x-hidden scrollbar-none ${
-                      isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
+                {/* TIMELINE TIMELINE GRID */}
+                {(!isMobileViewport || mobileTab === 'gantt') && (
+                  <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
+                    
+                    <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${
+                      isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-slate-100 border-slate-202'
                     }`}
-                    style={{ 
-                      scrollbarWidth: 'none', 
-                      msOverflowStyle: 'none',
-                      width: `${headerDays.length * 56}px`
-                    }}
-                  >
-                    {filteredTasks.map((task) => {
-                      const conflict = checkAssetConflict(task);
-                      return (
-                        <div 
-                          key={task.id} 
-                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}
-                          style={{ width: `${headerDays.length * 56}px` }}
-                        >
-                          {headerDays.map(day => {
-                            const currentAbsoluteDate = new Date(projectStartDate);
-                            currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
-                            const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
+                    style={{ width: `${headerDays.length * 56}px` }}>
+                      {headerDays.map(day => {
+                        const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
+                        const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
+                        
+                        const currentAbsoluteDate = new Date(projectStartDate);
+                        currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
+                        const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
 
-                            const isToolInUseThisDay = allAllocations.some(a => a.taskId === task.id && a.projectId === activeProjectId && a.absDateStr === currentAbsDateStr);
-                            if (isToolInUseThisDay) {
-                              return (
-                                <div 
-                                  key={`bg-day-${day}`}
-                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10"
-                                  style={{ left: `${day * 56}px` }}
-                                />
-                              );
-                            }
-                            return null;
-                          })}
+                        const activeAllocationsOnDay = allAllocations.filter(a => a.absDateStr === currentAbsDateStr);
 
+                        return (
+                          <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
+                            isDarkMode 
+                              ? `border-slate-900/60 ${isSatSun ? 'bg-slate-950/20' : ''}` 
+                              : `border-slate-202 ${isSatSun ? 'bg-slate-202' : ''}`
+                          }`}>
+                            <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
+                            <span className="text-[8px] font-bold text-slate-404 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                            
+                            {activeAllocationsOnDay.length > 0 && (
+                              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-500/10 px-1 py-0.5 rounded-full border border-blue-500/20">
+                                {activeAllocationsOnDay.map((alloc, idx) => (
+                                  <span key={idx} title={`${alloc.assetKey} (${alloc.startTime}-${alloc.endTime})`} className="text-[7.5px] leading-none shrink-0">
+                                    {customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'case' ? '🧳' : 
+                                     customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'lightning' ? '⚡' : 
+                                     customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'tester' ? '📊' : '🚚'}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <div 
+                      ref={rightScrollRef}
+                      onScroll={handleRightScroll}
+                      className={`flex-grow relative overflow-y-auto overflow-x-hidden scrollbar-none ${
+                        isDarkMode ? "gantt-grid-dark" : "gantt-grid-light"
+                      }`}
+                      style={{ 
+                        scrollbarWidth: 'none', 
+                        msOverflowStyle: 'none',
+                        width: `${headerDays.length * 56}px`
+                      }}
+                    >
+                      {filteredTasks.map((task) => {
+                        const conflict = checkAssetConflict(task);
+                        return (
                           <div 
-                            onClick={() => {
-                              setActiveTaskModal(task.id);
-                              setSelectedDayIndex(0);
-                            }}
-                            className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.01] hover:shadow-xl z-10 ${
-                              conflict 
-                                ? 'from-amber-600 to-amber-700 border-amber-500 text-white shadow-amber-500/10'
-                                : task.qaStatus === 'HOLD' 
-                                  ? 'from-rose-600 to-rose-700 border-rose-500 text-white animate-pulse shadow-rose-500/10' 
-                                  : task.qaStatus === 'APPROVED' 
-                                    ? 'from-emerald-600 to-emerald-700 border-emerald-500 text-white shadow-emerald-500/10' 
-                                    : 'from-blue-600 to-blue-700 border-blue-500 text-white shadow-blue-500/10'
-                            } bg-gradient-to-r`}
-                            style={{ left: `${(task.startDays) * 56 + 4}px`, width: `${(task.adjustedDuration * 56) - 8}px` }}
+                            key={task.id} 
+                            className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}
+                            style={{ width: `${headerDays.length * 56}px` }}
                           >
-                            <div className="absolute top-0 left-0 h-full bg-slate-950/20" style={{ width: `${task.progress || 0}%` }} />
-                            <span className="truncate px-3 font-black text-[9px] relative z-10 flex items-center gap-1.5 text-white">
-                              <span>{task.ref}</span>
-                              <span className="opacity-100">{task.task}</span>
+                            {headerDays.map(day => {
+                              const currentAbsoluteDate = new Date(projectStartDate);
+                              currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
+                              const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
+
+                              const isToolInUseThisDay = allAllocations.some(a => a.taskId === task.id && a.projectId === activeProjectId && a.absDateStr === currentAbsDateStr);
+                              if (isToolInUseThisDay) {
+                                return (
+                                  <div 
+                                    key={`bg-day-${day}`}
+                                    className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10"
+                                    style={{ left: `${day * 56}px` }}
+                                  />
+                                );
+                              }
+                              return null;
+                            })}
+
+                            <div 
+                              onClick={() => {
+                                setActiveTaskModal(task.id);
+                                setSelectedDayIndex(0);
+                              }}
+                              className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.01] hover:shadow-xl z-10 ${
+                                conflict 
+                                  ? 'from-amber-600 to-amber-700 border-amber-500 text-white shadow-amber-500/10'
+                                  : task.qaStatus === 'HOLD' 
+                                    ? 'from-rose-600 to-rose-700 border-rose-500 text-white animate-pulse shadow-rose-500/10' 
+                                    : task.qaStatus === 'APPROVED' 
+                                      ? 'from-emerald-600 to-emerald-700 border-emerald-500 text-white shadow-emerald-500/10' 
+                                      : 'from-blue-600 to-blue-700 border-blue-500 text-white shadow-blue-500/10'
+                              } bg-gradient-to-r`}
+                              style={{ left: `${(task.startDays) * 56 + 4}px`, width: `${(task.adjustedDuration * 56) - 8}px` }}
+                            >
+                              <div className="absolute top-0 left-0 h-full bg-slate-950/20" style={{ width: `${task.progress || 0}%` }} />
+                              <span className="truncate px-3 font-black text-[9px] relative z-10 flex items-center gap-1.5 text-white">
+                                <span>{task.ref}</span>
+                                <span className="opacity-100">{task.task}</span>
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
+                      isDarkMode ? 'bg-[#030712] border-slate-900' : 'bg-slate-100 border-slate-202'
+                    }`}
+                    style={{ width: `${headerDays.length * 56}px` }}>
+                      <div className="absolute left-3 top-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2 py-1 rounded-lg text-[9px] font-black uppercase text-blue-400">
+                        <BarChart3 size={11} />
+                        <span>Workforce Loading per Day</span>
+                      </div>
+                      {headerDays.map(day => {
+                        const dayManpower = activeFlowTasks.reduce((sum, task) => {
+                          if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
+                            const dayIdx = day - task.startDays;
+                            const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
+                            if (currentDayLabor) {
+                              return sum + activeRoles.reduce((roleSum, role) => {
+                                const val = parseInt(currentDayLabor[role.key]);
+                                return roleSum + (isNaN(val) ? 0 : val);
+                              }, 0);
+                            }
+                          }
+                          return sum;
+                        }, 0);
+                        const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
+                        return (
+                          <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
+                            {dayManpower > 0 && (
+                              <div 
+                                className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-500 animate-pulse' : 'bg-blue-600'}`}
+                                style={{ height: `${Math.max(4, heightPercentage)}%` }}
+                              />
+                            )}
+                            <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-404'}`}>
+                              {dayManpower > 0 ? dayManpower : '-'}
                             </span>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
-                    isDarkMode ? 'bg-[#030712] border-slate-900' : 'bg-slate-100 border-slate-202'
-                  }`}
-                  style={{ width: `${headerDays.length * 56}px` }}>
-                    <div className="absolute left-3 top-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2 py-1 rounded-lg text-[9px] font-black uppercase text-blue-400">
-                      <BarChart3 size={11} />
-                      <span>Workforce Loading per Day</span>
+                        );
+                      })}
                     </div>
-                    {headerDays.map(day => {
-                      const dayManpower = activeFlowTasks.reduce((sum, task) => {
-                        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
-                          const dayIdx = day - task.startDays;
-                          const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
-                          if (currentDayLabor) {
-                            return sum + activeRoles.reduce((roleSum, role) => {
-                              const val = parseInt(currentDayLabor[role.key]);
-                              return roleSum + (isNaN(val) ? 0 : val);
-                            }, 0);
-                          }
-                        }
-                        return sum;
-                      }, 0);
-                      const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
-                      return (
-                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
-                          {dayManpower > 0 && (
-                            <div 
-                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-500 animate-pulse' : 'bg-blue-600'}`}
-                              style={{ height: `${Math.max(4, heightPercentage)}%` }}
-                            />
-                          )}
-                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-404'}`}>
-                            {dayManpower > 0 ? dayManpower : '-'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
 
-                </div>
+                  </div>
+                )}
 
               </div>
             </div>
           )}
 
-          {}
+          {/* WEEKLY PERSPECTIVE */}
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
@@ -2142,7 +2062,7 @@ export default function App() {
             </div>
           )}
 
-          {}
+          {/* QA INSPECTION PERSPECTIVE */}
           {activePerspective === 'qa' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex items-center justify-between ${
@@ -2171,13 +2091,13 @@ export default function App() {
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="font-black font-mono text-xs text-blue-500">{task.ref}</span>
                       <div className="min-w-0 text-left">
-                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-400 block"> {task.desc}</span>
+                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-404 block"> {task.desc}</span>
                         <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{task.task}</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-black text-slate-404 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className="text-xs font-black text-slate-440 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
                       <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
@@ -2188,7 +2108,7 @@ export default function App() {
             </div>
           )}
 
-          {}
+          {/* LOGISTICS PERSPECTIVE */}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col lg:flex-row lg:items-center justify-between gap-4 ${
@@ -2252,11 +2172,11 @@ export default function App() {
                   <div className="flex items-center justify-between border-b border-slate-900 pb-3 mb-4 shrink-0">
                     <div className="text-left">
                       <h4 className="text-xs font-black text-slate-100 uppercase">Day {selectedLedgerDay + 1} Dispatch Schedule</h4>
-                      <p className="text-[10px] text-slate-400">Manage conflicting tools scheduled on this exact index.</p>
+                      <p className="text-[10px] text-slate-404">Manage conflicting tools scheduled on this exact index.</p>
                     </div>
                     <button
                       onClick={() => advanceAllLedgerToolsBy3Days(selectedLedgerDay)}
-                      className="bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600 text-indigo-400 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 transition-all"
+                      className="bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600 text-indigo-404 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 transition-all"
                     >
                       <RefreshCw size={11} />
                       <span>⏩ Advance All on Day {selectedLedgerDay + 1} by 3 Days</span>
@@ -2328,32 +2248,35 @@ export default function App() {
           )}
 
           {}
+          {/* Resolved alignment/overlapping shown in 748607690_1549596790201689_5710727974408244119_n.jpg */}
           <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
             isDarkMode ? 'bg-[#0a0f18] border-blue-500/10' : 'bg-blue-50/50 border-blue-202'
           }`}>
             <div 
               onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
-              className="flex items-center justify-between px-5 py-3.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors select-none"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 sm:px-5 sm:py-3.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors select-none"
             >
               <div className="flex items-center gap-3">
                 <Bell className={`text-blue-500 shrink-0 ${isAlertCenterExpanded ? 'animate-bounce' : ''}`} size={16}/>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-404 flex items-center gap-2">
-                  <span>Live Dispatch & Mobilization Alert Center</span>
-                  <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-404">
+                    Live Dispatch & Mobilization Alert Center
+                  </h4>
+                  <span className="text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20 whitespace-nowrap">
                     {todayAllocations.length} Active Today
                   </span>
-                </h4>
+                </div>
               </div>
               
-              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-slate-404 uppercase hidden sm:inline">Filter Asset:</span>
+                  <span className="text-[10px] font-black text-slate-404 uppercase hidden sm:inline">Filter:</span>
                   <div className="relative">
                     <select 
                       value={alertCenterAssetFilter} 
                       onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
                       className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
-                        isDarkMode ? 'bg-[#111827] border-slate-850 text-blue-400' : 'bg-white border-slate-300 text-blue-800 shadow-sm'
+                        isDarkMode ? 'bg-[#111827] border-slate-850 text-blue-404' : 'bg-white border-slate-300 text-blue-855 shadow-sm'
                       }`}
                     >
                       <option value="ALL">ALL VEHICLES / TOOLS</option>
@@ -2379,7 +2302,7 @@ export default function App() {
             {isAlertCenterExpanded && (
               <div className="p-5 border-t border-slate-700/10 dark:border-slate-900/60 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-top-1 duration-200">
                 <div className="space-y-2.5 text-left">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-404 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Active Dispatches Today
                   </span>
                   {todayAllocations.length === 0 ? (
@@ -2391,19 +2314,19 @@ export default function App() {
                         return (
                           <div 
                             key={idx} 
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-between w-full border ${
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex flex-col sm:flex-row items-stretch sm:items-center justify-between w-full border gap-2 ${
                               conflict 
                                 ? 'bg-red-500/10 border border-red-500 text-red-500' 
-                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-350'
                             }`}
                           >
-                            <div className="flex items-center gap-1.5">
-                              {renderAssetIcon(alloc.assetKey)}
-                              <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="shrink-0">{renderAssetIcon(alloc.assetKey)}</span>
+                              <span className="truncate">{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
                             </div>
 
                             {conflict && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
                                 <button
                                   onClick={() => handleRescheduleLaterThatDay(alloc.taskId, alloc.id)}
                                   className="bg-red-600 hover:bg-red-500 text-white text-[9px] px-2 py-0.5 rounded uppercase"
@@ -2426,7 +2349,7 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2.5 text-left">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-404 flex items-center gap-1.5">
                     <Clock size={11}/> Scheduled Mobilizations Tomorrow
                   </span>
                   {tomorrowAllocations.length === 0 ? (
@@ -2441,7 +2364,7 @@ export default function App() {
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-between w-full border ${
                               conflict 
                                 ? 'bg-red-500/10 border border-red-500 text-red-500' 
-                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-emerald-300'
+                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-805 dark:text-emerald-300'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -2470,49 +2393,49 @@ export default function App() {
         const dayLaborObj = currentDailyLabor[selectedDayIndex] || currentDailyLabor[0];
 
         return (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300 animate-fade-in">
-            <div className={`rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border flex flex-col max-h-[92vh] transition-all duration-300 ${
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4 transition-all duration-300 animate-fade-in">
+            <div className={`rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border flex flex-col max-h-[95vh] transition-all duration-300 ${
               isDarkMode 
                 ? 'bg-[#0f172a]/95 border-slate-800 text-white' 
                 : 'bg-white border-slate-300 text-slate-900'
             }`}>
               
-              <div className={`p-5 border-b flex justify-between items-center ${
+              <div className={`p-4 sm:p-5 border-b flex justify-between items-center shrink-0 ${
                 isDarkMode 
                   ? 'border-slate-800 bg-[#111827]' 
                   : 'border-slate-202 bg-slate-100'
               }`}>
-                <div className="text-left">
-                  <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                    <ClipboardCheck className="text-blue-500" size={16}/> 
-                    <span>Site Field Inspector Card</span>
+                <div className="text-left min-w-0">
+                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <ClipboardCheck className="text-blue-500" size={15}/> 
+                    <span className="truncate">Site Field Inspector Card</span>
                   </h3>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-white bg-blue-600 border border-blue-500 px-2 py-0.5 rounded-lg text-xs font-black tracking-wide">
+                  <div className="flex items-center gap-2 mt-1.5 min-w-0">
+                    <span className="text-white bg-blue-600 border border-blue-500 px-1.5 py-0.5 rounded-lg text-[10px] sm:text-xs font-black tracking-wide shrink-0">
                       {currentTaskEditing.ref}
                     </span>
-                    <span className="text-xs font-bold text-slate-400">
+                    <span className="text-xs font-bold text-slate-400 truncate">
                       {currentTaskEditing.task}
                     </span>
                   </div>
                 </div>
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
-                  className={`p-1.5 rounded-full border transition-colors ${
+                  className={`p-1.5 rounded-full border transition-colors shrink-0 ${
                     isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-404' : 'border-slate-300 hover:bg-slate-202 text-slate-700'
                   }`}
                 >
-                  <X size={16}/>
+                  <X size={15}/>
                 </button>
               </div>
               
-              <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
+              <div className="p-4 sm:p-6 overflow-y-auto flex-grow space-y-4 sm:space-y-6 scrollbar-thin">
                 
-                <div className={`p-5 rounded-2xl border text-left ${
+                <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
-                  <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-slate-800">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
+                  <div className="flex justify-between items-center mb-3 sm:mb-4 border-b pb-2 dark:border-slate-800">
+                    <h4 className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-404">
                       Configure Sequence Details
                     </h4>
                     <button 
@@ -2520,14 +2443,14 @@ export default function App() {
                         triggerTaskRemove(currentTaskEditing.id);
                         setActiveTaskModal(null);
                       }}
-                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-rose-400 transition-colors"
+                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-rose-400 transition-colors animate-none"
                     >
                       <Trash2 size={12} />
                       <span>Delete Sequence</span>
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <div>
                       <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Ref Code</label>
                       <input 
@@ -2552,7 +2475,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                     <div className="sm:col-span-8">
                       <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Detailed Sequence Title</label>
                       <input 
@@ -2580,7 +2503,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mt-3">
                     <div className="sm:col-span-4">
                       <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Baseline Days</label>
                       <input 
@@ -2608,11 +2531,11 @@ export default function App() {
                   </div>
                 </div>
 
-                {}
-                <div className={`p-5 rounded-2xl border text-left ${
+                {/* Day Stagger Crews */}
+                <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
-                  <div className="border-b pb-2 dark:border-slate-800 mb-4">
+                  <div className="border-b pb-2 dark:border-slate-800 mb-3 sm:mb-4">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5">
                       <Users size={14} className="text-blue-500" />
                       <span>Granular Day-by-Day Crew Allocations</span>
@@ -2638,11 +2561,11 @@ export default function App() {
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       {activeRoles.map(role => {
                         const count = parseInt(dayLaborObj?.[role.key]) || 0;
                         return (
-                          <div key={role.key} className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800 flex flex-col justify-between gap-3">
+                          <div key={role.key} className="p-3 sm:p-4 rounded-2xl bg-slate-900/40 border border-slate-800 flex flex-col justify-between gap-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">{role.icon}</span>
@@ -2655,7 +2578,7 @@ export default function App() {
                                 <button
                                   type="button"
                                   onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1, selectedDayIndex)}
-                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-404 hover:text-white transition-all"
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-440 hover:text-white transition-all"
                                 >
                                   -
                                 </button>
@@ -2665,7 +2588,7 @@ export default function App() {
                                 <button
                                   type="button"
                                   onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
-                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-404 hover:text-white transition-all"
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-440 hover:text-white transition-all"
                                 >
                                   +
                                 </button>
@@ -2684,7 +2607,7 @@ export default function App() {
                                       placeholder={`Assign name for ${role.fullName} #${workerIdx + 1}`}
                                       value={assignedName}
                                       onChange={(e) => assignWorkerName(currentTaskEditing.id, role.key, workerIdx, e.target.value, selectedDayIndex)}
-                                      className="w-full px-2.5 py-1 text-[10.5px] font-bold border rounded-lg bg-[#070a12] border-slate-800 text-slate-200 focus:border-blue-500 outline-none transition-colors"
+                                      className="w-full px-2.5 py-1 text-[10.5px] font-bold border rounded-lg bg-[#070a12] border-slate-800 text-slate-202 focus:border-blue-500 outline-none transition-colors"
                                     />
                                   );
                                 })}
@@ -2697,8 +2620,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {}
-                <div className={`p-5 rounded-2xl border text-left ${
+                {/* Subtask checklist */}
+                <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5 mb-3">
@@ -2706,9 +2629,9 @@ export default function App() {
                     <span>Divisible Sub-Category Operations</span>
                   </h4>
 
-                  <div className="flex gap-2.5 items-end mb-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                  <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-end mb-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
                     <div className="flex-1">
-                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Subtask Name</label>
+                      <label className="block text-[8px] font-black text-slate-400 uppercase mb-1 text-left">Subtask Name</label>
                       <input 
                         type="text" 
                         placeholder="e.g. Bend rebar stirrups / Check spacing"
@@ -2717,8 +2640,8 @@ export default function App() {
                         className="w-full text-xs p-2 rounded-lg border bg-slate-900 border-slate-800 text-white outline-none animate-none"
                       />
                     </div>
-                    <div className="w-24">
-                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Weight (%)</label>
+                    <div className="w-full sm:w-24">
+                      <label className="block text-[8px] font-black text-slate-400 uppercase mb-1 text-left">Weight (%)</label>
                       <input 
                         type="number" min="10" max="100"
                         value={newSubtaskWeight} 
@@ -2736,24 +2659,24 @@ export default function App() {
 
                   <div className="space-y-1.5">
                     {(currentTaskEditing.subtasks || []).map((sub) => (
-                      <div key={sub.id} className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                      <div key={sub.id} className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-3 min-w-0">
                           <input 
                             type="checkbox" 
                             checked={sub.status === 'COMPLETED'} 
                             onChange={() => handleToggleSubtaskStatus(currentTaskEditing.id, sub.id)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-750 bg-slate-950 rounded cursor-pointer"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-750 bg-slate-950 rounded cursor-pointer shrink-0"
                           />
-                          <span className={`text-xs font-bold ${sub.status === 'COMPLETED' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
+                          <span className={`text-xs font-bold truncate ${sub.status === 'COMPLETED' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                             {sub.name}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] font-mono text-slate-500 font-bold">Weight: {sub.weight}%</span>
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${sub.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                          <span className="text-[10px] font-mono text-slate-500 font-bold hidden xs:inline">Weight: {sub.weight}%</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${sub.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-404' : 'bg-amber-500/10 text-amber-404'}`}>
                             {sub.status}
                           </span>
-                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-404 hover:text-rose-500">
+                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-404 hover:text-rose-500 p-1">
                             <X size={14}/>
                           </button>
                         </div>
@@ -2762,8 +2685,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {}
-                <div className={`p-5 rounded-2xl border text-left ${
+                {/* Logistics scheduling panel inside modal */}
+                <div className={`p-4 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <div 
@@ -2798,7 +2721,7 @@ export default function App() {
                       }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Active Day</label>
-                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
                             {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
                               <option key={idx} value={idx}>Day {idx + 1}</option>
                             ))}
@@ -2806,7 +2729,7 @@ export default function App() {
                         </div>
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Tool / Vehicle</label>
-                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
                             {customAssets.map(a => (
                               <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
                             ))}
@@ -2819,7 +2742,7 @@ export default function App() {
                             name="startTime" 
                             type="time" 
                             defaultValue="08:00" 
-                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
+                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
                             required 
                           />
                         </div>
@@ -2829,7 +2752,7 @@ export default function App() {
                             name="endTime" 
                             type="time" 
                             defaultValue="17:00" 
-                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
+                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
                             required 
                           />
                         </div>
@@ -2844,7 +2767,7 @@ export default function App() {
                     {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
                       const conflict = checkLogisticalConflictForAllocation(alloc);
                       return (
-                        <div key={i} className={`p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
+                        <div key={i} className={`p-3 sm:p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
                           conflict 
                             ? 'bg-rose-500/10 border-rose-500 text-rose-800 dark:text-rose-200' 
                             : 'bg-white dark:bg-slate-900 border-slate-202 dark:border-slate-800 text-slate-800 dark:text-slate-100'
@@ -2869,18 +2792,18 @@ export default function App() {
                                 <AlertTriangle size={12} />
                                 <span>Overlap CLASH Detected with "{conflict.conflictProject}" sequence</span>
                               </div>
-                              <div className="flex items-center gap-1.5 mt-1">
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 <button
                                   type="button"
                                   onClick={() => handleRescheduleLaterThatDay(currentTaskEditing.id, alloc.id)}
-                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase"
+                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase animate-none"
                                 >
                                   Reschedule After That Time (13:00 - 17:00)
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleRescheduleTomorrow(currentTaskEditing.id, alloc.id, true)}
-                                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase"
+                                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-2.5 py-1 rounded font-black uppercase animate-none"
                                 >
                                   Reschedule Tomorrow (+1d Duration Extension)
                                 </button>
@@ -2899,7 +2822,7 @@ export default function App() {
         );
       })()}
 
-      {}
+      {/* Shared Asset Pool Registration modal */}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
@@ -3009,7 +2932,7 @@ export default function App() {
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-300'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-202'}`}
                     />
                   </div>
                 </div>
@@ -3032,7 +2955,7 @@ export default function App() {
         </div>
       )}
 
-      {}
+      {/* Create Project modal */}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -3069,7 +2992,7 @@ export default function App() {
         </div>
       )}
 
-      {}
+      {/* Delete Project verification modal */}
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -3095,7 +3018,7 @@ export default function App() {
         </div>
       )}
 
-      {}
+      {/* Global notifications panel */}
       {isNotificationPaneOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationPaneOpen(false)} />
