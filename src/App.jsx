@@ -38,7 +38,7 @@ try {
       };
   }
 } catch (e) {
-  // Fallback for isolated compilation sandbox
+  // Sandbox environment fallback
 }
 
 const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -50,7 +50,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 const CiticoreLogo = ({ isDarkMode }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
     <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#2563eb" />
-    <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#0891b2" />
+    <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#06b6d4" />
     <text x="50" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill={isDarkMode ? "#60a5fa" : "#1e3a8a"} letterSpacing="-0.03em">CITICORE</text>
     <text x="50" y="34" fontFamily="Inter, system-ui, sans-serif" fontWeight="800" fontSize="7" fill={isDarkMode ? "#94a3b8" : "#334155"} letterSpacing="0.1em">CONSTRUCTION</text>
   </svg>
@@ -72,30 +72,30 @@ const AssetIcons = {
     </svg>
   ),
   heavy: () => (
-    <svg className="w-4 h-4 text-blue-600 dark:text-blue-404" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 13.5v6H5v-6m14 0V9a2 2 0 00-2-2h-3m5 6.5H14m0 0V7m0 0h-4m0 0a2 2 0 00-2 2v4.5H5" />
       <circle cx="8" cy="19" r="2.5" />
       <circle cx="16" cy="19" r="2.5" />
     </svg>
   ),
   case: () => (
-    <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4 h-4 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <rect x="3" y="7" width="18" height="12" rx="2" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M12 11v4M9 13h6" />
     </svg>
   ),
   lightning: () => (
-    <svg className="w-4 h-4 text-amber-500 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
   ),
   tester: () => (
-    <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
     </svg>
   ),
   crane: () => (
-    <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V8l7-4M12 8h9M12 8l4 6" />
       <circle cx="12" cy="17" r="2" />
     </svg>
@@ -195,13 +195,10 @@ export default function App() {
   
   const [activePerspective, setActivePerspective] = useState('gantt');
   const [isGanttSidebarVisible, setIsGanttSidebarVisible] = useState(true);
-  const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
   const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(true);
   const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
-  const [isManpowerMatrixExpanded, setIsManpowerMatrixExpanded] = useState(true);
 
   const [laborProfile, setLaborProfile] = useState('electrical');
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
@@ -223,9 +220,6 @@ export default function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarViewDate, setCalendarViewDate] = useState(new Date());
   
-  const [showWeatherDropdown, setShowWeatherDropdown] = useState(false);
-  const weatherDropdownRef = useRef(null);
-
   const [showAssetIconDropdown, setShowAssetIconDropdown] = useState(false);
   const assetDropdownRef = useRef(null);
 
@@ -235,20 +229,14 @@ export default function App() {
   const [alertCenterAssetFilter, setAlertCenterAssetFilter] = useState('ALL');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Clock variables: real-time live clock toggling
-  const [clockMode, setClockMode] = useState('live'); // 'live' or 'simulated'
-  const [simulatedTime, setSimulatedTime] = useState("08:00 AM");
   const [liveSystemTime, setLiveSystemTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-  
-  const [showFourPMAuditModal, setShowFourPMAuditModal] = useState(false);
-  const [selectedAuditTaskId, setSelectedAuditTaskId] = useState(null);
-
   const [phonePushAlert, setPhonePushAlert] = useState(null);
+
   const [newSubtaskName, setNewSubtaskName] = useState('');
   const [newSubtaskWeight, setNewSubtaskWeight] = useState(50);
+
   const [selectedLedgerDay, setSelectedLedgerDay] = useState(0);
 
-  // Handle scrolling synchronization
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
       isSyncingRightScroll.current = false;
@@ -321,22 +309,22 @@ export default function App() {
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
 
-  // Live system clock monitor
+  const activeRoles = LABOR_PROFILES[laborProfile] || LABOR_PROFILES.electrical;
+
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
       const currentFormattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       setLiveSystemTime(currentFormattedTime);
 
-      // Automated check: if it strikes exactly 4:00 PM (16:00:00) in live mode, fire the compliance audit
-      if (clockMode === 'live' && now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() === 0) {
-        setSimulatedTime("04:00 PM");
-        forceTriggerFourPMAudit();
+      if (now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() === 0) {
+        playAlertSound();
+        triggerPhoneNotification("🚨 4:00 PM Automatic Field Review: Please submit updated sequence progress metrics!");
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [clockMode, tasks]);
+  }, []);
 
   const fetchWeatherDelayMultiplier = () => {
     if (weatherFactor === "heavy_rain") return 1.35;
@@ -344,11 +332,9 @@ export default function App() {
     return 1.0;
   };
 
-  // Perform operational sequence calculations
   const flowSchedule = useCallback(() => {
     let currentStartDay = 0;
     const multiplier = fetchWeatherDelayMultiplier();
-    const activeRoles = LABOR_PROFILES[laborProfile];
 
     return tasks.map((task) => {
       const start = currentStartDay;
@@ -377,40 +363,11 @@ export default function App() {
         subtasks: task.subtasks || []
       };
     });
-  }, [tasks, weatherFactor, laborProfile]);
+  }, [tasks, weatherFactor, laborProfile, activeRoles]);
 
   const activeFlowTasks = flowSchedule();
   const totalDays = activeFlowTasks.reduce((acc, curr) => acc + curr.adjustedDuration, 0) || 1;
   const headerDays = Array.from({ length: totalDays + 3 }, (_, i) => i);
-
-  // Calculate daily breakdown metrics for the Matrix panel view
-  const calculateManpowerBreakdownPerDay = useCallback(() => {
-    const matrix = {};
-    const roles = LABOR_PROFILES[laborProfile];
-
-    roles.forEach(role => {
-      matrix[role.key] = Array(headerDays.length).fill(0);
-    });
-
-    headerDays.forEach(day => {
-      activeFlowTasks.forEach(task => {
-        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
-          const dayIdx = day - task.startDays;
-          const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
-          if (currentDayLabor) {
-            roles.forEach(role => {
-              const count = parseInt(currentDayLabor[role.key]) || 0;
-              matrix[role.key][day] += count;
-            });
-          }
-        }
-      });
-    });
-
-    return matrix;
-  }, [activeFlowTasks, headerDays, laborProfile]);
-
-  const manpowerBreakdownMatrix = calculateManpowerBreakdownPerDay();
 
   const compileAllProjectAllocations = useCallback(() => {
     const allocations = [];
@@ -534,7 +491,7 @@ export default function App() {
             assetKey: alloc.assetKey,
             assetName,
             conflictProject: other.projectTitle,
-            conflictTaskId: other.taskId,
+            conflictTaskId: other.conflictTaskId || other.taskId,
             conflictTaskName: other.taskName,
             conflictTaskRef: other.taskRef,
             conflictTime: `${other.startTime} - ${other.endTime}`,
@@ -589,7 +546,7 @@ export default function App() {
       return t;
     }));
     playAlertSound();
-    triggerPhoneNotification(`Resolving clash: ${activeFlowTasks.find(x => x.id === taskId)?.task} shifted to afternoon.`);
+    triggerPhoneNotification(`Resolving clash: Shifted afternoon slot for asset on task.`);
     showToast("Allocation moved to afternoon shift successfully.");
   };
 
@@ -612,7 +569,7 @@ export default function App() {
       return t;
     }));
     playAlertSound();
-    triggerPhoneNotification(`Resolving clash: shifted tomorrow. Sequence extended by ${extendAmount}d.`);
+    triggerPhoneNotification(`Resolving clash: Shifted tomorrow. Extends duration by ${extendAmount}d.`);
     showToast(`Allocation shifted to tomorrow. ${extendTask ? 'Sequence duration extended.' : ''}`);
   };
 
@@ -630,7 +587,7 @@ export default function App() {
       return task;
     }));
     playAlertSound();
-    triggerPhoneNotification(`Bulk Update: Tools on Day ${selectedDayOffset + 1} advanced by 3 days.`);
+    triggerPhoneNotification(`Bulk Update: Advanced bookings on Day ${selectedDayOffset + 1} by 3 days.`);
     showToast(`Advanced bookings on Day ${selectedDayOffset + 1} by 3 days.`);
   };
 
@@ -646,60 +603,6 @@ export default function App() {
     }, 12000);
   };
 
-  const forceTriggerFourPMAudit = () => {
-    setSimulatedTime("04:00 PM");
-    const activeTasks = activeFlowTasks.filter(t => t.progress < 100);
-    if (activeTasks.length > 0) {
-      setSelectedAuditTaskId(activeTasks[0].id);
-      setShowFourPMAuditModal(true);
-      playAlertSound();
-      triggerPhoneNotification("🕒 4:00 PM Compliance Audit Triggered.");
-    } else {
-      showToast("All tasks are fully complete. No 4:00 PM audit needed!");
-    }
-  };
-
-  const submitFourPMAuditResponse = (taskId, completed, updatePercentage, rolloverOption) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id === taskId) {
-        let finalProgress = completed ? 100 : Math.max(t.progress || 0, parseInt(updatePercentage) || 0);
-        let finalDuration = t.duration;
-        let finalSubtasks = [...(t.subtasks || [])];
-
-        if (rolloverOption === 'extend-day') {
-          finalDuration += 1;
-        }
-
-        if (completed) {
-          finalSubtasks = finalSubtasks.map(st => ({ ...st, status: 'COMPLETED' }));
-        } else if (rolloverOption === 'subtask-rollover') {
-          const inProgressOnes = finalSubtasks.filter(st => st.status !== 'COMPLETED');
-          inProgressOnes.forEach(st => {
-            finalSubtasks.push({
-              id: `${st.id}-rollover`,
-              name: `[Rollover] ${st.name}`,
-              status: 'IN_PROGRESS',
-              weight: st.weight
-            });
-          });
-        }
-
-        return {
-          ...t,
-          progress: finalProgress,
-          duration: finalDuration,
-          subtasks: finalSubtasks
-        };
-      }
-      return t;
-    }));
-
-    setShowFourPMAuditModal(false);
-    playAlertSound();
-    triggerPhoneNotification(`Audit Signed off: progress set to ${completed ? 100 : updatePercentage}% with ${rolloverOption}.`);
-    showToast("Field progress report submitted to engineering registry.");
-  };
-
   const handleAddSubtask = (taskId) => {
     if (!newSubtaskName.trim()) return;
     setTasks(prev => prev.map(t => {
@@ -711,7 +614,17 @@ export default function App() {
           status: 'IN_PROGRESS',
           weight: parseInt(newSubtaskWeight) || 50
         };
-        return { ...t, subtasks: [...currentSub, nextSub] };
+        const updatedSubtasks = [...currentSub, nextSub];
+        
+        const totalWeight = updatedSubtasks.reduce((sum, s) => sum + s.weight, 0);
+        const completedWeight = updatedSubtasks.reduce((sum, s) => sum + (s.status === 'COMPLETED' ? s.weight : 0), 0);
+        const autoProgress = totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : t.progress;
+
+        return { 
+          ...t, 
+          subtasks: updatedSubtasks,
+          progress: autoProgress
+        };
       }
       return t;
     }));
@@ -743,7 +656,16 @@ export default function App() {
   const handleDeleteSubtask = (taskId, subtaskId) => {
     setTasks(prev => prev.map(t => {
       if (t.id === taskId) {
-        return { ...t, subtasks: (t.subtasks || []).filter(sub => sub.id !== subtaskId) };
+        const filtered = (t.subtasks || []).filter(sub => sub.id !== subtaskId);
+        const totalWeight = filtered.reduce((sum, s) => sum + s.weight, 0);
+        const completedWeight = filtered.reduce((sum, s) => sum + (s.status === 'COMPLETED' ? s.weight : 0), 0);
+        const autoProgress = totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+
+        return { 
+          ...t, 
+          subtasks: filtered,
+          progress: autoProgress
+        };
       }
       return t;
     }));
@@ -1052,12 +974,6 @@ export default function App() {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProjectDropdownOpen(false);
-      }
-      if (weatherDropdownRef.current && !weatherDropdownRef.current.contains(event.target)) {
-        setShowWeatherDropdown(false);
-      }
-      if (assetDropdownRef.current && !assetDropdownRef.current.contains(event.target)) {
-        setShowAssetIconDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -1370,10 +1286,6 @@ export default function App() {
     return AssetIcons.heavy();
   };
 
-  const triggerSystemPrint = () => window.print();
-
-  const activeRoles = LABOR_PROFILES[laborProfile];
-
   const maxManpowerVal = Math.max(
     ...headerDays.map(day => 
       activeFlowTasks.reduce((sum, task) => {
@@ -1559,13 +1471,6 @@ export default function App() {
     }));
   };
 
-  const shareToGroupChat = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('project', activeProjectId);
-    copyToClipboard(url.toString());
-    showToast("Workspace link copied! Share with Engr. Ana.");
-  };
-
   const filteredTasks = activeFlowTasks.filter(t => {
     const searchMatch = t.task.toLowerCase().includes(filterSearchQuery.toLowerCase()) || 
                         t.desc.toLowerCase().includes(filterSearchQuery.toLowerCase()) ||
@@ -1580,26 +1485,26 @@ export default function App() {
     const hasConflict = checkAssetConflict(task);
     
     if (isDarkMode) {
-      if (hasConflict) return 'bg-amber-950/40 border-amber-500/30 hover:bg-amber-950/50';
-      if (isHold) return 'bg-rose-950/30 border-rose-900/40 hover:bg-rose-950/40';
-      if (isApproved) return 'bg-[#152e25] border-emerald-900/40 hover:bg-[#1b3a2e] text-emerald-100';
-      return index % 2 === 0 ? 'bg-[#0f172a] border-slate-800 hover:bg-slate-800/30' : 'bg-[#0b0f19] border-slate-800 hover:bg-slate-800/20';
+      if (hasConflict) return 'bg-amber-950/20 border-amber-500/20 hover:bg-amber-950/30';
+      if (isHold) return 'bg-rose-950/20 border-rose-900/30 hover:bg-rose-950/30';
+      if (isApproved) return 'bg-[#0f2d20]/30 border-emerald-900/30 hover:bg-[#0f2d20]/45 text-emerald-100';
+      return index % 2 === 0 ? 'bg-[#0b101f] border-slate-900 hover:bg-slate-900/10' : 'bg-[#080b14] border-slate-900 hover:bg-[#0b101f]/10';
     } else {
-      if (hasConflict) return 'bg-amber-100 border-amber-600 hover:bg-amber-150';
-      if (isHold) return 'bg-rose-100 border-rose-600 hover:bg-rose-150';
-      if (isApproved) return 'bg-emerald-50 border-emerald-500 hover:bg-emerald-100';
-      return index % 2 === 0 ? 'bg-white border-slate-300 hover:bg-slate-100' : 'bg-slate-100 border-slate-300 hover:bg-slate-150';
+      if (hasConflict) return 'bg-amber-50 border-amber-300 hover:bg-amber-100/60';
+      if (isHold) return 'bg-rose-50 border-rose-300 hover:bg-rose-100/60';
+      if (isApproved) return 'bg-emerald-50/70 border-emerald-300 hover:bg-emerald-50';
+      return index % 2 === 0 ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-slate-50/50 border-slate-202 hover:bg-slate-50';
     }
   };
 
   const getBadgeStyle = (status) => {
     if (status === 'APPROVED') {
-      return 'bg-emerald-600 text-white dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-500 font-extrabold';
+      return 'bg-emerald-600/10 text-emerald-500 border border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-300 font-extrabold';
     }
     if (status === 'HOLD') {
-      return 'bg-rose-600 text-white dark:bg-rose-500/20 dark:text-rose-300 border-rose-500 animate-pulse font-black';
+      return 'bg-rose-650/10 text-rose-500 border border-rose-500/30 dark:bg-rose-500/20 dark:text-rose-300 animate-pulse font-black';
     }
-    return 'bg-blue-600 text-white dark:bg-blue-500/20 dark:text-blue-300 border-blue-500 font-extrabold';
+    return 'bg-blue-600/10 text-blue-500 border border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-300 font-extrabold';
   };
 
   const getThisWeeksForecastTasks = () => {
@@ -1623,97 +1528,8 @@ export default function App() {
 
   const thisWeeksForecastList = getThisWeeksForecastTasks();
 
-  const renderPremiumCalendar = () => {
-    const currentYear = calendarViewDate.getFullYear();
-    const currentMonth = calendarViewDate.getMonth();
-    
-    const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-
-    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-    const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
-    const daysArray = [];
-    for (let i = 0; i < firstDayIndex; i++) {
-      daysArray.push(null);
-    }
-    for (let i = 1; i <= totalDaysInMonth; i++) {
-      daysArray.push(i);
-    }
-
-    const handleMonthChange = (direction) => {
-      setCalendarViewDate(new Date(currentYear, currentMonth + direction, 1));
-    };
-
-    const handleSelectDay = (day) => {
-      if (!day) return;
-      const selectedDate = new Date(currentYear, currentMonth, day);
-      const formatted = selectedDate.toISOString().split('T')[0];
-      setProjectStartDate(formatted);
-      setShowCalendar(false);
-      logActivityToCloud(`Base launch target shifted to ${formatted}`, 'info');
-    };
-
-    return (
-      <div className={`absolute left-0 mt-2 p-4 rounded-3xl shadow-2xl z-50 w-72 border backdrop-blur-xl transition-all ${
-        isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-202 text-slate-900'
-      }`}>
-        <div className="flex items-center justify-between mb-4">
-          <button 
-            onClick={() => handleMonthChange(-1)} 
-            className="p-1.5 rounded-lg hover:bg-slate-202 dark:hover:bg-slate-800 text-xs font-black transition-all"
-          >
-            ←
-          </button>
-          <span className="text-xs font-extrabold uppercase tracking-widest">{monthNames[currentMonth]} {currentYear}</span>
-          <button 
-            onClick={() => handleMonthChange(1)} 
-            className="p-1.5 rounded-lg hover:bg-slate-202 dark:hover:bg-slate-800 text-xs font-black transition-all"
-          >
-            →
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1 text-[9px] font-black uppercase text-center mb-2 text-slate-505">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1 text-xs">
-          {daysArray.map((day, idx) => {
-            const isToday = day && new Date(currentYear, currentMonth, day).toISOString().split('T')[0] === projectStartDate;
-            return (
-              <button
-                key={idx}
-                disabled={!day}
-                onClick={() => handleSelectDay(day)}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold transition-all ${
-                  !day ? 'opacity-0 pointer-events-none' :
-                  isToday ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' :
-                  isDarkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
-                }`}
-              >
-                {day}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  if (view === 'loading') {
-    return (
-      <div className="h-screen w-screen bg-[#0b0f19] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="animate-spin text-blue-500 h-10 w-10"/>
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center">Syncing Citicore Mother DB...</span>
-      </div>
-    );
-  }
-
   return (
-    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#080d1a] text-slate-100' : 'bg-[#f8fafc] text-slate-900'}`}>
+    <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#030712] text-slate-100' : 'bg-[#f8fafc] text-slate-900'}`}>
       
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -1727,7 +1543,6 @@ export default function App() {
           -webkit-overflow-scrolling: touch;
         }
 
-        /* Prevent low contrast values on input pickers (fixes image_ee75e4.png styling issues) */
         input[type="time"]::-webkit-calendar-picker-indicator {
           filter: ${isDarkMode ? 'invert(1)' : 'none'};
           cursor: pointer;
@@ -1738,38 +1553,32 @@ export default function App() {
           appearance: none;
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: ${isDarkMode ? 'rgba(15, 23, 42, 0.3)' : '#cbd5e1'}; }
-        ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#334155' : '#475569'}; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: ${isDarkMode ? 'rgba(15, 23, 42, 0.1)' : '#cbd5e1'}; }
+        ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#334155' : '#94a3b8'}; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
         
         .gantt-grid-light {
           background-image: 
-            linear-gradient(to right, rgba(148, 163, 184, 0.4) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(148, 163, 184, 0.4) 1px, transparent 1px);
+            linear-gradient(to right, rgba(148, 163, 184, 0.25) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
           background-size: 56px 100%, 100% 68px;
         }
         
         .gantt-grid-dark {
           background-image: 
-            linear-gradient(to right, rgba(71, 85, 105, 0.5) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(71, 85, 105, 0.5) 1px, transparent 1px);
+            linear-gradient(to right, rgba(71, 85, 105, 0.15) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(71, 85, 105, 0.15) 1px, transparent 1px);
           background-size: 56px 100%, 100% 68px;
-        }
-
-        @media print {
-          @page { size: A4 landscape; margin: 8mm; }
-          body { background-color: #ffffff !important; color: #000000 !important; }
-          header, button, .print\\:hidden { display: none !important; }
-          #gantt-export-zone { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
         }
       `}} />
 
-      <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-202'}`}>
+      {}
+      <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#090d16] border-slate-900' : 'bg-white border-slate-202'}`}>
         <div className="px-4 py-3 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
           <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10">
             <div className="flex items-center gap-2">
-              <div className="bg-[#1e293b] p-2 rounded-xl border border-slate-700 text-white shrink-0 shadow-lg">
+              <div className="bg-[#111827] p-2 rounded-xl border border-slate-800 text-white shrink-0 shadow-lg">
                 <LayoutDashboard size={18} className="text-blue-500"/>
               </div>
               
@@ -1777,55 +1586,40 @@ export default function App() {
                 <div className="relative flex items-center gap-2">
                   <button
                     onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black select-none ${
-                      isDarkMode 
-                        ? 'bg-[#131c2e] hover:bg-[#1e293b] text-white border-slate-700' 
-                        : 'bg-slate-100 hover:bg-slate-202 text-slate-800 border-slate-303 shadow-sm'
-                    }`}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-[#111827] text-white border-slate-800 hover:bg-[#1a2333] transition-all text-xs font-black select-none"
                   >
-                    <Folder className="text-blue-600 shrink-0" size={13}/>
+                    <Folder className="text-blue-500 shrink-0" size={13}/>
                     <span className="truncate max-w-[120px] sm:max-w-[220px]">
                       {projectList.find(p => p.id === activeProjectId)?.title || 'Switch Project...'}
                     </span>
-                    <ChevronDown className="text-slate-900 dark:text-slate-202 shrink-0" size={12}/>
+                    <ChevronDown className="text-slate-400 shrink-0" size={12}/>
                   </button>
 
-                  {/* Refined Time Picker Indicator & Clock Mode Selector (fixes image_ee7662.png elements) */}
-                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-202 dark:border-slate-800 px-3 py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0">
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111827] border border-slate-202 dark:border-slate-800 px-3 py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0">
                     <Clock size={13} className="text-blue-500" />
-                    <button 
-                      onClick={() => setClockMode(m => m === 'live' ? 'simulated' : 'live')}
-                      className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded transition-all ${
-                        clockMode === 'live' ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-600/10 text-amber-400 border border-amber-500/20'
-                      }`}
-                      title="Click to toggle between real-world clock sync and simulated audit testing"
-                    >
-                      {clockMode === 'live' ? '● Live System' : '⚙ Simulated'}
-                    </button>
-                    <span className="text-slate-900 dark:text-white font-black font-mono">
-                      {clockMode === 'live' ? liveSystemTime : simulatedTime}
+                    <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      ● Live System Time
+                    </span>
+                    <span className="text-slate-800 dark:text-white font-black font-mono">
+                      {liveSystemTime}
                     </span>
                   </div>
 
-                  {/* Multi-Device Live Sync Pulse Indicator badge */}
                   <div className="hidden xl:flex items-center gap-1.5 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase text-blue-600 dark:text-blue-400">
                     <span className="relative flex h-2 w-2 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
                     <Wifi size={11} />
-                    <span>Live-Link Sync Connected</span>
+                    <span>Real-Time Sync Connected</span>
                   </div>
 
-                  {/* Interactive schedules select lists (Fixes contrast issues in image_ee7242.png by changing to dark blue/white themes) */}
                   {isProjectDropdownOpen && (
-                    <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#111827] border-slate-707 text-slate-100' : 'bg-white border-slate-300 text-slate-900'
-                    }`}>
-                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
+                    <div className="absolute left-0 top-11 w-72 rounded-2xl shadow-2xl border p-2 z-50 bg-[#0f172a] border-slate-800 text-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800/60 uppercase mb-2">
                         Schedules Directory
                       </div>
-                      <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
+                      <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
                         {projectList.map((proj) => (
                           <div 
                             key={proj.id}
@@ -1833,14 +1627,14 @@ export default function App() {
                               handleSwitchProject(proj.id);
                               setIsProjectDropdownOpen(false);
                             }}
-                            className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                            className={`flex items-center justify-between p-2 rounded-xl text-xs font-bold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
-                                ? 'bg-blue-600 text-white border border-blue-500 shadow-md font-black' 
-                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-200 border border-transparent' : 'hover:bg-slate-100 text-slate-850 border border-slate-200')
+                                ? 'bg-blue-600 text-white shadow-md font-black' 
+                                : 'hover:bg-slate-800 text-slate-200'
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <Folder className={activeProjectId === proj.id ? 'text-white' : 'text-slate-500'} size={13}/>
+                              <Folder className={activeProjectId === proj.id ? 'text-white' : 'text-slate-400'} size={13}/>
                               <span className="truncate">{proj.title}</span>
                             </div>
                             {proj.id !== 'master-schedule' && (
@@ -1850,13 +1644,26 @@ export default function App() {
                                   handleDeleteProject(proj.id);
                                   setIsProjectDropdownOpen(false);
                                 }}
-                                className={`p-1 rounded transition-colors shrink-0 ${activeProjectId === proj.id ? 'text-white/85 hover:text-red-200' : 'text-slate-500 hover:text-rose-600'}`}
+                                className={`p-1 rounded transition-colors shrink-0 ${activeProjectId === proj.id ? 'text-white/80 hover:text-red-200' : 'text-slate-400 hover:text-rose-500'}`}
                               >
                                 <Trash2 size={12}/>
                               </button>
                             )}
                           </div>
                         ))}
+                      </div>
+
+                      <div className="mt-2 pt-2 border-t border-slate-800/80">
+                        <button
+                          onClick={() => {
+                            setShowCreateProjectModal(true);
+                            setIsProjectDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600/10 hover:bg-blue-600 text-blue-500 hover:text-white border border-blue-500/20 text-xs font-black uppercase transition-all"
+                        >
+                          <Plus size={13} />
+                          <span>Add Project Workspace</span>
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1865,15 +1672,16 @@ export default function App() {
             </div>
           </div>
 
+          {}
           <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0 z-10">
             <div className={`flex items-center gap-1.5 border p-1 rounded-2xl whitespace-nowrap shadow-md bg-opacity-90 ${
-              isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-slate-100 border-slate-200'
+              isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-slate-100 border-slate-202'
             }`}>
               {[
-                { id: 'gantt', label: 'GANTT', icon: BarChart3, color: 'from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/20' },
-                { id: 'weekly', label: 'OUTLOOK', icon: Clock, color: 'from-cyan-500 to-blue-600', shadow: 'shadow-cyan-500/20' },
-                { id: 'qa', label: 'QA', icon: ShieldCheck, color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
-                { id: 'logistics', label: 'LOGISTICS SUMMARY', icon: Truck, color: 'from-purple-600 to-violet-600', shadow: 'shadow-purple-500/20' }
+                { id: 'gantt', label: 'GANTT VIEW', icon: BarChart3, color: 'from-blue-600 to-indigo-650', shadow: 'shadow-blue-500/10' },
+                { id: 'weekly', label: '7-DAY OUTLOOK', icon: Clock, color: 'from-cyan-500 to-blue-600', shadow: 'shadow-cyan-500/10' },
+                { id: 'qa', label: 'QA INSPECTION', icon: ShieldCheck, color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/10' },
+                { id: 'logistics', label: 'LOGISTICS SUMMARY', icon: Truck, color: 'from-purple-600 to-violet-600', shadow: 'shadow-purple-500/10' }
               ].map(tab => {
                 const IconComponent = tab.icon;
                 const isSelected = activePerspective === tab.id;
@@ -1881,13 +1689,13 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => setActivePerspective(tab.id)}
-                    className={`flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 group ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 group ${
                       isSelected 
-                        ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.03]` 
-                        : 'text-slate-500 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
+                        ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.02]` 
+                        : 'text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
-                    <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-404 group-hover:scale-110 transition-transform'}`} />
+                    <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-400 group-hover:scale-105 transition-transform'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -1896,25 +1704,15 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative items-center">
-            {/* Highly discoverable main header actions */}
             <button
               onClick={addTask}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-[11px] px-3.5 py-2 rounded-xl border border-blue-500 uppercase tracking-wider flex items-center gap-1.5 shadow shadow-blue-500/25 transition-all"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs px-4 py-2 rounded-xl border border-blue-500/30 uppercase tracking-wider flex items-center gap-1.5 shadow shadow-blue-500/20 transition-all"
             >
               <Plus size={13} />
               <span>Add Task</span>
             </button>
 
-            <button
-              onClick={forceTriggerFourPMAudit}
-              className="bg-amber-600 hover:bg-amber-500 text-white font-black text-[11px] px-3.5 py-2 rounded-xl border border-amber-500 uppercase tracking-wider flex items-center gap-1.5 shadow"
-              title="Manual testing bypass: skip clock to 4:00 PM to evaluate compliance flows"
-            >
-              <Clock size={13} className="animate-pulse" />
-              <span>Simulate 4:00 PM Audit</span>
-            </button>
-
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-707 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-100'}`}>
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#111827] border-slate-800 text-slate-300 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-50'}`}>
               <Bell size={14}/>
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
@@ -1929,14 +1727,14 @@ export default function App() {
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0 relative">
           
           {phonePushAlert && (
-            <div className="fixed bottom-6 right-6 z-50 w-80 bg-slate-900/95 border-2 border-blue-500 text-white rounded-2xl shadow-2xl p-4 animate-bounce flex items-start gap-3">
+            <div className="fixed bottom-6 right-6 z-50 w-80 bg-[#0f172a] border-2 border-blue-500 text-white rounded-2xl shadow-2xl p-4 flex items-start gap-3">
               <div className="bg-blue-600 p-2.5 rounded-xl"><Phone size={16} className="text-white" /></div>
               <div className="flex-1 text-xs">
-                <span className="font-extrabold uppercase tracking-widest text-[9px] text-blue-404 block">{phonePushAlert.title}</span>
+                <span className="font-extrabold uppercase tracking-widest text-[9px] text-blue-400 block">{phonePushAlert.title}</span>
                 <p className="font-bold text-slate-100 leading-tight mt-1">{phonePushAlert.text}</p>
                 <span className="text-[10px] text-slate-500 block mt-1">{phonePushAlert.time}</span>
               </div>
-              <button onClick={() => setPhonePushAlert(null)} className="p-1 hover:bg-slate-800 rounded text-slate-400"><X size={14}/></button>
+              <button onClick={() => setPhonePushAlert(null)} className="p-1 hover:bg-slate-850 rounded text-slate-400"><X size={14}/></button>
             </div>
           )}
 
@@ -1944,7 +1742,7 @@ export default function App() {
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
               <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
-                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
+                isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202 shadow-sm'
               }`}>
                 <div className="flex items-center gap-3 flex-1 justify-between sm:justify-start">
                   <input 
@@ -1954,8 +1752,8 @@ export default function App() {
                     onChange={(e) => setFilterSearchQuery(e.target.value)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
                       isDarkMode 
-                        ? 'bg-[#0f172a] border-slate-700 text-white focus:border-blue-500' 
-                        : 'bg-slate-100 border-slate-303 text-slate-808 focus:border-blue-600'
+                        ? 'bg-[#111827] border-slate-800 text-white focus:border-blue-500' 
+                        : 'bg-slate-100 border-slate-300 text-slate-800 focus:border-blue-600'
                     }`}
                   />
                   
@@ -1964,7 +1762,7 @@ export default function App() {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                       isGanttSidebarVisible 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                        : 'bg-slate-202 dark:bg-slate-800 border-slate-303 dark:border-slate-707 text-blue-808 dark:text-blue-404 hover:bg-slate-300'
+                        : 'bg-slate-200 dark:bg-[#111827] border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                     style={{ minWidth: '105px' }}
                   >
@@ -1977,7 +1775,7 @@ export default function App() {
                     className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1 shadow-md"
                   >
                     <Plus size={14}/>
-                    <span className="hidden sm:inline">Add Task Parameter</span>
+                    <span className="hidden sm:inline">Add Task</span>
                   </button>
                 </div>
                 
@@ -1989,7 +1787,7 @@ export default function App() {
                       className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-404 hover:text-white' : 'bg-white border-slate-303 text-slate-808 hover:bg-slate-100')
+                          : (isDarkMode ? 'bg-[#111827] border-slate-850 text-slate-400 hover:text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1998,16 +1796,16 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Central Gantt Grid workspace */}
-              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-white border-slate-200'}`}>
+              {}
+              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'}`}>
                 
                 {isGanttSidebarVisible && (
                   <div className={`flex w-[60%] sm:w-[50%] md:w-[40%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'
+                    isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'
                   }`}>
                     
                     <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-black text-[9px] flex items-center uppercase tracking-widest border-b transition-colors ${
-                      isDarkMode ? 'bg-slate-950/60 border-slate-800 text-slate-404' : 'bg-slate-202 border-slate-303 text-slate-805'
+                      isDarkMode ? 'bg-[#080d15] border-slate-900 text-slate-400' : 'bg-slate-100 border-slate-202 text-slate-800'
                     }`}>
                       <span className="w-8 text-center font-black">Ref</span>
                       <span className="flex-grow px-2 truncate font-black">Work Description</span>
@@ -2029,48 +1827,49 @@ export default function App() {
                           }}
                           className={`h-[68px] min-h-[68px] max-h-[68px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-700 dark:text-blue-404">
+                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-600 dark:text-blue-400">
                             {task.ref}
                           </div>
                           
-                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}>
+                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="font-black text-[8px] text-blue-700 dark:text-blue-404 uppercase tracking-wider block truncate">
+                              <span className="font-black text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-wider block truncate text-left">
                                 {task.desc}
                               </span>
-                              <span className={`px-1 rounded text-[7px] font-black uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
+                              <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
                                 {task.qaStatus}
                               </span>
                             </div>
-                            <span className={`font-black text-xs truncate leading-tight mt-1 ${isDarkMode ? 'text-slate-100' : 'text-slate-805'}`}>
+                            <span className={`font-bold text-xs truncate leading-tight mt-1 text-left ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
                               {task.task}
                             </span>
                             {task.subtasks && task.subtasks.length > 0 && (
-                              <span className="text-[9px] text-slate-400 font-bold block mt-0.5">
+                              <span className="text-[9px] text-slate-404 font-bold block mt-0.5 text-left">
                                 📊 {task.subtasks.filter(s=>s.status==='COMPLETED').length}/{task.subtasks.length} Subtasks Done
                               </span>
                             )}
                           </div>
                           
-                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40 text-slate-100' : 'border-slate-303 text-slate-805'}`}>
+                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-900 text-slate-100' : 'border-slate-202 text-slate-800'}`}>
                             {task.duration}d
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="h-[64px] p-2 flex items-center border-t border-slate-303 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-707 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-808 hover:border-blue-500 transition-colors">
+                    <div className="h-[64px] p-2 flex items-center border-t border-slate-202 dark:border-slate-900 sticky bottom-0 z-20 shrink-0 bg-transparent">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
                   </div>
                 )}
 
+                {}
                 <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
                   
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${
-                    isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-202 border-slate-303'
+                    isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-slate-100 border-slate-202'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
@@ -2086,14 +1885,14 @@ export default function App() {
                       return (
                         <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
                           isDarkMode 
-                            ? `border-slate-800/60 ${isSatSun ? 'bg-slate-950/40' : ''}` 
-                            : `border-slate-303 ${isSatSun ? 'bg-slate-202' : ''}`
+                            ? `border-slate-900/60 ${isSatSun ? 'bg-slate-950/20' : ''}` 
+                            : `border-slate-202 ${isSatSun ? 'bg-slate-202' : ''}`
                         }`}>
-                          <span className="text-[9px] font-black leading-tight text-slate-805 dark:text-slate-303">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-500 dark:text-slate-404 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                          <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
+                          <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
                           
                           {activeAllocationsOnDay.length > 0 && (
-                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-600/25 px-1 py-0.5 rounded-full border border-blue-500/20">
+                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-500/10 px-1 py-0.5 rounded-full border border-blue-500/20">
                               {activeAllocationsOnDay.map((alloc, idx) => (
                                 <span key={idx} title={`${alloc.assetKey} (${alloc.startTime}-${alloc.endTime})`} className="text-[7.5px] leading-none shrink-0">
                                   {customAssets.find(a => a.key === alloc.assetKey)?.iconPreset === 'case' ? '🧳' : 
@@ -2125,7 +1924,7 @@ export default function App() {
                       return (
                         <div 
                           key={task.id} 
-                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}
+                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}
                           style={{ width: `${headerDays.length * 56}px` }}
                         >
                           {headerDays.map(day => {
@@ -2138,7 +1937,7 @@ export default function App() {
                               return (
                                 <div 
                                   key={`bg-day-${day}`}
-                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10 dark:bg-blue-404/5 dark:border-blue-404/10"
+                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10"
                                   style={{ left: `${day * 56}px` }}
                                 />
                               );
@@ -2151,7 +1950,7 @@ export default function App() {
                               setActiveTaskModal(task.id);
                               setSelectedDayIndex(0);
                             }}
-                            className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.025] hover:shadow-xl z-10 ${
+                            className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.01] hover:shadow-xl z-10 ${
                               conflict 
                                 ? 'from-amber-600 to-amber-700 border-amber-500 text-white shadow-amber-500/10'
                                 : task.qaStatus === 'HOLD' 
@@ -2173,9 +1972,8 @@ export default function App() {
                     })}
                   </div>
 
-                  {/* RESTORED & COMPREHENSIVELY ENHANCED MANPOWER LOADING HISTOGRAM HIST */}
                   <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
-                    isDarkMode ? 'bg-[#0b0f19] border-slate-800' : 'bg-slate-202 border-slate-303'
+                    isDarkMode ? 'bg-[#030712] border-slate-900' : 'bg-slate-100 border-slate-202'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     <div className="absolute left-3 top-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2 py-1 rounded-lg text-[9px] font-black uppercase text-blue-400">
@@ -2198,14 +1996,14 @@ export default function App() {
                       }, 0);
                       const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
                       return (
-                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}>
+                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
                           {dayManpower > 0 && (
                             <div 
-                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-red-500 animate-pulse' : 'bg-blue-600'}`}
+                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-500 animate-pulse' : 'bg-blue-600'}`}
                               style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
-                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-700 dark:text-rose-404' : 'text-slate-800 dark:text-slate-404'}`}>
+                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-404'}`}>
                             {dayManpower > 0 ? dayManpower : '-'}
                           </span>
                         </div>
@@ -2220,98 +2018,23 @@ export default function App() {
           )}
 
           {}
-          {/* PERSISTENT MANPOWER ALLOCATION MATRIX SHEET (RESTORES DETAILED VALUES BY ROLE) */}
-          {activePerspective === 'gantt' && (
-            <div className={`border rounded-3xl overflow-hidden transition-all duration-300 relative ${
-              isDarkMode ? 'bg-[#131c2e]/90 border-slate-800' : 'bg-white border-slate-222 shadow-md'
-            }`}>
-              <div 
-                onClick={() => setIsManpowerMatrixExpanded(!isManpowerMatrixExpanded)}
-                className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 select-none"
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="text-blue-500" size={15} />
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-800 dark:text-blue-400">
-                    Interactive Daily Manpower Allocation Matrix ({laborProfile.toUpperCase()} Profile)
-                  </h4>
-                </div>
-                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                  <button 
-                    onClick={() => setLaborProfile(p => p === 'electrical' ? 'civil' : 'electrical')}
-                    className="text-[9px] font-black uppercase px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow"
-                  >
-                    Switch to {laborProfile === 'electrical' ? 'Civil' : 'Electrical'}
-                  </button>
-                  <button 
-                    onClick={() => setIsManpowerMatrixExpanded(!isManpowerMatrixExpanded)}
-                    className="p-1 text-slate-400 hover:text-white"
-                  >
-                    {isManpowerMatrixExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                  </button>
-                </div>
-              </div>
-
-              {isManpowerMatrixExpanded && (
-                <div className="border-t border-slate-800/80 overflow-x-auto scrollbar-thin">
-                  <div className="min-w-max p-4" style={{ width: `${(headerDays.length * 56) + 180}px` }}>
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-slate-800 text-[10px] uppercase font-black tracking-widest text-slate-500">
-                          <th className="w-[180px] pb-2 font-black">Labor Category Role</th>
-                          {headerDays.map(day => (
-                            <th key={`mh-${day}`} className="w-[56px] text-center pb-2 font-black font-mono">Day {day + 1}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activeRoles.map(role => (
-                          <tr key={role.key} className="border-b border-slate-800/40 hover:bg-slate-900/20">
-                            <td className="py-2 flex items-center gap-2 font-bold text-slate-300">
-                              <span className="text-sm">{role.icon}</span>
-                              <span className="font-extrabold text-[11px]">{role.label}</span>
-                              <span className="text-[9px] text-slate-500 font-normal">({role.fullName})</span>
-                            </td>
-                            {headerDays.map(day => {
-                              const count = manpowerBreakdownMatrix[role.key]?.[day] || 0;
-                              return (
-                                <td key={`mc-${role.key}-${day}`} className="py-2 text-center">
-                                  <span className={`px-1.5 py-0.5 rounded font-mono font-black text-[10px] ${
-                                    count > 0 
-                                      ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
-                                      : 'text-slate-600'
-                                  }`}>
-                                    {count > 0 ? count : '-'}
-                                  </span>
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
-                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
+                isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'
               }`}>
-                <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-700 dark:text-blue-404">
+                <div className="text-left">
+                  <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-500">
                     <CalendarDays size={16} /> 7-Day Cross-Project Outlook Forecast
                   </h3>
                   <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
                 </div>
                 
-                <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-202 border-slate-303'}`}>
+                <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-slate-100 border-slate-300'}`}>
                   <button
                     onClick={() => setActiveForecastFilter('this-week')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-505 dark:text-slate-404 hover:text-slate-202'
+                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-404 hover:text-white'
                     }`}
                   >
                     📅 This Week
@@ -2319,7 +2042,7 @@ export default function App() {
                   <button
                     onClick={() => setActiveForecastFilter('all-active')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-505 dark:text-slate-404 hover:text-slate-202'
+                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-404 hover:text-white'
                     }`}
                   >
                     ⚠️ All Unfinished Tasks
@@ -2328,10 +2051,10 @@ export default function App() {
               </div>
 
               {thisWeeksForecastList.length === 0 ? (
-                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-400 dark:border-slate-800 text-center">
-                  <CalendarDays size={40} className="text-slate-505 mb-2"/>
-                  <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-400">No Operations Scheduled Inside this Forecast cycle</h4>
-                  <p className="text-xs text-slate-505 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
+                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-800 text-center">
+                  <CalendarDays size={40} className="text-slate-600 mb-2"/>
+                  <h4 className="text-xs font-black uppercase text-slate-404">No Operations Scheduled Inside this Forecast cycle</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
                 </div>
               ) : (
                 <div className="flex-grow overflow-y-auto pr-1">
@@ -2358,16 +2081,16 @@ export default function App() {
                             }
                           }}
                           className={`p-6 rounded-3xl border shadow-sm cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between gap-4 ${
-                            isDarkMode ? 'bg-[#131c2e] border-slate-800 hover:border-slate-707' : 'bg-white border-slate-303 hover:border-slate-400 shadow-md'
+                            isDarkMode ? 'bg-[#0a0f18] border-slate-900 hover:border-slate-800' : 'bg-white border-slate-202 hover:border-slate-300 shadow-md'
                           }`}
                         >
                           <div>
-                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
-                              <div className="min-w-0 flex-1">
-                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-404 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
+                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
+                              <div className="min-w-0 flex-1 text-left">
+                                <span className="bg-blue-600/15 text-blue-500 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName}
                                 </span>
-                                <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-805'}`}>
+                                <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                                   {item.task}
                                 </h4>
                               </div>
@@ -2377,35 +2100,35 @@ export default function App() {
                             </div>
 
                             <div className="space-y-2 mt-4 text-xs font-bold text-slate-404">
-                              <div className="flex justify-between items-center text-[10px] bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                              <div className="flex justify-between items-center text-[10px] bg-[#111827] p-2 rounded-lg border border-slate-800/80">
                                 <span className="flex items-center gap-1 uppercase tracking-wide text-slate-404"><Clock size={11} className="text-amber-500" /> DATES</span>
                                 <span className="font-mono text-white text-[11px] font-black">
                                   {formattedStart} - {formattedEnd}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Truck size={11}/> Primary Asset</span>
-                                <span className="font-black text-blue-808 dark:text-blue-404">{item.assignedAsset || 'None'}</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 13H5v6h14v-6zM5 11h14V5H5v6z"/></svg> Primary Asset</span>
+                                <span className="font-black text-blue-500">{item.assignedAsset || 'None'}</span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Users size={11}/> Average Workforce</span>
-                                <span className="font-black text-slate-850 dark:text-slate-303">{item.totalManpower || 0} Workers</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Users size={11}/> Average Workforce</span>
+                                <span className="font-black text-slate-300">{item.totalManpower || 0} Workers</span>
                               </div>
                             </div>
                           </div>
 
-                          <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
+                          <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-900' : 'border-slate-202'}`}>
                             <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-404">
                               <span>PROGRESS COMPLETE</span>
-                              <span className="text-slate-850 dark:text-slate-202">{item.progress || 0}%</span>
+                              <span className="text-slate-300">{item.progress || 0}%</span>
                             </div>
-                            <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-slate-300'}`}>
+                            <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-[#111827]' : 'bg-slate-202'}`}>
                               <div className="h-full bg-blue-600 rounded-full" style={{width: `${item.progress || 0}%`}}></div>
                             </div>
                           </div>
 
                           {isOverdue && (
-                            <div className="mt-1 p-2 bg-rose-500/15 border border-rose-600 rounded-xl text-rose-505 text-[10px] font-black flex items-center gap-1.5 animate-pulse">
+                            <div className="mt-1 p-2 bg-rose-500/15 border border-rose-600 rounded-xl text-rose-500 text-[10px] font-black flex items-center gap-1.5 animate-pulse">
                               <AlertTriangle size={12} />
                               <span>OVERDUE BY COMPLIANCE BUFFER LIMITS</span>
                             </div>
@@ -2419,16 +2142,17 @@ export default function App() {
             </div>
           )}
 
+          {}
           {activePerspective === 'qa' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex items-center justify-between ${
-                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
+                isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'
               }`}>
-                <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase text-emerald-700 dark:text-emerald-404 flex items-center gap-1.5">
+                <div className="text-left">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-emerald-500 flex items-center gap-1.5">
                     <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
                   </h3>
-                  <p className="text-xs text-slate-505 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
+                  <p className="text-xs text-slate-400 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
               </div>
 
@@ -2441,19 +2165,19 @@ export default function App() {
                       setSelectedDayIndex(0);
                     }}
                     className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-202' : 'bg-white border-slate-303 hover:border-slate-500 shadow-sm'
+                      isDarkMode ? 'bg-[#0a0f18] border-slate-900 hover:border-slate-800' : 'bg-white border-slate-202 hover:border-slate-300 shadow-sm'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="font-black font-mono text-xs text-blue-600 dark:text-blue-500">{task.ref}</span>
-                      <div className="min-w-0">
-                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-404 block"> {task.desc}</span>
-                        <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-805'}`}>{task.task}</span>
+                      <span className="font-black font-mono text-xs text-blue-500">{task.ref}</span>
+                      <div className="min-w-0 text-left">
+                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-400 block"> {task.desc}</span>
+                        <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{task.task}</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-black text-slate-505 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className="text-xs font-black text-slate-404 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
                       <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
@@ -2464,13 +2188,14 @@ export default function App() {
             </div>
           )}
 
+          {}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col lg:flex-row lg:items-center justify-between gap-4 ${
-                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
+                isDarkMode ? 'bg-[#0a0f18] border-slate-900' : 'bg-white border-slate-202'
               }`}>
-                <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase text-purple-700 dark:text-purple-404 flex items-center gap-1.5">
+                <div className="text-left">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-purple-500 flex items-center gap-1.5">
                     <Truck size={16}/> Daily Equipment Dispatch Ledger
                   </h3>
                   <p className="text-xs text-slate-400 mt-1">Review granular tool allocations daily. Reschedule bookings easily or shift day schedules forward.</p>
@@ -2478,7 +2203,7 @@ export default function App() {
                 <div className="flex gap-2 shrink-0">
                   <button
                     onClick={() => setIsAssetModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-505 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
                   >
                     <Plus size={14}/> Add Asset Class
                   </button>
@@ -2486,8 +2211,9 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-grow overflow-hidden min-h-0">
-                <div className="xl:col-span-4 bg-slate-900/50 rounded-2xl border border-slate-800 p-4 flex flex-col overflow-hidden">
-                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-3">Timeline Days Summary</h4>
+                
+                <div className="xl:col-span-4 bg-[#0a0f18] rounded-2xl border border-slate-900 p-4 flex flex-col overflow-hidden">
+                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-3 text-left">Timeline Days Summary</h4>
                   <div className="space-y-1.5 overflow-y-auto flex-grow pr-1">
                     {Array.from({ length: 14 }).map((_, idx) => {
                       const dayBookings = allAllocations.filter(a => {
@@ -2507,13 +2233,13 @@ export default function App() {
                           className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all ${
                             selectedLedgerDay === idx
                               ? 'bg-blue-600 border-blue-500 text-white shadow'
-                              : 'bg-slate-950/40 border-slate-800 hover:bg-slate-800 text-slate-200'
+                              : 'bg-slate-900/50 border-slate-850 hover:bg-[#111827] text-slate-200'
                           }`}
                         >
                           <div className="text-xs">
                             <span className="font-extrabold block">Day {idx + 1} ({formattedDate})</span>
                           </div>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${selectedLedgerDay === idx ? 'bg-blue-700 text-white' : 'bg-slate-900 text-slate-300'}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${selectedLedgerDay === idx ? 'bg-blue-700 text-white' : 'bg-slate-950 text-slate-300'}`}>
                             {dayBookings.length} Bookings
                           </span>
                         </button>
@@ -2522,15 +2248,15 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="xl:col-span-8 bg-[#131c2e]/40 rounded-2xl border border-slate-800 p-4 flex flex-col overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4 shrink-0">
-                    <div>
+                <div className="xl:col-span-8 bg-[#0a0f18] rounded-2xl border border-slate-900 p-4 flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-slate-900 pb-3 mb-4 shrink-0">
+                    <div className="text-left">
                       <h4 className="text-xs font-black text-slate-100 uppercase">Day {selectedLedgerDay + 1} Dispatch Schedule</h4>
                       <p className="text-[10px] text-slate-400">Manage conflicting tools scheduled on this exact index.</p>
                     </div>
                     <button
                       onClick={() => advanceAllLedgerToolsBy3Days(selectedLedgerDay)}
-                      className="bg-indigo-600/15 border border-indigo-500/25 hover:bg-indigo-600 text-indigo-300 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1"
+                      className="bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600 text-indigo-400 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 transition-all"
                     >
                       <RefreshCw size={11} />
                       <span>⏩ Advance All on Day {selectedLedgerDay + 1} by 3 Days</span>
@@ -2547,8 +2273,8 @@ export default function App() {
                       if (dayBookings.length === 0) {
                         return (
                           <div className="h-full flex flex-col items-center justify-center text-center opacity-65 p-8">
-                            <Truck size={32} className="text-slate-500 mb-2" />
-                            <p className="text-xs font-black text-slate-400">No tools scheduled on this date.</p>
+                            <Truck size={32} className="text-slate-600 mb-2" />
+                            <p className="text-xs font-black text-slate-404">No tools scheduled on this date.</p>
                           </div>
                         );
                       }
@@ -2556,17 +2282,17 @@ export default function App() {
                       return dayBookings.map((alloc, idx) => {
                         const conflict = checkLogisticalConflictForAllocation(alloc);
                         return (
-                          <div key={idx} className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                          <div key={idx} className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 text-left ${
                             conflict 
-                              ? 'bg-amber-950/20 border-amber-600' 
-                              : 'bg-slate-900 border-slate-800'
+                              ? 'bg-amber-950/10 border-amber-600/50' 
+                              : 'bg-[#111827] border-slate-900'
                           }`}>
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-mono text-xs font-black text-blue-404">[{alloc.assetKey}]</span>
                                 <span className="text-xs font-bold text-slate-100">{alloc.taskName} ({alloc.projectTitle})</span>
                               </div>
-                              <span className="text-[10px] text-slate-404 block mt-1">🕒 Planned Slot: {alloc.startTime} - {alloc.endTime}</span>
+                              <span className="text-[10px] text-slate-400 block mt-1">🕒 Planned Slot: {alloc.startTime} - {alloc.endTime}</span>
                               
                               {conflict && (
                                 <span className="text-[9px] bg-red-500/15 text-red-500 px-2 py-0.5 rounded font-bold inline-block mt-2">
@@ -2585,7 +2311,7 @@ export default function App() {
                                 </button>
                                 <button
                                   onClick={() => handleRescheduleTomorrow(alloc.taskId, alloc.id, true)}
-                                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
+                                  className="bg-slate-850 hover:bg-slate-800 text-slate-200 text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
                                 >
                                   Shift Tomorrow + Extend
                                 </button>
@@ -2603,7 +2329,7 @@ export default function App() {
 
           {}
           <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
-            isDarkMode ? 'bg-[#131c2e]/90 border-blue-500/20' : 'bg-blue-50 border-blue-200'
+            isDarkMode ? 'bg-[#0a0f18] border-blue-500/10' : 'bg-blue-50/50 border-blue-202'
           }`}>
             <div 
               onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
@@ -2627,7 +2353,7 @@ export default function App() {
                       value={alertCenterAssetFilter} 
                       onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
                       className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
-                        isDarkMode ? 'bg-[#0f172a] border-slate-707 text-blue-404' : 'bg-white border-slate-303 text-blue-808 shadow-sm'
+                        isDarkMode ? 'bg-[#111827] border-slate-850 text-blue-400' : 'bg-white border-slate-300 text-blue-800 shadow-sm'
                       }`}
                     >
                       <option value="ALL">ALL VEHICLES / TOOLS</option>
@@ -2635,7 +2361,7 @@ export default function App() {
                         <option key={a.key} value={a.key}>{a.key} - {a.label}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-505">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
                       <ChevronDown size={11} />
                     </div>
                   </div>
@@ -2643,7 +2369,7 @@ export default function App() {
 
                 <button 
                   onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
-                  className={`p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-404`}
+                  className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400"
                 >
                   {isAlertCenterExpanded ? <ChevronDown size={15} /> : <ChevronUp size={15} />}
                 </button>
@@ -2651,13 +2377,13 @@ export default function App() {
             </div>
 
             {isAlertCenterExpanded && (
-              <div className="p-5 border-t border-slate-700/10 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-top-1 duration-200">
-                <div className="space-y-2.5">
+              <div className="p-5 border-t border-slate-700/10 dark:border-slate-900/60 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-top-1 duration-200">
+                <div className="space-y-2.5 text-left">
                   <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Active Dispatches Today
                   </span>
                   {todayAllocations.length === 0 ? (
-                    <p className="text-xs text-slate-505 italic">No tool dispatches scheduled for today.</p>
+                    <p className="text-xs text-slate-500 italic">No tool dispatches scheduled for today.</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {todayAllocations.map((alloc, idx) => {
@@ -2667,7 +2393,7 @@ export default function App() {
                             key={idx} 
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center justify-between w-full border ${
                               conflict 
-                                ? 'bg-red-500/10 border border-red-500 text-red-500 animate-pulse' 
+                                ? 'bg-red-500/10 border border-red-500 text-red-500' 
                                 : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
                             }`}
                           >
@@ -2686,7 +2412,7 @@ export default function App() {
                                 </button>
                                 <button
                                   onClick={() => handleRescheduleTomorrow(alloc.taskId, alloc.id, true)}
-                                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[9px] px-2 py-0.5 rounded uppercase"
+                                  className="bg-[#1a2333] hover:bg-slate-700 text-slate-200 text-[9px] px-2 py-0.5 rounded uppercase"
                                 >
                                   tomorrow
                                 </button>
@@ -2699,12 +2425,12 @@ export default function App() {
                   )}
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 text-left">
                   <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                     <Clock size={11}/> Scheduled Mobilizations Tomorrow
                   </span>
                   {tomorrowAllocations.length === 0 ? (
-                    <p className="text-xs text-slate-505 italic">No tool dispatches scheduled for tomorrow.</p>
+                    <p className="text-xs text-slate-500 italic">No tool dispatches scheduled for tomorrow.</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {tomorrowAllocations.map((alloc, idx) => {
@@ -2748,12 +2474,12 @@ export default function App() {
             <div className={`rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border flex flex-col max-h-[92vh] transition-all duration-300 ${
               isDarkMode 
                 ? 'bg-[#0f172a]/95 border-slate-800 text-white' 
-                : 'bg-white border-slate-303 text-slate-900'
+                : 'bg-white border-slate-300 text-slate-900'
             }`}>
               
               <div className={`p-5 border-b flex justify-between items-center ${
                 isDarkMode 
-                  ? 'border-slate-800 bg-[#1e293b]/50' 
+                  ? 'border-slate-800 bg-[#111827]' 
                   : 'border-slate-202 bg-slate-100'
               }`}>
                 <div className="text-left">
@@ -2773,7 +2499,7 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
                   className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-303 hover:bg-slate-202 text-slate-700'
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-404' : 'border-slate-300 hover:bg-slate-202 text-slate-700'
                   }`}
                 >
                   <X size={16}/>
@@ -2782,7 +2508,7 @@ export default function App() {
               
               <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
                 
-                <div className={`p-5 rounded-2xl border ${
+                <div className={`p-5 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-slate-800">
@@ -2794,7 +2520,7 @@ export default function App() {
                         triggerTaskRemove(currentTaskEditing.id);
                         setActiveTaskModal(null);
                       }}
-                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-505 hover:text-rose-400 transition-colors"
+                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-rose-400 transition-colors"
                     >
                       <Trash2 size={12} />
                       <span>Delete Sequence</span>
@@ -2809,7 +2535,7 @@ export default function App() {
                         value={currentTaskEditing.ref || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'ref', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2820,7 +2546,7 @@ export default function App() {
                         value={currentTaskEditing.desc || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'desc', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2834,7 +2560,7 @@ export default function App() {
                         value={currentTaskEditing.task || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'task', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
+                          isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                         }`}
                       />
                     </div>
@@ -2844,7 +2570,7 @@ export default function App() {
                         value={currentTaskEditing.qaStatus || 'PENDING'} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'qaStatus', e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707' : 'bg-white text-slate-900 border-slate-303'
+                          isDarkMode ? 'bg-[#111827] text-white border-slate-800' : 'bg-white text-slate-900 border-slate-300'
                         }`}
                       >
                         <option value="PENDING">PENDING</option>
@@ -2866,7 +2592,7 @@ export default function App() {
                           setSelectedDayIndex(0);
                         }}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-303'
+                          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-300'
                         }`}
                       />
                     </div>
@@ -2882,7 +2608,97 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`p-5 rounded-2xl border ${
+                {}
+                <div className={`p-5 rounded-2xl border text-left ${
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                }`}>
+                  <div className="border-b pb-2 dark:border-slate-800 mb-4">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5">
+                      <Users size={14} className="text-blue-500" />
+                      <span>Granular Day-by-Day Crew Allocations</span>
+                    </h4>
+                    <p className="text-[10px] text-slate-404 mt-0.5">Stagger and balance work loads by adjusting daily headcount and naming crew members.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                      {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setSelectedDayIndex(idx)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border shrink-0 ${
+                            selectedDayIndex === idx
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                              : 'bg-slate-900 border-slate-800 text-slate-404 hover:bg-slate-800 hover:text-white'
+                          }`}
+                        >
+                          Day {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {activeRoles.map(role => {
+                        const count = parseInt(dayLaborObj?.[role.key]) || 0;
+                        return (
+                          <div key={role.key} className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800 flex flex-col justify-between gap-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">{role.icon}</span>
+                                <div>
+                                  <span className="font-extrabold text-xs text-white block">{role.label}</span>
+                                  <span className="text-[9px] text-slate-404 font-bold block uppercase">{role.fullName}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1, selectedDayIndex)}
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-404 hover:text-white transition-all"
+                                >
+                                  -
+                                </button>
+                                <span className="w-8 text-center text-xs font-black font-mono text-white">
+                                  {count}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-404 hover:text-white transition-all"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            {count > 0 && (
+                              <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+                                <span className="text-[8.5px] font-black uppercase tracking-wider text-slate-500 block">Crew Assignments (Day {selectedDayIndex + 1})</span>
+                                {Array.from({ length: count }).map((_, workerIdx) => {
+                                  const assignedName = dayLaborObj?.assigned?.[role.key]?.[workerIdx] || '';
+                                  return (
+                                    <input
+                                      key={workerIdx}
+                                      type="text"
+                                      placeholder={`Assign name for ${role.fullName} #${workerIdx + 1}`}
+                                      value={assignedName}
+                                      onChange={(e) => assignWorkerName(currentTaskEditing.id, role.key, workerIdx, e.target.value, selectedDayIndex)}
+                                      className="w-full px-2.5 py-1 text-[10.5px] font-bold border rounded-lg bg-[#070a12] border-slate-800 text-slate-200 focus:border-blue-500 outline-none transition-colors"
+                                    />
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {}
+                <div className={`p-5 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5 mb-3">
@@ -2892,7 +2708,7 @@ export default function App() {
 
                   <div className="flex gap-2.5 items-end mb-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
                     <div className="flex-1">
-                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Subtask Name</label>
+                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Subtask Name</label>
                       <input 
                         type="text" 
                         placeholder="e.g. Bend rebar stirrups / Check spacing"
@@ -2902,7 +2718,7 @@ export default function App() {
                       />
                     </div>
                     <div className="w-24">
-                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Weight (%)</label>
+                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Weight (%)</label>
                       <input 
                         type="number" min="10" max="100"
                         value={newSubtaskWeight} 
@@ -2912,7 +2728,7 @@ export default function App() {
                     </div>
                     <button 
                       onClick={() => handleAddSubtask(currentTaskEditing.id)}
-                      className="bg-blue-600 hover:bg-blue-505 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider"
+                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
                     >
                       Add Sub
                     </button>
@@ -2926,7 +2742,7 @@ export default function App() {
                             type="checkbox" 
                             checked={sub.status === 'COMPLETED'} 
                             onChange={() => handleToggleSubtaskStatus(currentTaskEditing.id, sub.id)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-700 bg-slate-950 rounded cursor-pointer"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-750 bg-slate-950 rounded cursor-pointer"
                           />
                           <span className={`text-xs font-bold ${sub.status === 'COMPLETED' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                             {sub.name}
@@ -2937,7 +2753,7 @@ export default function App() {
                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${sub.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                             {sub.status}
                           </span>
-                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-400 hover:text-rose-500">
+                          <button onClick={() => handleDeleteSubtask(currentTaskEditing.id, sub.id)} className="text-slate-404 hover:text-rose-500">
                             <X size={14}/>
                           </button>
                         </div>
@@ -2946,8 +2762,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Granular Tool Dispatches scheduler inputs (Fixes visual bugs in image_ee75e4.png by replacing with custom premium pickers) */}
-                <div className={`p-5 rounded-2xl border ${
+                {}
+                <div className={`p-5 rounded-2xl border text-left ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <div 
@@ -2956,7 +2772,7 @@ export default function App() {
                   >
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5">
                       <Truck size={14} className="text-blue-500" />
-                      <span>Granular Tool Dispatches (Rescheduling resolution panel)</span>
+                      <span>Granular Tool Dispatches (Conflict resolution panel)</span>
                     </h4>
                     <div className="flex items-center gap-2">
                       <span className="text-[9px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded font-black">
@@ -2968,7 +2784,7 @@ export default function App() {
 
                   {isBookToolExpanded && (
                     <div className="p-3.5 bg-slate-100 dark:bg-slate-900 border rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
-                      <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
+                      <span className="text-[9px] font-bold text-slate-500 dark:text-slate-404 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
                       <form onSubmit={(e) => {
                         e.preventDefault();
                         const formData = new FormData(e.currentTarget);
@@ -2981,40 +2797,39 @@ export default function App() {
                         );
                       }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
                         <div>
-                          <label className="block text-[8px] font-black text-slate-400 uppercase mb-1">Active Day</label>
-                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Active Day</label>
+                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
                             {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
                               <option key={idx} value={idx}>Day {idx + 1}</option>
                             ))}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Tool / Vehicle</label>
-                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Tool / Vehicle</label>
+                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
                             {customAssets.map(a => (
                               <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
                             ))}
                           </select>
                         </div>
                         
-                        {/* High fidelity input layouts (cleans up image_ee75e4.png browser-native visual elements) */}
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Start Time</label>
                           <input 
                             name="startTime" 
                             type="time" 
                             defaultValue="08:00" 
-                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono outline-none shadow-sm" 
+                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
                             required 
                           />
                         </div>
                         <div>
-                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">End Time</label>
                           <input 
                             name="endTime" 
                             type="time" 
                             defaultValue="17:00" 
-                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono outline-none shadow-sm" 
+                            className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono outline-none shadow-sm" 
                             required 
                           />
                         </div>
@@ -3032,7 +2847,7 @@ export default function App() {
                         <div key={i} className={`p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
                           conflict 
                             ? 'bg-rose-500/10 border-rose-500 text-rose-800 dark:text-rose-200' 
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-808 dark:text-slate-100'
+                            : 'bg-white dark:bg-slate-900 border-slate-202 dark:border-slate-800 text-slate-800 dark:text-slate-100'
                         }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -3042,7 +2857,7 @@ export default function App() {
                             <button 
                               type="button" 
                               onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
-                              className="text-slate-400 hover:text-rose-600 p-1"
+                              className="text-slate-404 hover:text-rose-500 p-1"
                             >
                               <X size={14} />
                             </button>
@@ -3085,82 +2900,14 @@ export default function App() {
       })()}
 
       {}
-      {showFourPMAuditModal && (() => {
-        const auditTask = activeFlowTasks.find(t => t.id === selectedAuditTaskId);
-        if (!auditTask) return null;
-
-        return (
-          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 max-w-lg w-full animate-bounce-short">
-              <div className="flex justify-between items-start mb-4 border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 text-amber-500">
-                  <Clock className="animate-pulse" size={18} />
-                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-100">🕒 4:00 PM Daily Progress Audit</h3>
-                </div>
-                <button onClick={() => setShowFourPMAuditModal(false)} className="text-slate-400 hover:text-white"><X size={16}/></button>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  It is now past 4:00 PM. Site Engineers must verify field completions.
-                  Please update verified stats for:
-                </p>
-
-                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
-                  <span className="text-[10px] font-mono text-blue-404 font-extrabold">{auditTask.ref} - {auditTask.desc}</span>
-                  <h4 className="text-sm font-black text-white mt-1">{auditTask.task}</h4>
-                </div>
-
-                {auditTask.subtasks && auditTask.subtasks.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] font-black text-slate-400 block uppercase tracking-wide">Category Sub-tasks</span>
-                    {auditTask.subtasks.map(st => (
-                      <div key={st.id} className="text-[11px] flex justify-between bg-slate-950/40 p-2 rounded border border-slate-800">
-                        <span className="text-slate-300 font-semibold">{st.name}</span>
-                        <span className="text-amber-500 font-extrabold">{st.status}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="space-y-3 pt-3 border-t border-slate-800">
-                  <span className="text-[10px] font-black text-slate-404 block uppercase">Log Audit Actions</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => submitFourPMAuditResponse(auditTask.id, true, 100, 'none')}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors shadow-md shadow-emerald-500/20"
-                    >
-                      ✅ All Done Today
-                    </button>
-                    <button
-                      onClick={() => submitFourPMAuditResponse(auditTask.id, false, 80, 'extend-day')}
-                      className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors shadow-md shadow-rose-500/20"
-                    >
-                      ❌ Extend By 1 Day
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => submitFourPMAuditResponse(auditTask.id, false, 50, 'subtask-rollover')}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs py-2.5 rounded-xl uppercase tracking-wider border border-slate-700"
-                  >
-                    🔄 Rollover Incomplete Subtasks
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
             <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-202 bg-slate-100'}`}>
               <div>
-                <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-600" size={14}/> Logistics Pool Registry</h3>
+                <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-500" size={14}/> Logistics Pool Registry</h3>
               </div>
               <button onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} className="p-1.5 rounded-lg hover:bg-slate-300"><X size={14}/></button>
             </div>
@@ -3169,55 +2916,55 @@ export default function App() {
               <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-202'} space-y-4`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Asset Code (Unique Key)</label>
+                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1 text-left">Asset Code (Unique Key)</label>
                     <input 
                       type="text" 
                       placeholder="e.g. CRN50, HVBT1"
                       value={newAssetCode}
                       onChange={(e) => setNewAssetCode(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Asset Label Name</label>
+                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1 text-left">Asset Label Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g. 50-Ton Crawler Crane"
                       value={newAssetName}
                       onChange={(e) => setNewAssetName(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Class</label>
+                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1 text-left">Class</label>
                     <div className="relative">
                       <select 
                         value={newAssetType}
                         onChange={(e) => setNewAssetType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707' : 'bg-white text-slate-900 border-slate-303'
+                          isDarkMode ? 'bg-[#111827] text-white border-slate-800' : 'bg-white text-slate-900 border-slate-300'
                         }`}
                       >
                         <option value="Heavy Equipment">Heavy Equipment</option>
                         <option value="Specialized Tools">Specialized Tools</option>
                         <option value="Testing Equipment">Testing Equipment</option>
                       </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-505">
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
                         <ChevronDown size={14}/>
                       </div>
                     </div>
                   </div>
                   
                   <div className="relative" ref={assetDropdownRef}>
-                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Preset Design</label>
+                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1 text-left">Preset Design</label>
                     <button
                       type="button"
                       onClick={() => setShowAssetIconDropdown(!showAssetIconDropdown)}
                       className={`w-full text-left px-3 py-2 border rounded-xl text-xs font-bold flex items-center justify-between ${
-                        isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
+                        isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                       }`}
                     >
                       <span>
@@ -3229,7 +2976,7 @@ export default function App() {
 
                     {showAssetIconDropdown && (
                       <div className={`absolute left-0 mt-1 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in max-h-60 overflow-y-auto ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
+                        isDarkMode ? 'bg-[#111827] border-slate-800 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
                       }`}>
                         {LOGISTICAL_ASSET_PRESETS.map(preset => (
                           <button
@@ -3241,8 +2988,8 @@ export default function App() {
                             }}
                             className={`w-full text-left p-2 rounded-xl flex items-center gap-3 text-xs transition-all ${
                               newAssetIconPreset === preset.key 
-                                ? 'bg-blue-600/15 text-blue-404 border border-blue-500/30' 
-                                : 'hover:bg-slate-800 text-slate-303'
+                                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
+                                : 'hover:bg-slate-800 text-slate-300'
                             }`}
                           >
                             <span className="text-lg">{preset.emoji}</span>
@@ -3257,25 +3004,25 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Mob Buffer</label>
+                    <label className="block text-[9px] font-black text-slate-404 uppercase mb-1 text-left">Mob Buffer</label>
                     <input 
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-303'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-300'}`}
                     />
                   </div>
                 </div>
 
                 {assetValidationWarning && (
-                  <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-650 text-red-505 text-[10px] font-black">
+                  <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-500 text-red-500 text-[10px] font-black">
                     {assetValidationWarning}
                   </div>
                 )}
 
                 <button 
                   onClick={handleAddCustomAsset}
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-505 text-white font-bold text-xs uppercase tracking-wider shadow"
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow transition-all"
                 >
                   Register Custom Asset
                 </button>
@@ -3285,33 +3032,34 @@ export default function App() {
         </div>
       )}
 
+      {}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
-            <h3 className="text-xs font-black uppercase tracking-wider mb-4">Initialize Sub-Project Workspace</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider mb-4 text-left">Initialize Sub-Project Workspace</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Workspace/Substation Title Name</label>
+                <label className="block text-[9px] font-black text-slate-404 uppercase mb-1 text-left">Workspace/Substation Title Name</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Quezon Substation Phase 3B"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-303'}`}
+                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-300'}`}
                 />
               </div>
               <div className="flex gap-2">
                 <button 
                   onClick={() => setShowCreateProjectModal(false)}
-                  className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-750"
+                  className="flex-1 py-2 bg-slate-800 hover:bg-slate-750 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-700"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleCreateNewProject}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow"
+                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow transition-all"
                 >
                   Create
                 </button>
@@ -3321,118 +3069,24 @@ export default function App() {
         </div>
       )}
 
-      {isSettingsOpen && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className={`rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border p-6 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-303 text-slate-900'
-          }`}>
-            <div className="flex justify-between items-center mb-6 pb-2 border-b dark:border-slate-800">
-              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-404">
-                <Settings className="animate-spin-slow" size={18} />
-                <h3 className="text-sm font-black uppercase tracking-widest">Interactive Project Settings</h3>
-              </div>
-              <button 
-                onClick={() => setIsSettingsOpen(false)} 
-                className="p-1.5 rounded hover:bg-slate-202 dark:hover:bg-slate-800 text-slate-404 hover:text-slate-100"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="block text-[10px] font-black uppercase text-slate-404 mb-1">Citicore System Workspace Title</label>
-                <input 
-                  type="text" 
-                  value={appTitle} 
-                  onChange={(e) => setAppTitle(e.target.value)} 
-                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black uppercase text-slate-404 mb-1">Citicore Substation Subtitle</label>
-                <input 
-                  type="text" 
-                  value={appSubtitle} 
-                  onChange={(e) => setAppSubtitle(e.target.value)} 
-                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-2 border-t dark:border-slate-800">
-                <div>
-                  <span className="block text-[10px] font-black uppercase text-slate-404 mb-1">Color Palette Mode</span>
-                  <button 
-                    onClick={() => setIsDarkMode(!isDarkMode)}
-                    className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-slate-100 border-slate-303 text-slate-900 shadow-sm'
-                    }`}
-                  >
-                    {isDarkMode ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} />}
-                    <span>{isDarkMode ? "Light Theme" : "Dark Theme"}</span>
-                  </button>
-                </div>
-
-                <div>
-                  <span className="block text-[10px] font-black uppercase text-slate-404 mb-1">Audio Warning Synth</span>
-                  <button 
-                    onClick={() => setSoundEnabled(!soundEnabled)}
-                    className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      soundEnabled ? 'bg-blue-600 border-blue-505 text-white' : 'bg-slate-900 border-slate-707 text-slate-404'
-                    }`}
-                  >
-                    {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                    <span>{soundEnabled ? "Enabled" : "Muted"}</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t dark:border-slate-800 flex gap-2">
-                <button 
-                  onClick={() => {
-                    setTasks(INITIAL_TASKS);
-                    setCustomAssets(DEFAULT_SHARED_ASSETS);
-                    setProjectStartDate(new Date().toISOString().split('T')[0]);
-                    showToast("Database reset to factory default parameters.");
-                  }}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20"
-                >
-                  Reset Data
-                </button>
-                <button 
-                  onClick={() => setIsSettingsOpen(false)}
-                  className="ml-auto px-5 py-2 bg-blue-600 hover:bg-blue-505 text-white rounded-xl text-xs font-bold shadow"
-                >
-                  Save & Apply
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {}
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
-            <h3 className="text-xs font-black uppercase tracking-wider mb-2 text-rose-505">Delete Workspace?</h3>
-            <p className="text-xs text-slate-400 mb-4">Are you sure you want to delete this workspace and erase all schedules associated with it? This action cannot be undone.</p>
+            <h3 className="text-xs font-black uppercase tracking-wider mb-2 text-rose-500 text-left">Delete Workspace?</h3>
+            <p className="text-xs text-slate-404 mb-4 text-left">Are you sure you want to delete this workspace and erase all schedules associated with it? This action cannot be undone.</p>
             <div className="flex gap-2">
               <button 
                 onClick={() => setProjectToDelete(null)}
-                className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-750"
+                className="flex-1 py-2 bg-slate-800 hover:bg-slate-750 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-700"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmDeleteProject}
-                className="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow"
+                className="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow transition-all"
               >
                 Delete
               </button>
@@ -3441,6 +3095,7 @@ export default function App() {
         </div>
       )}
 
+      {}
       {isNotificationPaneOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationPaneOpen(false)} />
@@ -3456,7 +3111,7 @@ export default function App() {
                     <X size={18} />
                   </button>
                 </div>
-                <div className="relative flex-1 py-6 px-6 overflow-y-auto space-y-3">
+                <div className="relative flex-1 py-6 px-6 overflow-y-auto space-y-3 text-left">
                   {notifications.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
                       <Bell className="w-10 h-10 text-slate-404 mb-2" />
@@ -3470,33 +3125,16 @@ export default function App() {
                         notif.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-200' :
                         'bg-blue-500/10 border-blue-500/20 text-blue-800 dark:text-blue-200'
                       }`}>
-                        <div className="mt-0.5">
-                          {notif.type === 'alert' ? <AlertTriangle size={15} className="text-rose-505" /> :
-                           notif.type === 'warning' ? <AlertTriangle size={15} className="text-amber-500" /> :
-                           notif.type === 'success' ? <CheckCircle2 size={15} className="text-emerald-500" /> :
-                           <Info size={15} className="text-blue-500" />}
+                        <div className="mt-0.5 shrink-0">
+                          {notif.type === 'alert' ? <AlertTriangle size={15}/> : <Check size={15}/>}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold leading-relaxed">{notif.text}</p>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-404 font-semibold block mt-1">{notif.time}</span>
+                        <div className="flex-1 text-xs font-bold leading-relaxed">
+                          <p>{notif.text}</p>
+                          <span className="text-[9px] opacity-60 block mt-1">{notif.time}</span>
                         </div>
-                        <button 
-                          onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))} 
-                          className="text-slate-400 hover:text-slate-600"
-                        >
-                          <X size={12} />
-                        </button>
                       </div>
                     ))
                   )}
-                </div>
-                <div className="px-6 pt-4 border-t border-slate-202 dark:border-slate-800">
-                  <button 
-                    onClick={() => { setNotifications([]); showToast("Cleared communications history"); }} 
-                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-202 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-black uppercase tracking-widest transition-all"
-                  >
-                    Clear All Logs
-                  </button>
                 </div>
               </div>
             </div>
