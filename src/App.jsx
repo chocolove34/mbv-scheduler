@@ -12,7 +12,7 @@ import {
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, query, limit } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot } from 'firebase/firestore';
 
 let firebaseConfig = {
   apiKey: "",
@@ -187,7 +187,6 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
-  // New Collapsible UI States (Addresses image_ed1927.png and image_ed190d.png)
   const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(false);
   const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
 
@@ -285,7 +284,6 @@ export default function App() {
   });
 
   const [toastMessage, setToastMessage] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTaskModal, setActiveTaskModal] = useState(null);
   const [isSavingCloud, setIsSavingCloud] = useState(false);
 
@@ -1118,17 +1116,6 @@ export default function App() {
     return AssetIcons.heavy();
   };
 
-  const handleLogoUpload = (side, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setLogos(prev => ({...prev, [side]: event.target.result}));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const triggerSystemPrint = () => window.print();
 
   const activeRoles = LABOR_PROFILES[laborProfile];
@@ -1454,7 +1441,7 @@ export default function App() {
               >
                 {day}
               </button>
-            )
+            );
           })}
         </div>
       </div>
@@ -1517,8 +1504,7 @@ export default function App() {
         }
       `}} />
 
-      {/* HEADER SECTION - Fixed z-index & Flex layout */}
-      <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+      <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-202'}`}>
         <div className="px-4 py-3 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
           <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10">
             <div className="flex items-center gap-2">
@@ -1540,10 +1526,10 @@ export default function App() {
                     <span className="truncate max-w-[120px] sm:max-w-[220px]">
                       {projectList.find(p => p.id === activeProjectId)?.title || 'Switch Project...'}
                     </span>
-                    <ChevronDown className="text-slate-900 dark:text-slate-200 shrink-0" size={12}/>
+                    <ChevronDown className="text-slate-900 dark:text-slate-202 shrink-0" size={12}/>
                   </button>
 
-                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-1.5 rounded-xl">
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-202 dark:border-slate-800 px-2.5 py-1.5 rounded-xl">
                     {isSavingCloud ? (
                       <span className="flex items-center gap-1.5 text-[10px] text-blue-500 font-extrabold animate-pulse">
                         <Loader2 size={11} className="animate-spin" />
@@ -1559,7 +1545,7 @@ export default function App() {
 
                   {isProjectDropdownOpen && (
                     <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900'
+                      isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-300 text-slate-900'
                     }`}>
                       <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
                         Schedules Directory
@@ -1579,7 +1565,7 @@ export default function App() {
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-505'} size={12}/>
+                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-500'} size={12}/>
                               <span className="truncate">{proj.title}</span>
                             </div>
                             {proj.id !== 'master-schedule' && (
@@ -1617,7 +1603,7 @@ export default function App() {
                       onClick={() => setShowWeatherDropdown(!showWeatherDropdown)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black ${
                         isDarkMode 
-                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-404 border-slate-700' 
+                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-400 border-slate-700' 
                           : 'bg-slate-100 hover:bg-slate-200 text-blue-800 border-slate-300'
                       }`}
                     >
@@ -1629,7 +1615,7 @@ export default function App() {
 
                     {showWeatherDropdown && (
                       <div className={`absolute left-0 top-10 w-64 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150 ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-950'
+                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-202 text-slate-950'
                       }`}>
                         <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 mb-2">
                           Stochastic Weather State
@@ -1654,7 +1640,7 @@ export default function App() {
                           >
                             <div>
                               <span className="font-extrabold block">{weather.label}</span>
-                              <span className="text-[10px] text-slate-400 block">{weather.desc}</span>
+                              <span className="text-[10px] text-slate-404 block">{weather.desc}</span>
                             </div>
                             {weatherFactor === weather.key && <Check size={14} className="text-blue-500" />}
                           </button>
@@ -1674,7 +1660,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* Premium Perspectives Dashboard Tab bar (Addresses image_eca7b1.png) */}
           <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0 z-10">
             <div className={`flex items-center gap-1.5 border p-1 rounded-2xl whitespace-nowrap shadow-md bg-opacity-90 ${
               isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-slate-100 border-slate-200'
@@ -1694,7 +1679,7 @@ export default function App() {
                     className={`flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 group ${
                       isSelected 
                         ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.03]` 
-                        : 'text-slate-550 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
                     <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-400 group-hover:scale-110 transition-transform'}`} />
@@ -1705,7 +1690,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Actions Stack - Placed with high z-index to avoid overlay intercept issues */}
           <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative">
             <button 
               onClick={() => setIsControlPanelOpen(!isControlPanelOpen)}
@@ -1730,18 +1714,17 @@ export default function App() {
               {soundEnabled ? <Volume2 size={14}/> : <VolumeX size={14}/>}
             </button>
 
-            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
+            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
               <MessageSquareShare size={14}/>
             </button>
 
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
               <Bell size={14}/>
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
               )}
             </button>
             
-            {/* Settins gear icon button (Addresses image_ed1923.png click action issue) */}
             <button 
               onClick={() => setIsSettingsOpen(true)} 
               className={`p-2 rounded-xl transition border shadow-sm cursor-pointer z-30 hover:scale-105 active:scale-95 ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'}`}
@@ -1752,9 +1735,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Dynamic drop-down sub-controls */}
         {isControlPanelOpen && (
-          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-200'}`}>
+          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-202'}`}>
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Crew Structuring Profile</span>
               <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-200 border-slate-300'}`}>
@@ -1782,11 +1764,11 @@ export default function App() {
             </div>
 
             <div className="flex flex-col gap-1 relative">
-              <span className="text-[10px] font-black text-slate-404 uppercase tracking-wider">Base Launch Target</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Base Launch Target</span>
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-707 text-blue-404' : 'bg-white border-slate-300 text-blue-800'
+                  isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400' : 'bg-white border-slate-300 text-blue-800'
                 }`}
               >
                 <Calendar size={14} />
@@ -1797,7 +1779,7 @@ export default function App() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-slate-404 uppercase tracking-wider">Document Specs</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Document Specs</span>
               <button 
                 onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
                 className={`px-3 py-2 rounded-xl border text-xs font-black flex items-center gap-1.5 ${
@@ -1821,13 +1803,13 @@ export default function App() {
         )}
       </header>
 
-      {/* MAIN VIEW AREA */}
+      {}
       <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
           {!isMetadataCollapsed && (
             <div id="gantt-export-zone" className={`rounded-2xl border p-4 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 animate-in slide-in-from-top-1 ${
-              isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+              isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
             }`}>
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="w-full md:w-1/4 flex justify-start items-center">
@@ -1852,7 +1834,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800">
                   <span>Document No:</span>
                   <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
@@ -1877,7 +1859,7 @@ export default function App() {
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
               <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
-                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
               }`}>
                 <div className="flex items-center gap-3 flex-1 justify-between sm:justify-start">
                   <input 
@@ -1897,7 +1879,7 @@ export default function App() {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                       isGanttSidebarVisible 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                        : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-blue-800 dark:text-blue-404 hover:bg-slate-300'
+                        : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-blue-800 dark:text-blue-400 hover:bg-slate-300'
                     }`}
                     style={{ minWidth: '105px' }}
                   >
@@ -1923,7 +1905,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* TIMELINE GANTT PLOTTER */}
               <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-white border-slate-200'}`}>
                 
                 {isGanttSidebarVisible && (
@@ -1980,7 +1961,7 @@ export default function App() {
                     </div>
 
                     <div className="h-[64px] p-2 flex items-center border-t border-slate-300 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-700 w-full justify-center text-blue-700 dark:text-blue-400 hover:text-blue-800">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-700 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-800">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
@@ -2010,7 +1991,7 @@ export default function App() {
                             : `border-slate-300 ${isSatSun ? 'bg-slate-200' : ''}`
                         }`}>
                           <span className="text-[9px] font-black leading-tight text-slate-800 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-500 dark:text-slate-400 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                          <span className="text-[8px] font-bold text-slate-505 dark:text-slate-400 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
                           
                           {activeAllocationsOnDay.length > 0 && (
                             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-600/25 px-1 py-0.5 rounded-full border border-blue-500/20">
@@ -2024,7 +2005,7 @@ export default function App() {
                             </div>
                           )}
                         </div>
-                      )
+                      );
                     })}
                   </div>
                   
@@ -2089,7 +2070,7 @@ export default function App() {
                             </span>
                           </div>
                         </div>
-                      )
+                      );
                     })}
                   </div>
 
@@ -2116,7 +2097,7 @@ export default function App() {
                         <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-300'}`}>
                           {dayManpower > 0 && (
                             <div 
-                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-600 animate-pulse' : 'bg-blue-600'}`}
+                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-red-500 animate-pulse' : 'bg-blue-600'}`}
                               style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
@@ -2124,7 +2105,7 @@ export default function App() {
                             {dayManpower > 0 ? dayManpower : '-'}
                           </span>
                         </div>
-                      )
+                      );
                     })}
                   </div>
 
@@ -2134,11 +2115,10 @@ export default function App() {
             </div>
           )}
 
-          {/* ADDITIONAL PERSPECTIVES */}
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
-                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
               }`}>
                 <div>
                   <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-700 dark:text-blue-404">
@@ -2151,7 +2131,7 @@ export default function App() {
                   <button
                     onClick={() => setActiveForecastFilter('this-week')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-550 dark:text-slate-400 hover:text-slate-200'
+                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     📅 This Week
@@ -2159,7 +2139,7 @@ export default function App() {
                   <button
                     onClick={() => setActiveForecastFilter('all-active')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-550 dark:text-slate-400 hover:text-slate-200'
+                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-505 dark:text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     ⚠️ All Unfinished Tasks
@@ -2198,9 +2178,9 @@ export default function App() {
                           }`}
                         >
                           <div>
-                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                               <div className="min-w-0 flex-1">
-                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-404 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
+                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-400 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName}
                                 </span>
                                 <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -2221,19 +2201,19 @@ export default function App() {
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
                                 <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Truck size={11}/> Primary Asset</span>
-                                <span className="font-black text-blue-800 dark:text-blue-404">{item.assignedAsset || 'None'}</span>
+                                <span className="font-black text-blue-800 dark:text-blue-400">{item.assignedAsset || 'None'}</span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Users size={11}/> Average Workforce</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Users size={11}/> Average Workforce</span>
                                 <span className="font-black text-slate-800 dark:text-slate-300">{item.totalManpower || 0} Workers</span>
                               </div>
                             </div>
                           </div>
 
                           <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
-                            <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-404">
+                            <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-400">
                               <span>PROGRESS COMPLETE</span>
-                              <span className="text-slate-850 dark:text-slate-200">{item.progress || 0}%</span>
+                              <span className="text-slate-800 dark:text-slate-200">{item.progress || 0}%</span>
                             </div>
                             <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-slate-300'}`}>
                               <div className="h-full bg-blue-600 rounded-full" style={{width: `${item.progress || 0}%`}}></div>
@@ -2247,7 +2227,7 @@ export default function App() {
                             </div>
                           )}
                         </div>
-                      )
+                      );
                     })}
                   </div>
                 </div>
@@ -2258,13 +2238,13 @@ export default function App() {
           {activePerspective === 'qa' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex items-center justify-between ${
-                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
               }`}>
                 <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase text-emerald-750 dark:text-emerald-404 flex items-center gap-1.5">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-emerald-700 dark:text-emerald-404 flex items-center gap-1.5">
                     <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
+                  <p className="text-xs text-slate-500 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
               </div>
 
@@ -2303,10 +2283,10 @@ export default function App() {
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex items-center justify-between ${
-                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+                isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-202'
               }`}>
                 <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase text-purple-800 dark:text-purple-404 flex items-center gap-1.5">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-purple-700 dark:text-purple-404 flex items-center gap-1.5">
                     <Truck size={16}/> Heavy Rig & Logistics Equipment Pool
                   </h3>
                   <p className="text-xs text-slate-404 mt-1">Configure site machinery, mobilization buffers, and check overlapping booking clashes.</p>
@@ -2325,7 +2305,7 @@ export default function App() {
                     const isAllocated = allAllocations.filter(a => a.assetKey === asset.key && a.projectId === activeProjectId);
                     return (
                       <div key={asset.key} className={`p-5 rounded-3xl border flex flex-col justify-between gap-4 ${
-                        isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                        isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
                       }`}>
                         <div className="flex items-center gap-3 justify-between">
                           <div className="flex items-center gap-3 min-w-0">
@@ -2333,7 +2313,7 @@ export default function App() {
                               {renderAssetIcon(asset.key)}
                             </div>
                             <div className="min-w-0">
-                              <span className="font-mono text-xs font-black text-blue-800 dark:text-blue-400 block">{asset.key}</span>
+                              <span className="font-mono text-xs font-black text-blue-800 dark:text-blue-404 block">{asset.key}</span>
                               <span className="text-xs font-black truncate block">{asset.label}</span>
                             </div>
                           </div>
@@ -2346,7 +2326,7 @@ export default function App() {
                           </button>
                         </div>
 
-                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-400 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-400 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                           <div className="flex justify-between font-bold">
                             <span>CLASS:</span>
                             <span className="font-black text-slate-800 dark:text-slate-300">{asset.type}</span>
@@ -2356,23 +2336,22 @@ export default function App() {
                             <span className="font-black text-slate-800 dark:text-slate-300">{asset.defaultMobilizationDays} Days</span>
                           </div>
                           <div className="flex justify-between font-bold">
-                            <span>DAILY RESERVATIONS (CURRENT WORKSPACE):</span>
+                            <span>DAILY RESERVATIONS:</span>
                             <span className="font-black text-blue-800 dark:text-blue-404">{isAllocated.length} Slots</span>
                           </div>
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
             </div>
           )}
 
-          {/* ACTIVE DISPATCH & MOBILIZATION ALERT CENTER (COLLAPSIBLE / ACCORDION - Addresses image_ed1927.png) */}
+          {}
           <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
             isDarkMode ? 'bg-[#131c2e]/90 border-blue-500/20' : 'bg-blue-50 border-blue-200'
           }`}>
-            {/* Alert Center Header Strip */}
             <div 
               onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
               className="flex items-center justify-between px-5 py-3.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors select-none"
@@ -2388,7 +2367,6 @@ export default function App() {
               </div>
               
               <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                {/* Embedded Select Filter Control */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-slate-400 uppercase hidden sm:inline">Filter Asset:</span>
                   <div className="relative">
@@ -2404,7 +2382,7 @@ export default function App() {
                         <option key={a.key} value={a.key}>{a.key} - {a.label}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-550">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
                       <ChevronDown size={11} />
                     </div>
                   </div>
@@ -2419,9 +2397,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Collapsible Content Area */}
             {isAlertCenterExpanded && (
-              <div className="p-5 border-t border-slate-750/10 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-top-1 duration-200">
+              <div className="p-5 border-t border-slate-700/10 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-top-1 duration-200">
                 <div className="space-y-2.5">
                   <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Active Dispatches Today
@@ -2437,8 +2414,8 @@ export default function App() {
                             key={idx} 
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
                               conflict 
-                                ? 'bg-rose-500/10 border border-rose-500 text-rose-500 animate-pulse' 
-                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-850 dark:text-emerald-300'
+                                ? 'bg-red-500/10 border border-red-500 text-red-500 animate-pulse' 
+                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
                             }`}
                           >
                             {renderAssetIcon(alloc.assetKey)}
@@ -2466,8 +2443,8 @@ export default function App() {
                             key={idx} 
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
                               conflict 
-                                ? 'bg-rose-500/10 border border-rose-500 text-rose-500' 
-                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-850 dark:text-amber-300'
+                                ? 'bg-red-500/10 border border-red-500 text-red-500' 
+                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-emerald-300'
                             }`}
                           >
                             {renderAssetIcon(alloc.assetKey)}
@@ -2486,13 +2463,12 @@ export default function App() {
         </div>
       </main>
 
-      {/* ASSETS / LOGISTICS MODAL */}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
             isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-100'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-202 bg-slate-100'}`}>
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-600" size={14}/> Logistics Pool Registry</h3>
               </div>
@@ -2500,7 +2476,7 @@ export default function App() {
             </div>
 
             <div className="p-5 overflow-y-auto space-y-6 scrollbar-thin">
-              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-202'} space-y-4`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Asset Code (Unique Key)</label>
@@ -2509,7 +2485,7 @@ export default function App() {
                       placeholder="e.g. CRN50, HVBT1"
                       value={newAssetCode}
                       onChange={(e) => setNewAssetCode(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                     />
                   </div>
                   <div>
@@ -2519,7 +2495,7 @@ export default function App() {
                       placeholder="e.g. 50-Ton Crawler Crane"
                       value={newAssetName}
                       onChange={(e) => setNewAssetName(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                     />
                   </div>
                 </div>
@@ -2563,7 +2539,7 @@ export default function App() {
 
                     {showAssetIconDropdown && (
                       <div className={`absolute left-0 mt-1 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in max-h-60 overflow-y-auto ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-900'
+                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
                       }`}>
                         {LOGISTICAL_ASSET_PRESETS.map(preset => (
                           <button
@@ -2582,7 +2558,7 @@ export default function App() {
                             <span className="text-lg">{preset.emoji}</span>
                             <div className="text-left">
                               <span className="font-extrabold block">{preset.label}</span>
-                              <span className="text-[10px] text-slate-404 block">{preset.desc}</span>
+                              <span className="text-[10px] text-slate-400 block">{preset.desc}</span>
                             </div>
                           </button>
                         ))}
@@ -2596,13 +2572,13 @@ export default function App() {
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-300'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}
                     />
                   </div>
                 </div>
 
                 {assetValidationWarning && (
-                  <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-600 text-rose-500 text-[10px] font-black">
+                  <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-650 text-red-500 text-[10px] font-black">
                     {assetValidationWarning}
                   </div>
                 )}
@@ -2619,7 +2595,7 @@ export default function App() {
         </div>
       )}
 
-      {/* DETAILED TASK EDIT & TOOL DISPATCH WORKCARD (Addresses image_ed190d.png) */}
+      {}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -2638,7 +2614,7 @@ export default function App() {
               <div className={`p-5 border-b flex justify-between items-center ${
                 isDarkMode 
                   ? 'border-slate-800 bg-[#1e293b]/50' 
-                  : 'border-slate-200 bg-slate-100'
+                  : 'border-slate-202 bg-slate-100'
               }`}>
                 <div className="text-left">
                   <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
@@ -2657,7 +2633,7 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
                   className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-300 hover:bg-slate-200 text-slate-700'
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-300 hover:bg-slate-202 text-slate-700'
                   }`}
                 >
                   <X size={16}/>
@@ -2667,7 +2643,7 @@ export default function App() {
               <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
                 
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-200'
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-slate-800">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -2718,7 +2694,7 @@ export default function App() {
                         value={currentTaskEditing.task || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'task', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-650'
+                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2773,15 +2749,14 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* GRANULAR DISPATCHES BUILDER (Addresses image_ed190d.png - Collapsible Booking form) */}
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-200'
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <div 
                     onClick={() => setIsBookToolExpanded(!isBookToolExpanded)}
                     className="flex justify-between items-center cursor-pointer select-none pb-2 border-b dark:border-slate-800 mb-3"
                   >
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1.5">
                       <Truck size={14} className="text-blue-500" />
                       <span>Granular Tool Dispatches (Day & Time Bookings)</span>
                     </h4>
@@ -2838,7 +2813,6 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* RESERVATIONS OVERLAPPING CLASH LIST */}
                   <div className="space-y-1.5">
                     {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
                       const conflict = checkLogisticalConflictForAllocation(alloc);
@@ -2872,9 +2846,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* INSPECTION CHECKLIST CODES */}
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-200'
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
                   <div className="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-800">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
@@ -2904,7 +2877,7 @@ export default function App() {
                     <button 
                       type="button"
                       onClick={() => addCustomChecklistItem(currentTaskEditing.id)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-505 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow"
                     >
                       <Plus size={14}/> Add Option
                     </button>
@@ -2936,7 +2909,7 @@ export default function App() {
                             e.preventDefault();
                             removeCustomChecklistItem(currentTaskEditing.id, name);
                           }}
-                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
+                          className="p-1 text-slate-404 hover:text-rose-600 rounded-lg transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -2945,7 +2918,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* MANPOWER CONFIGS */}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2953,7 +2925,7 @@ export default function App() {
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
                       Day-by-Day Manpower Allocations
                     </h4>
-                    <span className="text-[10px] bg-blue-500/10 text-blue-404 px-2 py-0.5 rounded-lg border border-blue-500/20 font-mono">
+                    <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-lg border border-blue-500/20 font-mono">
                       Active: Day {selectedDayIndex + 1} of {currentTaskEditing.adjustedDuration}
                     </span>
                   </div>
@@ -2975,12 +2947,12 @@ export default function App() {
                             selectedDayIndex === idx
                               ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/10'
                               : isDarkMode 
-                                ? 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white' 
+                                ? 'bg-slate-900 border-slate-800 text-slate-404 hover:bg-slate-800 hover:text-white' 
                                 : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
                           }`}
                         >
                           <span>Day {idx + 1}</span>
-                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-705 text-white' : 'bg-slate-800 text-slate-300'}`}>
+                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-300'}`}>
                             {dayCrewCount} Pax
                           </span>
                         </button>
@@ -2998,7 +2970,7 @@ export default function App() {
                         const count = parseInt(dayLaborObj[role.key]) || 0;
                         return (
                           <div key={role.key} className={`p-3 rounded-xl border flex flex-col justify-between ${
-                            isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                            isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
                           }`}>
                             <div className="flex justify-between items-center">
                               <span className="text-xs">{role.icon} {role.label}</span>
@@ -3073,7 +3045,6 @@ export default function App() {
         );
       })()}
 
-      {/* CREATE SUB-PROJECT DIALOG */}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
@@ -3088,7 +3059,7 @@ export default function App() {
                   placeholder="e.g. Quezon Substation Phase 3B"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}
+                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-300'}`}
                 />
               </div>
               <div className="flex gap-2">
@@ -3110,11 +3081,10 @@ export default function App() {
         </div>
       )}
 
-      {/* INTERACTIVE SYSTEM SETTINGS MODAL (Addresses Settings Click Action) */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border p-6 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-300 text-slate-900'
           }`}>
             <div className="flex justify-between items-center mb-6 pb-2 border-b dark:border-slate-800">
               <div className="flex items-center gap-2 text-blue-600 dark:text-blue-404">
@@ -3123,7 +3093,7 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setIsSettingsOpen(false)} 
-                className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-100"
+                className="p-1.5 rounded hover:bg-slate-202 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-100"
               >
                 <X size={16} />
               </button>
@@ -3137,7 +3107,7 @@ export default function App() {
                   value={appTitle} 
                   onChange={(e) => setAppTitle(e.target.value)} 
                   className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -3149,7 +3119,7 @@ export default function App() {
                   value={appSubtitle} 
                   onChange={(e) => setAppSubtitle(e.target.value)} 
                   className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -3173,7 +3143,7 @@ export default function App() {
                   <button 
                     onClick={() => setSoundEnabled(!soundEnabled)}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      soundEnabled ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-400'
+                      soundEnabled ? 'bg-blue-600 border-blue-505 text-white' : 'bg-slate-900 border-slate-707 text-slate-400'
                     }`}
                   >
                     {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -3190,13 +3160,13 @@ export default function App() {
                     setProjectStartDate(new Date().toISOString().split('T')[0]);
                     showToast("Database reset to factory default parameters.");
                   }}
-                  className="px-4 py-2 bg-rose-605/10 hover:bg-rose-600 text-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20"
                 >
                   Reset Data
                 </button>
                 <button 
                   onClick={() => setIsSettingsOpen(false)}
-                  className="ml-auto px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold"
+                  className="ml-auto px-5 py-2 bg-blue-600 hover:bg-blue-505 text-white rounded-xl text-xs font-bold"
                 >
                   Save & Apply
                 </button>
@@ -3206,11 +3176,10 @@ export default function App() {
         </div>
       )}
 
-      {/* CONFIRM DELETE PROJECT DIALOG */}
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-909'
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
             <h3 className="text-xs font-black uppercase tracking-wider mb-2 text-rose-500">Delete Workspace?</h3>
             <p className="text-xs text-slate-400 mb-4">Are you sure you want to delete this workspace and erase all schedules associated with it? This action cannot be undone.</p>
@@ -3232,14 +3201,13 @@ export default function App() {
         </div>
       )}
 
-      {/* SIDEBAR COMMUNICATIONS PANE */}
       {isNotificationPaneOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationPaneOpen(false)} />
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className={`w-screen max-w-md border-l transform transition-all ease-in-out duration-300 ${isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+            <div className={`w-screen max-w-md border-l transform transition-all ease-in-out duration-300 ${isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-202 text-slate-900'}`}>
               <div className="h-full flex flex-col py-6 bg-transparent shadow-xl">
-                <div className="px-6 flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="px-6 flex justify-between items-center pb-4 border-b border-slate-202 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <Bell className="text-blue-500" size={18} />
                     <h2 className="text-sm font-black uppercase tracking-widest">Site Communications Log</h2>
@@ -3270,11 +3238,11 @@ export default function App() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold leading-relaxed">{notif.text}</p>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-1">{notif.time}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-404 font-semibold block mt-1">{notif.time}</span>
                         </div>
                         <button 
                           onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))} 
-                          className="text-slate-404 hover:text-slate-650"
+                          className="text-slate-400 hover:text-slate-600"
                         >
                           <X size={12} />
                         </button>
@@ -3282,7 +3250,7 @@ export default function App() {
                     ))
                   )}
                 </div>
-                <div className="px-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div className="px-6 pt-4 border-t border-slate-202 dark:border-slate-800">
                   <button 
                     onClick={() => { setNotifications([]); showToast("Cleared communications history"); }} 
                     className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-202 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-black uppercase tracking-widest transition-all"
