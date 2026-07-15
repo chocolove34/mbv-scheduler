@@ -124,7 +124,7 @@ const LABOR_PROFILES = {
     { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
     { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-200 border-amber-500 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
     { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-200 border-emerald-500 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-300 border-slate-500 text-slate-900 dark:bg-slate-800/80 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-300 border-slate-500 text-slate-900 dark:bg-slate-800/80 dark:border-slate-700/55 dark:text-slate-202', icon: '⛓️' },
     { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-200 border-yellow-500 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
     { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-200 border-rose-500 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
     { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-200 border-teal-500 text-teal-900 dark:bg-teal-900/30 dark:border-teal-505/25 dark:text-teal-300', icon: '🧹' }
@@ -141,17 +141,41 @@ const LABOR_PROFILES = {
 };
 
 const INITIAL_TASKS = [
-  { id: 'T1', ref: '1.0', desc: 'Pre-Construction', task: 'Permit Processing & Mobilization', duration: 2, progress: 100, pm: 1, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Mobilization Permit': true, 'Office Container Set': true }, assignedAsset: 'None' },
-  { id: 'T2', ref: '1.1', desc: 'Technical Survey', task: 'Geo-staking & Trenching Layout', duration: 1, progress: 100, pm: 1, se: 2, ee: 1, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Boundary Markers Laid': true, 'Topographical Crosscheck': true }, assignedAsset: 'None' },
-  { id: 'T3', ref: '2.0', desc: 'Civil Works', task: '1.5m Depth Manual Cable Potholing', duration: 3, progress: 80, pm: 0, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Utility Clearance Received': true, 'Depth Level Checked': false }, assignedAsset: 'PC135' },
-  { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false }, assignedAsset: 'None' },
-  { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false }, assignedAsset: 'None' },
-  { id: 'T6', ref: '3.1', desc: 'Equipment Alignment', task: 'Main Circuit Breaker Structural Alignment', duration: 1, progress: 0, pm: 1, se: 2, ee: 2, so: 1, st: 0, cp: 1, ms: 0, el: 3, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'HOLD', checklist: { 'Plumbness Signed-Off': false, 'Contact Alignment Check': false }, assignedAsset: 'MVK01' },
-  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false }, assignedAsset: 'None' },
-  { id: 'T8', ref: '4.1', desc: 'Curing Period', task: '5-Day Continuous Pad Concrete Wet Curing (Hold)', duration: 5, progress: 0, pm: 0, se: 0, ee: 0, so: 1, st: 0, cp: 0, ms: 1, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Wet Sack Blanket Placed': false, 'Daily Water Log Checklist': false }, assignedAsset: 'None' },
-  { id: 'T9', ref: '5.0', desc: 'Assembly & Splicing', task: 'MV Cable Terminations & Splicing', duration: 3, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 2, cp: 2, ms: 0, el: 4, lm: 2, cs: 3, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Cable Splicing Certified': false, 'High Potential Test Logged': false }, assignedAsset: 'FSA22' },
-  { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false }, assignedAsset: 'PIT99' },
+  { id: 'T1', ref: '1.0', desc: 'Pre-Construction', task: 'Permit Processing & Mobilization', duration: 2, progress: 100, pm: 1, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Mobilization Permit': true, 'Office Container Set': true }, assignedAsset: 'None', dailyLabor: [] },
+  { id: 'T2', ref: '1.1', desc: 'Technical Survey', task: 'Geo-staking & Trenching Layout', duration: 1, progress: 100, pm: 1, se: 2, ee: 1, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'APPROVED', checklist: { 'Boundary Markers Laid': true, 'Topographical Crosscheck': true }, assignedAsset: 'None', dailyLabor: [] },
+  { id: 'T3', ref: '2.0', desc: 'Civil Works', task: '1.5m Depth Manual Cable Potholing', duration: 3, progress: 80, pm: 0, se: 1, ee: 0, so: 1, st: 0, cp: 0, ms: 0, el: 0, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Utility Clearance Received': true, 'Depth Level Checked': false }, assignedAsset: 'PC135', dailyLabor: [] },
+  { id: 'T4', ref: '2.1', desc: 'Electrical Grid', task: 'Substation Ground Mesh Assembly', duration: 2, progress: 40, pm: 0, se: 1, ee: 1, so: 1, st: 0, cp: 1, ms: 0, el: 2, lm: 0, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Excavation Safety Barrier Set': true, 'Mesh Ground resistance logged': false }, assignedAsset: 'None', dailyLabor: [] },
+  { id: 'T5', ref: '3.0', desc: 'Substation Pad', task: 'Transformer Pad Rebar & Conduit Setup', duration: 3, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 4, cp: 2, ms: 0, el: 2, lm: 0, cs: 0, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Rebar Bend Specs OK': false, 'Bedding Compactness Signed': false }, assignedAsset: 'None', dailyLabor: [] },
+  { id: 'T6', ref: '3.1', desc: 'Equipment Alignment', task: 'Main Circuit Breaker Structural Alignment', duration: 1, progress: 0, pm: 1, se: 2, ee: 2, so: 1, st: 0, cp: 1, ms: 0, el: 3, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'HOLD', checklist: { 'Plumbness Signed-Off': false, 'Contact Alignment Check': false }, assignedAsset: 'MVK01', dailyLabor: [] },
+  { id: 'T7', ref: '4.0', desc: 'Cable Pulling', task: 'Conduit Placement & Pulling MV Feeders', duration: 2, progress: 0, pm: 0, se: 1, ee: 1, so: 1, st: 2, cp: 2, ms: 4, el: 4, lm: 2, cs: 0, hl: 4, assigned: {}, qaStatus: 'PENDING', checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false }, assignedAsset: 'None', dailyLabor: [] },
+  { id: 'T8', ref: '4.1', desc: 'Curing Period', task: '5-Day Continuous Pad Concrete Wet Curing (Hold)', duration: 5, progress: 0, pm: 0, se: 0, ee: 0, so: 1, st: 0, cp: 0, ms: 1, el: 0, lm: 0, cs: 0, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Wet Sack Blanket Placed': false, 'Daily Water Log Checklist': false }, assignedAsset: 'None', dailyLabor: [] },
+  { id: 'T9', ref: '5.0', desc: 'Assembly & Splicing', task: 'MV Cable Terminations & Splicing', duration: 3, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 2, cp: 2, ms: 0, el: 4, lm: 2, cs: 3, hl: 2, assigned: {}, qaStatus: 'PENDING', checklist: { 'Cable Splicing Certified': false, 'High Potential Test Logged': false }, assignedAsset: 'FSA22', dailyLabor: [] },
+  { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false }, assignedAsset: 'PIT99', dailyLabor: [] },
 ];
+
+const getDailyLaborForTask = (task, neededLength) => {
+  let list = task.dailyLabor ? [...task.dailyLabor] : [];
+  while (list.length < neededLength) {
+    list.push({
+      pm: task.pm !== undefined ? task.pm : 0,
+      se: task.se !== undefined ? task.se : 0,
+      ee: task.ee !== undefined ? task.ee : 0,
+      so: task.so !== undefined ? task.so : 0,
+      st: task.st !== undefined ? task.st : 0,
+      cp: task.cp !== undefined ? task.cp : 0,
+      ms: task.ms !== undefined ? task.ms : 0,
+      el: task.el !== undefined ? task.el : 0,
+      lm: task.lm !== undefined ? task.lm : 0,
+      cs: task.cs !== undefined ? task.cs : 0,
+      hl: task.hl !== undefined ? task.hl : 0,
+      assigned: task.assigned ? JSON.parse(JSON.stringify(task.assigned)) : {}
+    });
+  }
+  if (list.length > neededLength) {
+    list = list.slice(0, neededLength);
+  }
+  return list;
+};
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -190,6 +214,8 @@ export default function App() {
   const assetDropdownRef = useRef(null);
 
   const [newChecklistItemText, setNewChecklistItemText] = useState('');
+  
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
@@ -281,16 +307,22 @@ export default function App() {
       const adjustedDuration = Math.max(1, Math.round(task.duration * multiplier));
       currentStartDay += adjustedDuration;
       
-      const totalManpower = activeRoles.reduce((sum, r) => {
-        const val = parseInt(task[r.key]);
-        return sum + (isNaN(val) ? 0 : val);
+      const normalizedDailyLabor = getDailyLaborForTask(task, adjustedDuration);
+      
+      const totalManpowerAcrossDays = normalizedDailyLabor.reduce((accumSum, dailyObj) => {
+        const dayTotal = activeRoles.reduce((sum, r) => {
+          const val = parseInt(dailyObj[r.key]);
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+        return accumSum + dayTotal;
       }, 0);
 
       return { 
         ...task, 
         startDays: start, 
         adjustedDuration,
-        totalManpower, 
+        dailyLabor: normalizedDailyLabor,
+        totalManpower: Math.round(totalManpowerAcrossDays / adjustedDuration), 
         progress: task.progress || 0,
         assignedAsset: task.assignedAsset || 'None'
       };
@@ -803,7 +835,7 @@ export default function App() {
 
     setActiveProjectId(nextId);
     setAppTitle(newProjectName);
-    setTasks(INITIAL_TASKS.map(t => ({...t, progress: 0, qaStatus: 'PENDING', assigned: {}})));
+    setTasks(INITIAL_TASKS.map(t => ({...t, progress: 0, qaStatus: 'PENDING', assigned: {}, dailyLabor: []})));
     setCustomAssets(DEFAULT_SHARED_ASSETS);
     setDocMetadata({
       projectName: newProjectName.toUpperCase(),
@@ -858,46 +890,6 @@ export default function App() {
 
     if (activeProjectId === projectToDelete) {
       handleSwitchProject('master-schedule');
-    }
-  };
-
-  const handleShareToCloud = async () => {
-    if (!db) {
-      showToast("Cloud configuration missing.");
-      return;
-    }
-    setIsSavingCloud(true);
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
-      await setDoc(docRef, {
-        tasks,
-        customAssets,
-        docMetadata,
-        projectStartDate,
-        appTitle,
-        appSubtitle,
-        logos,
-        weatherFactor,
-        updatedAt: new Date().toISOString()
-      });
-
-      const freshRegistry = projectList.map(p => 
-        p.id === activeProjectId ? { ...p, title: appTitle, lastModified: new Date().toISOString() } : p
-      );
-      setProjectList(freshRegistry);
-      localStorage.setItem('mbv_cloud_registry', JSON.stringify(freshRegistry));
-
-      const url = new URL(window.location.href);
-      url.searchParams.set('project', activeProjectId);
-      copyToClipboard(url.toString());
-
-      showToast("Sync Successful! URL copied to clipboard.");
-      logActivityToCloud(`Global database synced successfully`, 'success');
-    } catch (e) {
-      console.error(e);
-      showToast("Error synchronizing project data to cloud.");
-    } finally {
-      setIsSavingCloud(false);
     }
   };
 
@@ -995,7 +987,16 @@ export default function App() {
   const maxManpowerVal = Math.max(
     ...headerDays.map(day => 
       activeFlowTasks.reduce((sum, task) => {
-        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) return sum + task.totalManpower;
+        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
+          const dayIdx = day - task.startDays;
+          const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
+          if (currentDayLabor) {
+            return sum + activeRoles.reduce((roleSum, role) => {
+              const val = parseInt(currentDayLabor[role.key]);
+              return roleSum + (isNaN(val) ? 0 : val);
+            }, 0);
+          }
+        }
         return sum;
       }, 0)
     ), 1
@@ -1027,7 +1028,8 @@ export default function App() {
       assigned: {}, 
       qaStatus: 'PENDING', 
       checklist: { 'Formwork Leak Review': false, 'Vibrator Tool Mobilized': false },
-      assignedAsset: 'None'
+      assignedAsset: 'None',
+      dailyLabor: []
     }];
     setTasks(updatedTasks);
     showToast("New schedule row added.");
@@ -1044,24 +1046,41 @@ export default function App() {
     }
   };
 
-  const adjustWorkerCount = (taskId, roleKey, increment) => {
-    setTasks(tasks.map(t => {
+  const adjustWorkerCount = (taskId, roleKey, increment, dayIdx) => {
+    setTasks(prevTasks => prevTasks.map(t => {
       if (t.id === taskId) {
-        const currentCount = parseInt(t[roleKey]);
-        const safeCount = isNaN(currentCount) ? 0 : currentCount;
-        return { ...t, [roleKey]: Math.max(0, safeCount + increment) };
+        const currentAdjustedDuration = Math.max(1, Math.round(t.duration * fetchWeatherDelayMultiplier()));
+        const dailyLabor = getDailyLaborForTask(t, currentAdjustedDuration);
+        
+        const dayObj = { ...dailyLabor[dayIdx] };
+        const currentVal = parseInt(dayObj[roleKey]) || 0;
+        dayObj[roleKey] = Math.max(0, currentVal + increment);
+        
+        const newDailyLabor = [...dailyLabor];
+        newDailyLabor[dayIdx] = dayObj;
+        
+        return { ...t, dailyLabor: newDailyLabor };
       }
       return t;
     }));
   };
 
-  const assignWorkerName = (taskId, roleKey, index, name) => {
-    setTasks(tasks.map(t => {
+  const assignWorkerName = (taskId, roleKey, index, name, dayIdx) => {
+    setTasks(prevTasks => prevTasks.map(t => {
       if (t.id === taskId) {
-        const newAssigned = { ...(t.assigned || {}) };
+        const currentAdjustedDuration = Math.max(1, Math.round(t.duration * fetchWeatherDelayMultiplier()));
+        const dailyLabor = getDailyLaborForTask(t, currentAdjustedDuration);
+        
+        const dayObj = { ...dailyLabor[dayIdx] };
+        const newAssigned = { ...(dayObj.assigned || {}) };
         if (!newAssigned[roleKey]) newAssigned[roleKey] = [];
         newAssigned[roleKey][index] = name;
-        return { ...t, assigned: newAssigned };
+        dayObj.assigned = newAssigned;
+        
+        const newDailyLabor = [...dailyLabor];
+        newDailyLabor[dayIdx] = dayObj;
+        
+        return { ...t, dailyLabor: newDailyLabor };
       }
       return t;
     }));
@@ -1164,7 +1183,7 @@ export default function App() {
       if (hasConflict) return 'bg-amber-100 border-amber-600 hover:bg-amber-150';
       if (isHold) return 'bg-rose-100 border-rose-600 hover:bg-rose-150';
       if (isApproved) return 'bg-emerald-50 border-emerald-500 hover:bg-emerald-100';
-      return index % 2 === 0 ? 'bg-white border-slate-300 hover:bg-slate-100' : 'bg-slate-101 border-slate-300 hover:bg-slate-150';
+      return index % 2 === 0 ? 'bg-white border-slate-300 hover:bg-slate-101' : 'bg-slate-101 border-slate-303 hover:bg-slate-150';
     }
   };
 
@@ -1234,7 +1253,7 @@ export default function App() {
 
     return (
       <div className={`absolute left-0 mt-2 p-4 rounded-3xl shadow-2xl z-50 w-72 border backdrop-blur-xl transition-all ${
-        isDarkMode ? 'bg-[#0f172a]/95 border-slate-800 text-white' : 'bg-white/95 border-slate-202 text-slate-900'
+        isDarkMode ? 'bg-[#0f172a]/95 border-slate-800 text-white' : 'bg-white/95 border-slate-202 text-slate-909'
       }`}>
         <div className="flex items-center justify-between mb-4">
           <button 
@@ -1334,7 +1353,6 @@ export default function App() {
           #gantt-export-zone { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
         }
 
-        /* Responsive Mobile Landscape Optimization */
         @media (max-height: 520px) and (orientation: landscape) {
           header {
             padding-top: 0.25rem !important;
@@ -1353,7 +1371,6 @@ export default function App() {
           .max-w-\[1700px\] {
             gap: 0.5rem !important;
           }
-          /* Scrollable Modal Card for Landscape Viewports */
           .fixed.inset-0 .max-w-2xl {
             max-height: 95vh !important;
             overflow-y: auto !important;
@@ -1367,8 +1384,8 @@ export default function App() {
         }
       `}} />
 
-      {/* STABLE HEADER DECLARATION CONTEXT */}
-      <header className={`border-b z-40 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+      {}
+      <header className={`border-b z-40 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-202'}`}>
         <div className="px-4 py-3 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start">
             <div className="flex items-center gap-2">
@@ -1393,7 +1410,6 @@ export default function App() {
                     <ChevronDown className="text-slate-900 dark:text-slate-202 shrink-0" size={12}/>
                   </button>
 
-                  {/* LIVE REAL-TIME CLOUD SYNCING INDICATOR */}
                   <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-1.5 rounded-xl">
                     {isSavingCloud ? (
                       <span className="flex items-center gap-1.5 text-[10px] text-blue-500 dark:text-blue-404 font-extrabold animate-pulse">
@@ -1410,7 +1426,7 @@ export default function App() {
 
                   {isProjectDropdownOpen && (
                     <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-303 text-slate-900'
+                      isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-303 text-slate-909'
                     }`}>
                       <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-404 border-b border-slate-800 uppercase mb-2">
                         Schedules Directory
@@ -1425,7 +1441,7 @@ export default function App() {
                             }}
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-bold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
-                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-400 border border-blue-500 shadow-md' 
+                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-404 border border-blue-500 shadow-md' 
                                 : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-100 text-slate-808 border border-slate-202')
                             }`}
                           >
@@ -1463,14 +1479,13 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* PREMIUM WEATHER DROPDOWN SYSTEM */}
                   <div className="relative" ref={weatherDropdownRef}>
                     <button
                       onClick={() => setShowWeatherDropdown(!showWeatherDropdown)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black ${
                         isDarkMode 
                           ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-404 border-slate-707' 
-                          : 'bg-slate-100 hover:bg-slate-200 text-blue-800 border-slate-300'
+                          : 'bg-slate-101 hover:bg-slate-200 text-blue-800 border-slate-303'
                       }`}
                     >
                       <span>
@@ -1520,16 +1535,15 @@ export default function App() {
             
             <button 
               onClick={() => setIsDarkMode(!isDarkMode)} 
-              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-707' : 'bg-slate-202 text-slate-900 border-slate-300'}`}
+              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-707' : 'bg-slate-202 text-slate-900 border-slate-303'}`}
             >
               {isDarkMode ? <Sun size={15}/> : <Moon size={15}/>}
             </button>
           </div>
 
-          {/* CUSTOM ENTERPRISE SEGMENTED NAVIGATION CONTROLLER */}
           <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0">
             <div className={`flex items-center gap-1 border p-1 rounded-2xl whitespace-nowrap shadow-inner ${
-              isDarkMode ? 'bg-slate-950/80 border-slate-800/60' : 'bg-slate-100 border-slate-200'
+              isDarkMode ? 'bg-slate-950/80 border-slate-800/60' : 'bg-slate-100 border-slate-202'
             }`}>
               {[
                 { id: 'gantt', label: '📊 GANTT' },
@@ -1588,7 +1602,7 @@ export default function App() {
         </div>
 
         {isControlPanelOpen && (
-          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-200'}`}>
+          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-202'}`}>
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black text-slate-404 uppercase tracking-wider">Crew Structuring Profile</span>
               <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-slate-300 border-slate-404'}`}>
@@ -1684,19 +1698,19 @@ export default function App() {
               <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800">
                   <span>Document No:</span>
-                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`} />
+                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-808'}`} />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1">
                   <span>Revision:</span>
-                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`} />
+                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-808'}`} />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1">
                   <span>Effective Date:</span>
-                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`} />
+                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-808'}`} />
                 </div>
                 <div className="flex flex-col gap-1 pl-1">
                   <span>Base Launch:</span>
-                  <span className={`font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`}>{projectStartDate}</span>
+                  <span className={`font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-808'}`}>{projectStartDate}</span>
                 </div>
               </div>
             </div>
@@ -1707,7 +1721,7 @@ export default function App() {
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
               <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
-                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
               }`}>
                 <div className="flex items-center gap-3 flex-1 justify-between sm:justify-start">
                   <input 
@@ -1778,16 +1792,19 @@ export default function App() {
                       {filteredTasks.map((task, index) => (
                         <div 
                           key={task.id} 
-                          onClick={() => setActiveTaskModal(task.id)}
+                          onClick={() => {
+                            setActiveTaskModal(task.id);
+                            setSelectedDayIndex(0);
+                          }}
                           className={`h-[68px] min-h-[68px] max-h-[68px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-700 dark:text-blue-400">
+                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-700 dark:text-blue-404">
                             {task.ref}
                           </div>
                           
-                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-300'}`}>
+                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="font-black text-[8px] text-blue-700 dark:text-blue-400 uppercase tracking-wider block truncate">
+                              <span className="font-black text-[8px] text-blue-700 dark:text-blue-404 uppercase tracking-wider block truncate">
                                 {task.desc}
                               </span>
                               <span className={`px-1 rounded text-[7px] font-black uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
@@ -1799,7 +1816,7 @@ export default function App() {
                             </span>
                           </div>
                           
-                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40 text-slate-101' : 'border-slate-300 text-slate-808'}`}>
+                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40 text-slate-101' : 'border-slate-303 text-slate-808'}`}>
                             {task.duration}d
                           </div>
                         </div>
@@ -1807,7 +1824,7 @@ export default function App() {
                     </div>
 
                     <div className="h-[64px] p-2 flex items-center border-t border-slate-303 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-707 w-full justify-center text-blue-700 dark:text-blue-400 hover:text-blue-800">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-707 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-800">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
@@ -1871,7 +1888,7 @@ export default function App() {
                       return (
                         <div 
                           key={task.id} 
-                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-300'}`}
+                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}
                           style={{ width: `${headerDays.length * 56}px` }}
                         >
                           {headerDays.map(day => {
@@ -1889,7 +1906,10 @@ export default function App() {
                           })}
 
                           <div 
-                            onClick={() => setActiveTaskModal(task.id)}
+                            onClick={() => {
+                              setActiveTaskModal(task.id);
+                              setSelectedDayIndex(0);
+                            }}
                             className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.025] hover:shadow-xl z-10 ${
                               conflict 
                                 ? 'from-amber-600 to-amber-700 border-amber-500 text-white shadow-amber-500/10'
@@ -1912,13 +1932,23 @@ export default function App() {
                     })}
                   </div>
 
+                  {}
                   <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
                     isDarkMode ? 'bg-[#0b0f19] border-slate-850' : 'bg-slate-202 border-slate-303'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
                       const dayManpower = activeFlowTasks.reduce((sum, task) => {
-                        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) return sum + task.totalManpower;
+                        if (day >= task.startDays && day < task.startDays + task.adjustedDuration) {
+                          const dayIdx = day - task.startDays;
+                          const currentDayLabor = getDailyLaborForTask(task, task.adjustedDuration)[dayIdx];
+                          if (currentDayLabor) {
+                            return sum + activeRoles.reduce((roleSum, role) => {
+                              const val = parseInt(currentDayLabor[role.key]);
+                              return roleSum + (isNaN(val) ? 0 : val);
+                            }, 0);
+                          }
+                        }
                         return sum;
                       }, 0);
                       const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
@@ -1993,9 +2023,13 @@ export default function App() {
                           onClick={() => {
                             if (item.parentProjectId === activeProjectId) {
                               setActiveTaskModal(item.id);
+                              setSelectedDayIndex(0);
                             } else {
                               handleSwitchProject(item.parentProjectId);
-                              setTimeout(() => setActiveTaskModal(item.id), 300);
+                              setTimeout(() => {
+                                setActiveTaskModal(item.id);
+                                setSelectedDayIndex(0);
+                              }, 300);
                             }
                           }}
                           className={`p-6 rounded-3xl border shadow-sm cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between gap-4 ${
@@ -2005,10 +2039,10 @@ export default function App() {
                           <div>
                             <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-850' : 'border-slate-202'}`}>
                               <div className="min-w-0 flex-1">
-                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-400 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
+                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-404 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName}
                                 </span>
-                                <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-808'}`}>
                                   {item.task}
                                 </h4>
                               </div>
@@ -2029,7 +2063,7 @@ export default function App() {
                                 <span className="font-black text-blue-800 dark:text-blue-404">{item.assignedAsset || 'None'}</span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Users size={11}/> Workforce Loading</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Users size={11}/> Average Workforce</span>
                                 <span className="font-black text-slate-808 dark:text-slate-303">{item.totalManpower || 0} Workers</span>
                               </div>
                             </div>
@@ -2077,7 +2111,10 @@ export default function App() {
                 {activeFlowTasks.map(task => (
                   <div 
                     key={`qa-${task.id}`}
-                    onClick={() => setActiveTaskModal(task.id)}
+                    onClick={() => {
+                      setActiveTaskModal(task.id);
+                      setSelectedDayIndex(0);
+                    }}
                     className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                       isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-202' : 'bg-white border-slate-303 hover:border-slate-500 shadow-sm'
                     }`}
@@ -2177,7 +2214,7 @@ export default function App() {
             }`}>
               <div className="flex items-center gap-2 border-b pb-2 border-slate-700/20 dark:border-slate-800">
                 <Bell className="text-blue-500 shrink-0" size={16}/>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-808 dark:text-blue-400">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-808 dark:text-blue-404">
                   Live Dispatch & Mobilization Alert Center
                 </h4>
               </div>
@@ -2225,7 +2262,6 @@ export default function App() {
         </div>
       </main>
 
-      {}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-955/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
@@ -2362,6 +2398,10 @@ export default function App() {
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
+        
+        const currentDailyLabor = getDailyLaborForTask(currentTaskEditing, currentTaskEditing.adjustedDuration);
+        const dayLaborObj = currentDailyLabor[selectedDayIndex] || currentDailyLabor[0];
+
         return (
           <div className="fixed inset-0 bg-slate-955/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
             <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[90vh] transition-all duration-300 ${
@@ -2486,7 +2526,11 @@ export default function App() {
                       <input 
                         type="number" min="1" max="60"
                         value={currentTaskEditing.duration || 1} 
-                        onChange={(e) => updateTask(currentTaskEditing.id, 'duration', parseInt(e.target.value) || 1)}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1;
+                          updateTask(currentTaskEditing.id, 'duration', val);
+                          setSelectedDayIndex(0);
+                        }}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
                           isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303'
                         }`}
@@ -2526,7 +2570,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* VERIFICATION AND COMPLIANCE CHECKBOX INTERACTION PANEL (Image_ec3794.png Verification Box) */}
+                {/* VERIFICATION AND COMPLIANCE CHECKBOX INTERACTION PANEL */}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2552,7 +2596,7 @@ export default function App() {
                       className={`flex-grow px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
                         isDarkMode 
                           ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' 
-                          : 'bg-white border-slate-300 text-slate-909 focus:border-blue-600 shadow-inner'
+                          : 'bg-white border-slate-303 text-slate-909 focus:border-blue-600 shadow-inner'
                       }`}
                     />
                     <button 
@@ -2591,7 +2635,7 @@ export default function App() {
                             e.preventDefault();
                             removeCustomChecklistItem(currentTaskEditing.id, name);
                           }}
-                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
+                          className="p-1 text-slate-404 hover:text-rose-600 rounded-lg transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -2600,42 +2644,127 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* MANPOWER ALLOCATION PANEL */}
+                {}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 mb-3 pb-2 border-b dark:border-slate-800">
-                    Allocated Resource Loading Counts
-                  </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {activeRoles.map(role => (
-                      <div key={role.key} className={`p-3 rounded-xl border flex flex-col justify-between ${
-                        isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
-                      }`}>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs">{role.icon} {role.label}</span>
-                          <span className="text-xs font-black text-blue-600 dark:text-blue-400">
-                            {parseInt(currentTaskEditing[role.key]) || 0}
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
+                      Day-by-Day Manpower Allocations
+                    </h4>
+                    <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-lg border border-blue-500/20 font-mono">
+                      Active: Day {selectedDayIndex + 1} of {currentTaskEditing.adjustedDuration}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-1.5 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800">
+                    {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => {
+                      const dailyRolesObj = currentDailyLabor[idx] || {};
+                      const dayCrewCount = activeRoles.reduce((sum, role) => {
+                        const val = parseInt(dailyRolesObj[role.key]);
+                        return sum + (isNaN(val) ? 0 : val);
+                      }, 0);
+
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setSelectedDayIndex(idx)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all border shrink-0 flex flex-col items-center gap-1 min-w-[70px] ${
+                            selectedDayIndex === idx
+                              ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/10'
+                              : isDarkMode 
+                                ? 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white' 
+                                : 'bg-white border-slate-300 text-slate-707 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span>Day {idx + 1}</span>
+                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-300'}`}>
+                            {dayCrewCount} Pax
                           </span>
-                        </div>
-                        <div className="flex gap-1 mt-2.5">
-                          <button 
-                            type="button"
-                            onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1)}
-                            className="flex-1 bg-slate-800 text-white hover:bg-slate-700 py-1 rounded-lg text-xs font-bold"
-                          >
-                            -
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1)}
-                            className="flex-1 bg-blue-600 text-white hover:bg-blue-505 py-1 rounded-lg text-xs font-bold"
-                          >
-                            +
-                          </button>
-                        </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* MANPOWER ALLOCATION PANEL (RESOLVES image_ec9600.png) */}
+                  <div className="mt-5 space-y-5">
+                    <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-404">
+                      Labor Crew Requirements (Day {selectedDayIndex + 1})
+                    </h5>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {activeRoles.map(role => {
+                        const count = parseInt(dayLaborObj[role.key]) || 0;
+                        return (
+                          <div key={role.key} className={`p-3 rounded-xl border flex flex-col justify-between ${
+                            isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
+                          }`}>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs">{role.icon} {role.label}</span>
+                              <span className="text-xs font-black text-blue-600 dark:text-blue-404">
+                                {count}
+                              </span>
+                            </div>
+                            <div className="flex gap-1 mt-2.5">
+                              <button 
+                                type="button"
+                                onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1, selectedDayIndex)}
+                                className="flex-1 bg-slate-800 text-white hover:bg-slate-700 py-1 rounded-lg text-xs font-bold"
+                              >
+                                -
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
+                                className="flex-1 bg-blue-600 text-white hover:bg-blue-550 py-1 rounded-lg text-xs font-bold"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* NAMES FIELD DYNAMIC INDEX MAP LOGGER */}
+                    <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-404">
+                        Field Identity Logs (Day {selectedDayIndex + 1})
+                      </h5>
+                      <div className="space-y-3">
+                        {activeRoles.map(role => {
+                          const limitCount = parseInt(dayLaborObj[role.key]) || 0;
+                          if (limitCount === 0) return null;
+                          return (
+                            <div key={`names-${role.key}`} className="space-y-1.5">
+                              <span className="text-[9px] font-black text-slate-404 uppercase tracking-widest block">
+                                {role.icon} {role.fullName} Identity logs
+                              </span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {Array.from({ length: limitCount }).map((_, workerIdx) => {
+                                  const nameVal = (dayLaborObj.assigned?.[role.key]?.[workerIdx]) || '';
+                                  return (
+                                    <input
+                                      key={`${role.key}-${workerIdx}`}
+                                      type="text"
+                                      placeholder={`Enter name for ${role.fullName} #${workerIdx + 1}...`}
+                                      value={nameVal}
+                                      onChange={(e) => assignWorkerName(currentTaskEditing.id, role.key, workerIdx, e.target.value, selectedDayIndex)}
+                                      className={`w-full px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
+                                        isDarkMode 
+                                          ? 'bg-slate-900 border-slate-800 text-white focus:border-blue-500' 
+                                          : 'bg-white border-slate-300 text-slate-909 focus:border-blue-600 shadow-inner'
+                                      }`}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
 
