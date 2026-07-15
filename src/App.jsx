@@ -7,7 +7,7 @@ import {
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
   Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer,
-  SlidersHorizontal, EyeOff, Check, Calendar, Trash
+  SlidersHorizontal, EyeOff, Check, Calendar, Trash, ChevronLeft
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -47,7 +47,7 @@ const db = app ? getFirestore(app) : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 
 const CiticoreLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-8 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
     <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#2563eb" />
     <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#0891b2" />
     <text x="50" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill={isDarkMode ? "#60a5fa" : "#1e3a8a"} letterSpacing="-0.03em">CITICORE</text>
@@ -56,7 +56,7 @@ const CiticoreLogo = ({ isDarkMode }) => (
 );
 
 const MbvLogo = ({ isDarkMode }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-8 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-9 w-auto">
     <rect x="10" y="5" width="35" height="35" rx="8" fill="#1e293b" stroke="#2563eb" strokeWidth="2" />
     <path d="M27 10 L19 23 L26 23 L23 33 L32 19 L25 19 Z" fill="#06b6d4" />
     <text x="55" y="24" fontFamily="Inter, system-ui, sans-serif" fontWeight="900" fontSize="14" fill="#2563eb" letterSpacing="-0.03em">MBV ELECTRIC</text>
@@ -121,22 +121,22 @@ const DEFAULT_SHARED_ASSETS = [
 
 const LABOR_PROFILES = {
   civil: [
-    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
-    { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-200 border-amber-500 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
-    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-200 border-emerald-500 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-300 border-slate-500 text-slate-900 dark:bg-slate-850 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
-    { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-200 border-yellow-500 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
-    { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-200 border-rose-500 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
-    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-200 border-teal-500 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
+    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
+    { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
+    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
+    { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
+    { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-100 border-rose-400 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
+    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
   ],
   electrical: [
-    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-200 border-blue-500 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
-    { key: 'ee', label: 'EE', fullName: 'Electrical Engineer', bg: 'bg-purple-200 border-purple-500 text-purple-900 dark:bg-purple-900/30 dark:border-purple-500/25 dark:text-purple-300', icon: '⚡' },
-    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-200 border-emerald-500 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'el', label: 'EL', fullName: 'Electrician', bg: 'bg-indigo-200 border-indigo-500 text-indigo-900 dark:bg-indigo-900/30 dark:border-indigo-500/25 dark:text-indigo-300', icon: '🔌' },
-    { key: 'lm', label: 'LM', fullName: 'Lineman', bg: 'bg-cyan-200 border-cyan-500 text-cyan-900 dark:bg-cyan-900/30 dark:border-cyan-500/25 dark:text-cyan-300', icon: '🧗' },
-    { key: 'cs', label: 'CS', fullName: 'Cable Splicer', bg: 'bg-amber-200 border-amber-500 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '🪓' },
-    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-200 border-teal-500 text-teal-900 dark:bg-teal-900/30 dark:border-teal-505/25 dark:text-teal-300', icon: '🧹' }
+    { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
+    { key: 'ee', label: 'EE', fullName: 'Electrical Engineer', bg: 'bg-purple-100 border-purple-400 text-purple-900 dark:bg-purple-900/30 dark:border-purple-500/25 dark:text-purple-300', icon: '⚡' },
+    { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
+    { key: 'el', label: 'EL', fullName: 'Electrician', bg: 'bg-indigo-100 border-indigo-400 text-indigo-900 dark:bg-indigo-900/30 dark:border-indigo-500/25 dark:text-indigo-300', icon: '🔌' },
+    { key: 'lm', label: 'LM', fullName: 'Lineman', bg: 'bg-cyan-100 border-cyan-400 text-cyan-900 dark:bg-cyan-900/30 dark:border-cyan-500/25 dark:text-cyan-300', icon: '🧗' },
+    { key: 'cs', label: 'CS', fullName: 'Cable Splicer', bg: 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '🪓' },
+    { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
   ]
 };
 
@@ -187,6 +187,10 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(true);
 
+  // New Collapsible UI States (Addresses image_ed1927.png and image_ed190d.png)
+  const [isAlertCenterExpanded, setIsAlertCenterExpanded] = useState(false);
+  const [isBookToolExpanded, setIsBookToolExpanded] = useState(false);
+
   const [laborProfile, setLaborProfile] = useState('electrical');
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -214,10 +218,8 @@ export default function App() {
   const assetDropdownRef = useRef(null);
 
   const [newChecklistItemText, setNewChecklistItemText] = useState('');
-  
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
-  /* New granular states */
   const [alertCenterAssetFilter, setAlertCenterAssetFilter] = useState('ALL');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -340,7 +342,6 @@ export default function App() {
   const compileAllProjectAllocations = useCallback(() => {
     const allocations = [];
 
-    // Parse current active project
     activeFlowTasks.forEach(task => {
       const taskStartOffset = task.startDays;
       const taskDuration = task.adjustedDuration;
@@ -366,7 +367,6 @@ export default function App() {
           }
         });
       } else if (task.assignedAsset && task.assignedAsset !== 'None') {
-        // Fallback backward compatibility - entire task gets the tool
         for (let i = 0; i < taskDuration; i++) {
           const allocAbsDate = new Date(projectStartDate);
           allocAbsDate.setDate(allocAbsDate.getDate() + taskStartOffset + i);
@@ -387,12 +387,10 @@ export default function App() {
       }
     });
 
-    // Parse cached list of other projects' compiled tasks from pooled global forecast logic
     allProjectsTasks.forEach(otherTask => {
-      if (otherTask.parentProjectId === activeProjectId) return; // skip self duplicate
+      if (otherTask.parentProjectId === activeProjectId) return;
 
       const taskDuration = otherTask.calculatedDuration || otherTask.duration;
-      // Calculate absolute baseline dates
       if (otherTask.assetAllocations && otherTask.assetAllocations.length > 0) {
         otherTask.assetAllocations.forEach(alloc => {
           if (alloc.dayOffset < taskDuration) {
@@ -442,12 +440,10 @@ export default function App() {
   const checkLogisticalConflictForAllocation = useCallback((alloc) => {
     if (!alloc.assetKey || alloc.assetKey === 'None') return null;
 
-    // Check overlaps
     for (let other of allAllocations) {
       if (other.id === alloc.id || (other.taskId === alloc.taskId && other.projectId === alloc.projectId)) continue;
 
       if (other.assetKey === alloc.assetKey && other.absDateStr === alloc.absDateStr) {
-        // Evaluate overlapping times
         const [shA, smA] = alloc.startTime.split(':').map(Number);
         const [ehA, emA] = alloc.endTime.split(':').map(Number);
         const [shB, smB] = other.startTime.split(':').map(Number);
@@ -475,10 +471,8 @@ export default function App() {
   }, [allAllocations, customAssets]);
 
   const checkAssetConflict = (taskToCheck) => {
-    // If any allocations for this task has a clash, flag it!
     const taskAllocs = allAllocations.filter(a => a.taskId === taskToCheck.id && a.projectId === activeProjectId);
     if (taskAllocs.length === 0 && taskToCheck.assignedAsset && taskToCheck.assignedAsset !== 'None') {
-      // Check full task level fallback collision
       const dummyAlloc = {
         id: `${taskToCheck.id}-fb-check`,
         taskId: taskToCheck.id,
@@ -488,7 +482,6 @@ export default function App() {
         startTime: "00:00",
         endTime: "23:59"
       };
-      // Test all allocations inside active ranges
       for (let i = 0; i < taskToCheck.adjustedDuration; i++) {
         const d = new Date(projectStartDate);
         d.setDate(d.getDate() + taskToCheck.startDays + i);
@@ -535,7 +528,7 @@ export default function App() {
           return updated;
         });
       } catch (err) {
-        console.warn("Automated Cloud Autosave suspended/interrupted: ", err);
+        console.warn("Automated Cloud Autosave suspended: ", err);
       } finally {
         setIsSavingCloud(false);
       }
@@ -1298,7 +1291,6 @@ export default function App() {
           endTime: endTime || "17:00"
         };
         
-        // Block duplicate allocations in same task on same offset
         const isDuplicate = currentAllocs.some(a => a.assetKey === assetKey && a.dayOffset === newAlloc.dayOffset && a.startTime === newAlloc.startTime);
         if (isDuplicate) {
           showToast("A dispatch matching these values already exists on this sequence.");
@@ -1424,7 +1416,7 @@ export default function App() {
 
     return (
       <div className={`absolute left-0 mt-2 p-4 rounded-3xl shadow-2xl z-50 w-72 border backdrop-blur-xl transition-all ${
-        isDarkMode ? 'bg-[#0f172a]/95 border-slate-800 text-white' : 'bg-white/95 border-slate-200 text-slate-900'
+        isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-200 text-slate-900'
       }`}>
         <div className="flex items-center justify-between mb-4">
           <button 
@@ -1457,7 +1449,7 @@ export default function App() {
                 className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold transition-all ${
                   !day ? 'opacity-0 pointer-events-none' :
                   isToday ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' :
-                  isDarkMode ? 'hover:bg-slate-800 text-slate-202' : 'hover:bg-slate-105 text-slate-800'
+                  isDarkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                 }`}
               >
                 {day}
@@ -1525,10 +1517,10 @@ export default function App() {
         }
       `}} />
 
-      {/* HEADER SECTION */}
-      <header className={`border-b z-40 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
-        <div className="px-4 py-3 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start">
+      {/* HEADER SECTION - Fixed z-index & Flex layout */}
+      <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+        <div className="px-4 py-3 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
+          <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10">
             <div className="flex items-center gap-2">
               <div className="bg-[#1e293b] p-2 rounded-xl border border-slate-700 text-white shrink-0 shadow-lg">
                 <LayoutDashboard size={18} className="text-blue-500"/>
@@ -1540,8 +1532,8 @@ export default function App() {
                     onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black select-none ${
                       isDarkMode 
-                        ? 'bg-[#131c2e] hover:bg-[#1e293b] text-white border-slate-700 hover:border-slate-500' 
-                        : 'bg-slate-100 hover:bg-slate-202 text-slate-800 border-slate-300 hover:border-slate-400 shadow-sm'
+                        ? 'bg-[#131c2e] hover:bg-[#1e293b] text-white border-slate-700' 
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300 shadow-sm'
                     }`}
                   >
                     <Folder className="text-blue-600 shrink-0" size={13}/>
@@ -1553,12 +1545,12 @@ export default function App() {
 
                   <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-1.5 rounded-xl">
                     {isSavingCloud ? (
-                      <span className="flex items-center gap-1.5 text-[10px] text-blue-500 dark:text-blue-404 font-extrabold animate-pulse">
+                      <span className="flex items-center gap-1.5 text-[10px] text-blue-500 font-extrabold animate-pulse">
                         <Loader2 size={11} className="animate-spin" />
                         <span className="hidden sm:inline">Syncing...</span>
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-404 font-extrabold">
+                      <span className="flex items-center gap-1.5 text-[10px] text-emerald-600 font-extrabold">
                         <CloudLightning size={11} className="animate-bounce" />
                         <span className="hidden sm:inline">Live Synced</span>
                       </span>
@@ -1567,9 +1559,9 @@ export default function App() {
 
                   {isProjectDropdownOpen && (
                     <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-303 text-slate-909'
+                      isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900'
                     }`}>
-                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-404 border-b border-slate-800 uppercase mb-2">
+                      <div className="px-3 py-1.5 text-[9px] font-black tracking-widest text-slate-400 border-b border-slate-800 uppercase mb-2">
                         Schedules Directory
                       </div>
                       <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
@@ -1582,12 +1574,12 @@ export default function App() {
                             }}
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-bold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
-                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-404 border border-blue-500 shadow-md' 
-                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-303 border border-transparent' : 'hover:bg-slate-100 text-slate-800 border border-slate-202')
+                                ? 'bg-blue-600/15 text-blue-900 dark:text-blue-400 border border-blue-500 shadow-md' 
+                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-100 text-slate-800 border border-slate-200')
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-500'} size={12}/>
+                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-505'} size={12}/>
                               <span className="truncate">{proj.title}</span>
                             </div>
                             {proj.id !== 'master-schedule' && (
@@ -1625,8 +1617,8 @@ export default function App() {
                       onClick={() => setShowWeatherDropdown(!showWeatherDropdown)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black ${
                         isDarkMode 
-                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-400 border-slate-700' 
-                          : 'bg-slate-105 hover:bg-slate-202 text-blue-800 border-slate-300'
+                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-404 border-slate-700' 
+                          : 'bg-slate-100 hover:bg-slate-200 text-blue-800 border-slate-300'
                       }`}
                     >
                       <span>
@@ -1637,9 +1629,9 @@ export default function App() {
 
                     {showWeatherDropdown && (
                       <div className={`absolute left-0 top-10 w-64 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150 ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-202 text-slate-950'
+                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-950'
                       }`}>
-                        <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-404 border-b border-slate-800 mb-2">
+                        <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 mb-2">
                           Stochastic Weather State
                         </div>
                         {[
@@ -1656,13 +1648,13 @@ export default function App() {
                             }}
                             className={`w-full text-left p-2 rounded-xl flex items-center justify-between text-xs transition-all ${
                               weatherFactor === weather.key 
-                                ? 'bg-blue-600/15 text-blue-404 border border-blue-500/30' 
-                                : 'hover:bg-slate-808/80 text-slate-300'
+                                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
+                                : 'hover:bg-slate-800 text-slate-300'
                             }`}
                           >
                             <div>
                               <span className="font-extrabold block">{weather.label}</span>
-                              <span className="text-[10px] text-slate-404 block">{weather.desc}</span>
+                              <span className="text-[10px] text-slate-400 block">{weather.desc}</span>
                             </div>
                             {weatherFactor === weather.key && <Check size={14} className="text-blue-500" />}
                           </button>
@@ -1676,21 +1668,22 @@ export default function App() {
             
             <button 
               onClick={() => setIsDarkMode(!isDarkMode)} 
-              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-slate-202 text-slate-900 border-slate-300'}`}
+              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-slate-100 text-slate-900 border-slate-300'}`}
             >
               {isDarkMode ? <Sun size={15}/> : <Moon size={15}/>}
             </button>
           </div>
 
-          <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <div className={`flex items-center gap-1 border p-1 rounded-2xl whitespace-nowrap shadow-inner ${
-              isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-slate-100 border-slate-250'
+          {/* Premium Perspectives Dashboard Tab bar (Addresses image_eca7b1.png) */}
+          <div className="flex items-center justify-start overflow-x-auto scrollbar-none w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0 z-10">
+            <div className={`flex items-center gap-1.5 border p-1 rounded-2xl whitespace-nowrap shadow-md bg-opacity-90 ${
+              isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-slate-100 border-slate-200'
             }`}>
               {[
                 { id: 'gantt', label: 'GANTT', icon: BarChart3, color: 'from-blue-600 to-indigo-600', shadow: 'shadow-blue-500/20' },
                 { id: 'weekly', label: 'OUTLOOK', icon: Clock, color: 'from-cyan-500 to-blue-600', shadow: 'shadow-cyan-500/20' },
                 { id: 'qa', label: 'QA', icon: ShieldCheck, color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
-                { id: 'logistics', label: 'LOGISTICS', icon: Truck, color: 'from-violet-600 to-purple-600', shadow: 'shadow-violet-500/20' }
+                { id: 'logistics', label: 'LOGISTICS', icon: Truck, color: 'from-purple-600 to-violet-600', shadow: 'shadow-purple-500/20' }
               ].map(tab => {
                 const IconComponent = tab.icon;
                 const isSelected = activePerspective === tab.id;
@@ -1698,10 +1691,10 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => setActivePerspective(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 group ${
+                    className={`flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 group ${
                       isSelected 
-                        ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.02]` 
-                        : 'text-slate-400 hover:text-slate-900 dark:hover:text-slate-202'
+                        ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.03]` 
+                        : 'text-slate-550 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
                     <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-400 group-hover:scale-110 transition-transform'}`} />
@@ -1712,13 +1705,14 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex gap-2 shrink-0 justify-end md:justify-start">
+          {/* Actions Stack - Placed with high z-index to avoid overlay intercept issues */}
+          <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative">
             <button 
               onClick={() => setIsControlPanelOpen(!isControlPanelOpen)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border shadow-sm transition-all text-xs font-black uppercase tracking-wider ${
                 isControlPanelOpen
                   ? 'bg-blue-600 border-blue-600 text-white' 
-                  : isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-105 shadow-sm'
+                  : isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100 shadow-sm'
               }`}
               title="Site Control Center"
             >
@@ -1731,26 +1725,26 @@ export default function App() {
                 setSoundEnabled(!soundEnabled);
                 showToast(soundEnabled ? "Audio alerts muted" : "Audio alerts enabled 🔊");
               }} 
-              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-101'} ${soundEnabled ? 'text-blue-600' : 'text-slate-505'}`} 
+              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-600' : 'text-slate-500'}`} 
             >
               {soundEnabled ? <Volume2 size={14}/> : <VolumeX size={14}/>}
             </button>
 
-            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-707 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-101'}`}>
+            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
               <MessageSquareShare size={14}/>
             </button>
 
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-101'}`}>
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
               <Bell size={14}/>
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
               )}
             </button>
             
-            {/* SETTINGS GEAR COMPONENT (RESOLVES image_ed0de3.png CLICKABILITY BUG) */}
+            {/* Settins gear icon button (Addresses image_ed1923.png click action issue) */}
             <button 
               onClick={() => setIsSettingsOpen(true)} 
-              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-105'}`}
+              className={`p-2 rounded-xl transition border shadow-sm cursor-pointer z-30 hover:scale-105 active:scale-95 ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'}`}
               title="Interactive Project Settings"
             >
               <Settings size={14} className="animate-spin-slow text-slate-600 dark:text-slate-400" />
@@ -1758,17 +1752,18 @@ export default function App() {
           </div>
         </div>
 
+        {/* Dynamic drop-down sub-controls */}
         {isControlPanelOpen && (
-          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-202'}`}>
+          <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-200'}`}>
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-slate-404 uppercase tracking-wider">Crew Structuring Profile</span>
-              <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-202 border-slate-300'}`}>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Crew Structuring Profile</span>
+              <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-200 border-slate-300'}`}>
                 <button 
                   onClick={() => { setLaborProfile('civil'); showToast("Switched to Civil Crew"); }}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
                     laborProfile === 'civil' 
                       ? 'bg-amber-600 text-white shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   Civil 🏗️
@@ -1778,7 +1773,7 @@ export default function App() {
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
                     laborProfile === 'electrical' 
                       ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   Electrical ⚡
@@ -1791,7 +1786,7 @@ export default function App() {
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400' : 'bg-white border-slate-300 text-blue-800'
+                  isDarkMode ? 'bg-[#131c2e] border-slate-707 text-blue-404' : 'bg-white border-slate-300 text-blue-800'
                 }`}
               >
                 <Calendar size={14} />
@@ -1806,7 +1801,7 @@ export default function App() {
               <button 
                 onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
                 className={`px-3 py-2 rounded-xl border text-xs font-black flex items-center gap-1.5 ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-105'
+                  isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'
                 }`}
               >
                 {isMetadataCollapsed ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}
@@ -1848,7 +1843,7 @@ export default function App() {
                   <input 
                     value={docMetadata.location} 
                     onChange={(e) => setDocMetadata({...docMetadata, location: e.target.value})}
-                    className="text-center text-[10px] text-slate-404 font-bold uppercase tracking-wider bg-transparent border-none outline-none mt-1"
+                    className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-transparent border-none outline-none mt-1"
                     placeholder="Location Hub..."
                   />
                 </div>
@@ -1860,19 +1855,19 @@ export default function App() {
               <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800">
                   <span>Document No:</span>
-                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`} />
+                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1">
                   <span>Revision:</span>
-                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`} />
+                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
                 </div>
                 <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1">
                   <span>Effective Date:</span>
-                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`} />
+                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
                 </div>
                 <div className="flex flex-col gap-1 pl-1">
                   <span>Base Launch:</span>
-                  <span className={`font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-800'}`}>{projectStartDate}</span>
+                  <span className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{projectStartDate}</span>
                 </div>
               </div>
             </div>
@@ -1892,8 +1887,8 @@ export default function App() {
                     onChange={(e) => setFilterSearchQuery(e.target.value)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
                       isDarkMode 
-                        ? 'bg-[#0f172a] border-slate-707 text-white focus:border-blue-500' 
-                        : 'bg-slate-105 border-slate-300 text-slate-800 focus:border-blue-600'
+                        ? 'bg-[#0f172a] border-slate-700 text-white focus:border-blue-500' 
+                        : 'bg-slate-100 border-slate-300 text-slate-800 focus:border-blue-600'
                     }`}
                   />
                   
@@ -1902,7 +1897,7 @@ export default function App() {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                       isGanttSidebarVisible 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                        : 'bg-slate-202 dark:bg-slate-800 border-slate-300 dark:border-slate-707 text-blue-800 dark:text-blue-400 hover:bg-slate-300'
+                        : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-blue-800 dark:text-blue-404 hover:bg-slate-300'
                     }`}
                     style={{ minWidth: '105px' }}
                   >
@@ -1919,7 +1914,7 @@ export default function App() {
                       className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#0f172a] border-slate-707 text-slate-404 hover:text-white' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-105')
+                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1929,15 +1924,15 @@ export default function App() {
               </div>
 
               {/* TIMELINE GANTT PLOTTER */}
-              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-white border-slate-202'}`}>
+              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#131c2e]/10 border-slate-800' : 'bg-white border-slate-200'}`}>
                 
                 {isGanttSidebarVisible && (
                   <div className={`flex w-[60%] sm:w-[50%] md:w-[40%] lg:w-[45%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-202'
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'
                   }`}>
                     
                     <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-black text-[9px] flex items-center uppercase tracking-widest border-b transition-colors ${
-                      isDarkMode ? 'bg-slate-950/60 border-slate-850 text-slate-404' : 'bg-slate-202 border-slate-300 text-slate-800'
+                      isDarkMode ? 'bg-slate-950/60 border-slate-800 text-slate-400' : 'bg-slate-200 border-slate-300 text-slate-800'
                     }`}>
                       <span className="w-8 text-center font-black">Ref</span>
                       <span className="flex-grow px-2 truncate font-black">Work Description</span>
@@ -1985,7 +1980,7 @@ export default function App() {
                     </div>
 
                     <div className="h-[64px] p-2 flex items-center border-t border-slate-300 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-404 dark:border-slate-700 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-800">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-700 w-full justify-center text-blue-700 dark:text-blue-400 hover:text-blue-800">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
@@ -1995,14 +1990,13 @@ export default function App() {
                 <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
                   
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${
-                    isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-slate-202 border-slate-303'
+                    isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-200 border-slate-300'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
                       const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
                       const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
                       
-                      // Match granular dispatches targeting this specific absolute date
                       const currentAbsoluteDate = new Date(projectStartDate);
                       currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
                       const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
@@ -2013,10 +2007,10 @@ export default function App() {
                         <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
                           isDarkMode 
                             ? `border-slate-800/60 ${isSatSun ? 'bg-slate-950/40' : ''}` 
-                            : `border-slate-300 ${isSatSun ? 'bg-slate-202' : ''}`
+                            : `border-slate-300 ${isSatSun ? 'bg-slate-200' : ''}`
                         }`}>
                           <span className="text-[9px] font-black leading-tight text-slate-800 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-505 dark:text-slate-404 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                          <span className="text-[8px] font-bold text-slate-500 dark:text-slate-400 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
                           
                           {activeAllocationsOnDay.length > 0 && (
                             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-600/25 px-1 py-0.5 rounded-full border border-blue-500/20">
@@ -2055,7 +2049,6 @@ export default function App() {
                           style={{ width: `${headerDays.length * 56}px` }}
                         >
                           {headerDays.map(day => {
-                            // Verify if an allocation is scheduled for this specific offset
                             const currentAbsoluteDate = new Date(projectStartDate);
                             currentAbsoluteDate.setDate(currentAbsoluteDate.getDate() + day);
                             const currentAbsDateStr = currentAbsoluteDate.toISOString().split('T')[0];
@@ -2065,7 +2058,7 @@ export default function App() {
                               return (
                                 <div 
                                   key={`bg-day-${day}`}
-                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10 dark:bg-blue-404/5 dark:border-blue-400/10"
+                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10 dark:bg-blue-400/5 dark:border-blue-400/10"
                                   style={{ left: `${day * 56}px` }}
                                 />
                               );
@@ -2101,7 +2094,7 @@ export default function App() {
                   </div>
 
                   <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
-                    isDarkMode ? 'bg-[#0b0f19] border-slate-850' : 'bg-slate-202 border-slate-303'
+                    isDarkMode ? 'bg-[#0b0f19] border-slate-800' : 'bg-slate-200 border-slate-300'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
@@ -2127,7 +2120,7 @@ export default function App() {
                               style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
-                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-700 dark:text-rose-400' : 'text-slate-800 dark:text-slate-404'}`}>
+                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-700 dark:text-rose-400' : 'text-slate-800 dark:text-slate-400'}`}>
                             {dayManpower > 0 ? dayManpower : '-'}
                           </span>
                         </div>
@@ -2148,17 +2141,17 @@ export default function App() {
                 isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
               }`}>
                 <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                  <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-700 dark:text-blue-404">
                     <CalendarDays size={16} /> 7-Day Cross-Project Outlook Forecast
                   </h3>
-                  <p className="text-xs text-slate-404 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
+                  <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
                 </div>
                 
-                <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-202 border-slate-300'}`}>
+                <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-200 border-slate-300'}`}>
                   <button
                     onClick={() => setActiveForecastFilter('this-week')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-500 dark:text-slate-404 hover:text-slate-202'
+                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-550 dark:text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     📅 This Week
@@ -2166,7 +2159,7 @@ export default function App() {
                   <button
                     onClick={() => setActiveForecastFilter('all-active')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-500 dark:text-slate-404 hover:text-slate-202'
+                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-550 dark:text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     ⚠️ All Unfinished Tasks
@@ -2175,10 +2168,10 @@ export default function App() {
               </div>
 
               {thisWeeksForecastList.length === 0 ? (
-                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-404 dark:border-slate-800 text-center">
-                  <CalendarDays size={40} className="text-slate-505 mb-2"/>
-                  <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-404">No Operations Scheduled Inside this Forecast cycle</h4>
-                  <p className="text-xs text-slate-505 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
+                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-400 dark:border-slate-800 text-center">
+                  <CalendarDays size={40} className="text-slate-500 mb-2"/>
+                  <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-400">No Operations Scheduled Inside this Forecast cycle</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
                 </div>
               ) : (
                 <div className="flex-grow overflow-y-auto pr-1">
@@ -2205,9 +2198,9 @@ export default function App() {
                           }`}
                         >
                           <div>
-                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
+                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                               <div className="min-w-0 flex-1">
-                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-400 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
+                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-404 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName}
                                 </span>
                                 <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -2219,7 +2212,7 @@ export default function App() {
                               </span>
                             </div>
 
-                            <div className="space-y-2 mt-4 text-xs font-bold text-slate-404">
+                            <div className="space-y-2 mt-4 text-xs font-bold text-slate-400">
                               <div className="flex justify-between items-center text-[10px]">
                                 <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Clock size={11}/> Dates</span>
                                 <span className="font-mono text-slate-800 dark:text-slate-300">
@@ -2227,7 +2220,7 @@ export default function App() {
                                 </span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Truck size={11}/> Primary Asset</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Truck size={11}/> Primary Asset</span>
                                 <span className="font-black text-blue-800 dark:text-blue-404">{item.assignedAsset || 'None'}</span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
@@ -2240,7 +2233,7 @@ export default function App() {
                           <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                             <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-404">
                               <span>PROGRESS COMPLETE</span>
-                              <span className="text-slate-800 dark:text-slate-202">{item.progress || 0}%</span>
+                              <span className="text-slate-850 dark:text-slate-200">{item.progress || 0}%</span>
                             </div>
                             <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-slate-300'}`}>
                               <div className="h-full bg-blue-600 rounded-full" style={{width: `${item.progress || 0}%`}}></div>
@@ -2248,7 +2241,7 @@ export default function App() {
                           </div>
 
                           {isOverdue && (
-                            <div className="mt-1 p-2 bg-rose-500/15 border border-rose-600 rounded-xl text-rose-505 text-[10px] font-black flex items-center gap-1.5 animate-pulse">
+                            <div className="mt-1 p-2 bg-rose-500/15 border border-rose-600 rounded-xl text-rose-500 text-[10px] font-black flex items-center gap-1.5 animate-pulse">
                               <AlertTriangle size={12} />
                               <span>OVERDUE BY COMPLIANCE BUFFER LIMITS</span>
                             </div>
@@ -2268,10 +2261,10 @@ export default function App() {
                 isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
               }`}>
                 <div>
-                  <h3 className="text-sm font-black tracking-widest uppercase text-emerald-700 dark:text-emerald-404 flex items-center gap-1.5">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-emerald-750 dark:text-emerald-404 flex items-center gap-1.5">
                     <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
                   </h3>
-                  <p className="text-xs text-slate-404 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
+                  <p className="text-xs text-slate-400 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
               </div>
 
@@ -2284,19 +2277,19 @@ export default function App() {
                       setSelectedDayIndex(0);
                     }}
                     className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-202' : 'bg-white border-slate-300 hover:border-slate-500 shadow-sm'
+                      isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-200' : 'bg-white border-slate-300 hover:border-slate-500 shadow-sm'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="font-black font-mono text-xs text-blue-600 dark:text-blue-500">{task.ref}</span>
                       <div className="min-w-0">
-                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-404 block"> {task.desc}</span>
+                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-400 block"> {task.desc}</span>
                         <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{task.task}</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-black text-slate-505 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className="text-xs font-black text-slate-500 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
                       <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
@@ -2332,11 +2325,11 @@ export default function App() {
                     const isAllocated = allAllocations.filter(a => a.assetKey === asset.key && a.projectId === activeProjectId);
                     return (
                       <div key={asset.key} className={`p-5 rounded-3xl border flex flex-col justify-between gap-4 ${
-                        isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
+                        isDarkMode ? 'bg-[#131c2e]/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
                       }`}>
                         <div className="flex items-center gap-3 justify-between">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="p-2.5 rounded-xl bg-slate-202 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 shrink-0">
+                            <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 shrink-0">
                               {renderAssetIcon(asset.key)}
                             </div>
                             <div className="min-w-0">
@@ -2353,7 +2346,7 @@ export default function App() {
                           </button>
                         </div>
 
-                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-404 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
+                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-400 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                           <div className="flex justify-between font-bold">
                             <span>CLASS:</span>
                             <span className="font-black text-slate-800 dark:text-slate-300">{asset.type}</span>
@@ -2375,100 +2368,119 @@ export default function App() {
             </div>
           )}
 
-          {/* ACTIVE DISPATCH & MOBILIZATION ALERT CENTER (RESOLVES image_ed0d10.png GRACEFUL INTEGRATION) */}
-          <div className={`p-4 rounded-3xl border flex flex-col gap-4 shrink-0 shadow-lg relative ${
-            isDarkMode ? 'bg-[#131c2e]/80 border-blue-500/20' : 'bg-blue-50 border-blue-200'
+          {/* ACTIVE DISPATCH & MOBILIZATION ALERT CENTER (COLLAPSIBLE / ACCORDION - Addresses image_ed1927.png) */}
+          <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
+            isDarkMode ? 'bg-[#131c2e]/90 border-blue-500/20' : 'bg-blue-50 border-blue-200'
           }`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-2 border-slate-700/20 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Bell className="text-blue-500 shrink-0 animate-bounce" size={16}/>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-404">
-                  Live Dispatch & Mobilization Alert Center
+            {/* Alert Center Header Strip */}
+            <div 
+              onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
+              className="flex items-center justify-between px-5 py-3.5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors select-none"
+            >
+              <div className="flex items-center gap-3">
+                <Bell className={`text-blue-500 shrink-0 ${isAlertCenterExpanded ? 'animate-bounce' : ''}`} size={16}/>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-blue-400 flex items-center gap-2">
+                  <span>Live Dispatch & Mobilization Alert Center</span>
+                  <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">
+                    {todayAllocations.length} Active Today
+                  </span>
                 </h4>
               </div>
               
-              {/* Dropdown Menu Bar (Attached inside Alert Center as requested) */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[10px] font-black text-slate-450 uppercase">Filter Dispatch:</span>
-                <div className="relative">
-                  <select 
-                    value={alertCenterAssetFilter} 
-                    onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
-                    className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
-                      isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-400' : 'bg-white border-slate-300 text-blue-800 shadow-sm'
-                    }`}
-                  >
-                    <option value="ALL">ALL SHARED VEHICLES / TOOLS</option>
-                    {customAssets.map(a => (
-                      <option key={a.key} value={a.key}>{a.key} - {a.label}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                    <ChevronDown size={11} />
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                {/* Embedded Select Filter Control */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase hidden sm:inline">Filter Asset:</span>
+                  <div className="relative">
+                    <select 
+                      value={alertCenterAssetFilter} 
+                      onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
+                      className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
+                        isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-404' : 'bg-white border-slate-300 text-blue-800 shadow-sm'
+                      }`}
+                    >
+                      <option value="ALL">ALL VEHICLES / TOOLS</option>
+                      {customAssets.map(a => (
+                        <option key={a.key} value={a.key}>{a.key} - {a.label}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-550">
+                      <ChevronDown size={11} />
+                    </div>
                   </div>
                 </div>
+
+                <button 
+                  onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
+                  className={`p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400`}
+                >
+                  {isAlertCenterExpanded ? <ChevronDown size={15} /> : <ChevronUp size={15} />}
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Active Dispatches Today
-                </span>
-                {todayAllocations.length === 0 ? (
-                  <p className="text-xs text-slate-505 italic">No tool dispatches scheduled for today.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {todayAllocations.map((alloc, idx) => {
-                      const conflict = checkLogisticalConflictForAllocation(alloc);
-                      return (
-                        <span 
-                          key={idx} 
-                          className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
-                            conflict 
-                              ? 'bg-rose-500/10 border border-rose-500 text-rose-500 animate-pulse' 
-                              : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
-                          }`}
-                        >
-                          {renderAssetIcon(alloc.assetKey)}
-                          <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
-                          {conflict && <AlertTriangle size={11} className="text-rose-500 ml-1" />}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+            {/* Collapsible Content Area */}
+            {isAlertCenterExpanded && (
+              <div className="p-5 border-t border-slate-750/10 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-top-1 duration-200">
+                <div className="space-y-2.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Active Dispatches Today
+                  </span>
+                  {todayAllocations.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">No tool dispatches scheduled for today.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {todayAllocations.map((alloc, idx) => {
+                        const conflict = checkLogisticalConflictForAllocation(alloc);
+                        return (
+                          <span 
+                            key={idx} 
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
+                              conflict 
+                                ? 'bg-rose-500/10 border border-rose-500 text-rose-500 animate-pulse' 
+                                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-850 dark:text-emerald-300'
+                            }`}
+                          >
+                            {renderAssetIcon(alloc.assetKey)}
+                            <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
+                            {conflict && <AlertTriangle size={11} className="text-rose-500 ml-1" />}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                  <Clock size={11}/> Scheduled Mobilizations Tomorrow
-                </span>
-                {tomorrowAllocations.length === 0 ? (
-                  <p className="text-xs text-slate-505 italic">No tool dispatches scheduled for tomorrow.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {tomorrowAllocations.map((alloc, idx) => {
-                      const conflict = checkLogisticalConflictForAllocation(alloc);
-                      return (
-                        <span 
-                          key={idx} 
-                          className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
-                            conflict 
-                              ? 'bg-rose-500/10 border border-rose-500 text-rose-550' 
-                              : 'bg-amber-500/10 border border-amber-500/30 text-amber-850 dark:text-amber-303'
-                          }`}
-                        >
-                          {renderAssetIcon(alloc.assetKey)}
-                          <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) ready for {alloc.taskRef} ({alloc.taskName})</span>
-                          {conflict && <AlertTriangle size={11} className="text-rose-500 ml-1" />}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
+                <div className="space-y-2.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                    <Clock size={11}/> Scheduled Mobilizations Tomorrow
+                  </span>
+                  {tomorrowAllocations.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">No tool dispatches scheduled for tomorrow.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {tomorrowAllocations.map((alloc, idx) => {
+                        const conflict = checkLogisticalConflictForAllocation(alloc);
+                        return (
+                          <span 
+                            key={idx} 
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 ${
+                              conflict 
+                                ? 'bg-rose-500/10 border border-rose-500 text-rose-500' 
+                                : 'bg-amber-500/10 border border-amber-500/30 text-amber-850 dark:text-amber-300'
+                            }`}
+                          >
+                            {renderAssetIcon(alloc.assetKey)}
+                            <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) ready for {alloc.taskRef} ({alloc.taskName})</span>
+                            {conflict && <AlertTriangle size={11} className="text-rose-500 ml-1" />}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
         </div>
@@ -2476,19 +2488,19 @@ export default function App() {
 
       {/* ASSETS / LOGISTICS MODAL */}
       {isAssetModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-202 bg-slate-100'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-100'}`}>
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-600" size={14}/> Logistics Pool Registry</h3>
               </div>
-              <button onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} className="p-1 rounded-lg hover:bg-slate-300"><X size={14}/></button>
+              <button onClick={() => { setIsAssetModalOpen(false); setAssetValidationWarning(''); }} className="p-1.5 rounded-lg hover:bg-slate-300"><X size={14}/></button>
             </div>
 
             <div className="p-5 overflow-y-auto space-y-6 scrollbar-thin">
-              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-202'} space-y-4`}>
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Asset Code (Unique Key)</label>
@@ -2497,7 +2509,7 @@ export default function App() {
                       placeholder="e.g. CRN50, HVBT1"
                       value={newAssetCode}
                       onChange={(e) => setNewAssetCode(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-909'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                     />
                   </div>
                   <div>
@@ -2507,7 +2519,7 @@ export default function App() {
                       placeholder="e.g. 50-Ton Crawler Crane"
                       value={newAssetName}
                       onChange={(e) => setNewAssetName(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-909'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                     />
                   </div>
                 </div>
@@ -2520,7 +2532,7 @@ export default function App() {
                         value={newAssetType}
                         onChange={(e) => setNewAssetType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-909 border-slate-300 [&_option]:bg-white'
+                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-700 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-900 border-slate-300 [&_option]:bg-white'
                         }`}
                       >
                         <option value="Heavy Equipment">Heavy Equipment</option>
@@ -2539,7 +2551,7 @@ export default function App() {
                       type="button"
                       onClick={() => setShowAssetIconDropdown(!showAssetIconDropdown)}
                       className={`w-full text-left px-3 py-2 border rounded-xl text-xs font-bold flex items-center justify-between ${
-                        isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-909'
+                        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
                       }`}
                     >
                       <span>
@@ -2551,7 +2563,7 @@ export default function App() {
 
                     {showAssetIconDropdown && (
                       <div className={`absolute left-0 mt-1 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in max-h-60 overflow-y-auto ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
+                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-900'
                       }`}>
                         {LOGISTICAL_ASSET_PRESETS.map(preset => (
                           <button
@@ -2563,8 +2575,8 @@ export default function App() {
                             }}
                             className={`w-full text-left p-2 rounded-xl flex items-center gap-3 text-xs transition-all ${
                               newAssetIconPreset === preset.key 
-                                ? 'bg-blue-600/15 text-blue-404 border border-blue-500/30' 
-                                : 'hover:bg-slate-808/80 text-slate-303'
+                                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
+                                : 'hover:bg-slate-800 text-slate-300'
                             }`}
                           >
                             <span className="text-lg">{preset.emoji}</span>
@@ -2607,7 +2619,7 @@ export default function App() {
         </div>
       )}
 
-      {/* DETAILED TASK EDIT & GRANULAR TOOL DISPATCH WORKCARD */}
+      {/* DETAILED TASK EDIT & TOOL DISPATCH WORKCARD (Addresses image_ed190d.png) */}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -2626,7 +2638,7 @@ export default function App() {
               <div className={`p-5 border-b flex justify-between items-center ${
                 isDarkMode 
                   ? 'border-slate-800 bg-[#1e293b]/50' 
-                  : 'border-slate-202 bg-slate-100'
+                  : 'border-slate-200 bg-slate-100'
               }`}>
                 <div className="text-left">
                   <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
@@ -2637,7 +2649,7 @@ export default function App() {
                     <span className="text-white bg-blue-600 border border-blue-500 px-2 py-0.5 rounded-lg text-xs font-black tracking-wide">
                       {currentTaskEditing.ref}
                     </span>
-                    <span className="text-xs font-bold text-slate-450 dark:text-slate-400">
+                    <span className="text-xs font-bold text-slate-400">
                       {currentTaskEditing.task}
                     </span>
                   </div>
@@ -2645,7 +2657,7 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
                   className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-404' : 'border-slate-300 hover:bg-slate-202 text-slate-707'
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-300 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
                   <X size={16}/>
@@ -2655,10 +2667,10 @@ export default function App() {
               <div className="p-6 overflow-y-auto flex-grow space-y-6 scrollbar-thin">
                 
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-slate-800">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                       Configure Sequence Details
                     </h4>
                     <button 
@@ -2666,7 +2678,7 @@ export default function App() {
                         triggerTaskRemove(currentTaskEditing.id);
                         setActiveTaskModal(null);
                       }}
-                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-505 hover:text-rose-400 transition-colors"
+                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-rose-400 transition-colors"
                     >
                       <Trash2 size={12} />
                       <span>Delete Sequence</span>
@@ -2675,24 +2687,24 @@ export default function App() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Ref Code</label>
+                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Ref Code</label>
                       <input 
                         type="text" 
                         value={currentTaskEditing.ref || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'ref', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-909 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-[9px] font-black text-slate-404 uppercase mb-1">Phase / Description Category</label>
+                      <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Phase / Description Category</label>
                       <input 
                         type="text" 
                         value={currentTaskEditing.desc || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'desc', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-909 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2706,7 +2718,7 @@ export default function App() {
                         value={currentTaskEditing.task || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'task', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-909'
+                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-650'
                         }`}
                       />
                     </div>
@@ -2718,8 +2730,8 @@ export default function App() {
                           onChange={(e) => updateTask(currentTaskEditing.id, 'qaStatus', e.target.value)}
                           className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
                             isDarkMode 
-                              ? 'bg-[#131c2e] text-white border-slate-707 [&_option]:bg-[#131c2e]' 
-                              : 'bg-white text-slate-909 border-slate-300 [&_option]:bg-white'
+                              ? 'bg-[#131c2e] text-white border-slate-700 [&_option]:bg-[#131c2e]' 
+                              : 'bg-white text-slate-900 border-slate-300 [&_option]:bg-white'
                           }`}
                         >
                           <option value="PENDING">PENDING</option>
@@ -2745,7 +2757,7 @@ export default function App() {
                           setSelectedDayIndex(0);
                         }}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303'
+                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300'
                         }`}
                       />
                     </div>
@@ -2761,67 +2773,80 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* GRANULAR DISPATCHES BUILDER (RESOLVES DYNAMIC TOOL SCHEDULE REQUIREMENT) */}
+                {/* GRANULAR DISPATCHES BUILDER (Addresses image_ed190d.png - Collapsible Booking form) */}
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-200'
                 }`}>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 mb-3 flex items-center gap-1.5">
-                    <Truck size={14} className="text-blue-500" />
-                    <span>Granular Tool Dispatches (Day & Time Selection)</span>
-                  </h4>
-
-                  <div className="p-3 bg-slate-100 dark:bg-slate-900 border rounded-2xl mb-4">
-                    <span className="text-[9px] font-bold text-slate-505 dark:text-slate-400 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
-                    <form onSubmit={(e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.currentTarget);
-                      addAssetAllocation(
-                        currentTaskEditing.id,
-                        formData.get('assetKey'),
-                        parseInt(formData.get('dayOffset')),
-                        formData.get('startTime'),
-                        formData.get('endTime')
-                      );
-                    }} className="grid grid-cols-1 sm:grid-cols-5 gap-2 items-end">
-                      <div>
-                        <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Active Day</label>
-                        <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 cursor-pointer">
-                          {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
-                            <option key={idx} value={idx}>Day {idx + 1}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Tool / Vehicle</label>
-                        <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 cursor-pointer">
-                          {customAssets.map(a => (
-                            <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
-                        <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-mono" required />
-                      </div>
-                      <div>
-                        <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
-                        <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-mono" required />
-                      </div>
-                      <button type="submit" className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider">
-                        Add dispatch
-                      </button>
-                    </form>
+                  <div 
+                    onClick={() => setIsBookToolExpanded(!isBookToolExpanded)}
+                    className="flex justify-between items-center cursor-pointer select-none pb-2 border-b dark:border-slate-800 mb-3"
+                  >
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                      <Truck size={14} className="text-blue-500" />
+                      <span>Granular Tool Dispatches (Day & Time Bookings)</span>
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded font-black">
+                        {currentTaskEditing.assetAllocations?.length || 0} Scheduled
+                      </span>
+                      {isBookToolExpanded ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
+                    </div>
                   </div>
 
-                  {/* RESERVATIONS OVERLAPPING CLASH TABLE */}
+                  {isBookToolExpanded && (
+                    <div className="p-3.5 bg-slate-100 dark:bg-slate-900 border rounded-2xl mb-4 animate-in slide-in-from-top-1 duration-150">
+                      <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">Book Shared Tool Slot</span>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        addAssetAllocation(
+                          currentTaskEditing.id,
+                          formData.get('assetKey'),
+                          parseInt(formData.get('dayOffset')),
+                          formData.get('startTime'),
+                          formData.get('endTime')
+                        );
+                      }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-400 uppercase mb-1">Active Day</label>
+                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                            {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
+                              <option key={idx} value={idx}>Day {idx + 1}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Tool / Vehicle</label>
+                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                            {customAssets.map(a => (
+                              <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
+                          <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono" required />
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
+                          <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono" required />
+                        </div>
+                        <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider">
+                          Add dispatch
+                        </button>
+                      </form>
+                    </div>
+                  )}
+
+                  {/* RESERVATIONS OVERLAPPING CLASH LIST */}
                   <div className="space-y-1.5">
                     {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
                       const conflict = checkLogisticalConflictForAllocation(alloc);
                       return (
                         <div key={i} className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
                           conflict 
-                            ? 'bg-rose-500/10 border-rose-500 animate-pulse text-rose-800 dark:text-rose-250' 
-                            : 'bg-white dark:bg-slate-900 border-slate-202 dark:border-slate-800 text-slate-800 dark:text-slate-100'
+                            ? 'bg-rose-500/10 border-rose-500 animate-pulse text-rose-800 dark:text-rose-300' 
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100'
                         }`}>
                           <div className="flex items-center gap-2">
                             {renderAssetIcon(alloc.assetKey)}
@@ -2836,7 +2861,7 @@ export default function App() {
                             <button 
                               type="button" 
                               onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
-                              className="text-slate-404 hover:text-rose-600 p-1"
+                              className="text-slate-400 hover:text-rose-600 p-1"
                             >
                               <X size={14} />
                             </button>
@@ -2849,10 +2874,10 @@ export default function App() {
 
                 {/* INSPECTION CHECKLIST CODES */}
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
+                  isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-800">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404 flex items-center gap-1">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
                       <ShieldCheck size={14} className="text-blue-500" />
                       <span>Engineering Checklist Compliance Gates</span>
                     </h4>
@@ -2872,8 +2897,8 @@ export default function App() {
                       }}
                       className={`flex-grow px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
                         isDarkMode 
-                          ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' 
-                          : 'bg-white border-slate-303 text-slate-909 focus:border-blue-600 shadow-inner'
+                          ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' 
+                          : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600 shadow-inner'
                       }`}
                     />
                     <button 
@@ -2892,7 +2917,7 @@ export default function App() {
                         className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all ${
                           checked 
                             ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-800 dark:text-emerald-300' 
-                            : isDarkMode ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-[#1e293b]' : 'bg-slate-105 border-slate-202 text-slate-707 hover:bg-slate-50 shadow-sm'
+                            : isDarkMode ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-[#1e293b]' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -2911,7 +2936,7 @@ export default function App() {
                             e.preventDefault();
                             removeCustomChecklistItem(currentTaskEditing.id, name);
                           }}
-                          className="p-1 text-slate-404 hover:text-rose-600 rounded-lg transition-colors"
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -2920,6 +2945,7 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* MANPOWER CONFIGS */}
                 <div className={`p-5 rounded-2xl border ${
                   isDarkMode ? 'bg-[#111827] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                 }`}>
@@ -2927,7 +2953,7 @@ export default function App() {
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
                       Day-by-Day Manpower Allocations
                     </h4>
-                    <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-lg border border-blue-500/20 font-mono">
+                    <span className="text-[10px] bg-blue-500/10 text-blue-404 px-2 py-0.5 rounded-lg border border-blue-500/20 font-mono">
                       Active: Day {selectedDayIndex + 1} of {currentTaskEditing.adjustedDuration}
                     </span>
                   </div>
@@ -2950,11 +2976,11 @@ export default function App() {
                               ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/10'
                               : isDarkMode 
                                 ? 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white' 
-                                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-105'
+                                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
                           }`}
                         >
                           <span>Day {idx + 1}</span>
-                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-303'}`}>
+                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-705 text-white' : 'bg-slate-800 text-slate-300'}`}>
                             {dayCrewCount} Pax
                           </span>
                         </button>
@@ -2972,7 +2998,7 @@ export default function App() {
                         const count = parseInt(dayLaborObj[role.key]) || 0;
                         return (
                           <div key={role.key} className={`p-3 rounded-xl border flex flex-col justify-between ${
-                            isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-202 shadow-sm'
+                            isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
                           }`}>
                             <div className="flex justify-between items-center">
                               <span className="text-xs">{role.icon} {role.label}</span>
@@ -2991,7 +3017,7 @@ export default function App() {
                               <button 
                                 type="button"
                                 onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
-                                className="flex-1 bg-blue-600 text-white hover:bg-blue-550 py-1 rounded-lg text-xs font-bold"
+                                className="flex-1 bg-blue-600 text-white hover:bg-blue-500 py-1 rounded-lg text-xs font-bold"
                               >
                                 +
                               </button>
@@ -3002,7 +3028,7 @@ export default function App() {
                     </div>
 
                     <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
-                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-505 dark:text-slate-404">
+                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                         Field Identity Logs (Day {selectedDayIndex + 1})
                       </h5>
                       <div className="space-y-3">
@@ -3026,7 +3052,7 @@ export default function App() {
                                       onChange={(e) => assignWorkerName(currentTaskEditing.id, role.key, workerIdx, e.target.value, selectedDayIndex)}
                                       className={`w-full px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
                                         isDarkMode 
-                                          ? 'bg-slate-900 border-slate-808 text-white focus:border-blue-500' 
+                                          ? 'bg-slate-900 border-slate-800 text-white focus:border-blue-500' 
                                           : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600 shadow-inner'
                                       }`}
                                     />
@@ -3051,7 +3077,7 @@ export default function App() {
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-909'
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
           }`}>
             <h3 className="text-xs font-black uppercase tracking-wider mb-4">Initialize Sub-Project Workspace</h3>
             <div className="space-y-4">
@@ -3084,20 +3110,20 @@ export default function App() {
         </div>
       )}
 
-      {/* INTERACTIVE SYSTEM SETTINGS MODAL (RESOLVES image_ed0de3.png CLICABILITY BUG) */}
+      {/* INTERACTIVE SYSTEM SETTINGS MODAL (Addresses Settings Click Action) */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border p-6 ${
             isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900'
           }`}>
-            <div className="flex justify-between items-center mb-6 pb-2 border-b dark:border-slate-805">
-              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+            <div className="flex justify-between items-center mb-6 pb-2 border-b dark:border-slate-800">
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-404">
                 <Settings className="animate-spin-slow" size={18} />
                 <h3 className="text-sm font-black uppercase tracking-widest">Interactive Project Settings</h3>
               </div>
               <button 
                 onClick={() => setIsSettingsOpen(false)} 
-                className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-100"
+                className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-100"
               >
                 <X size={16} />
               </button>
@@ -3105,13 +3131,13 @@ export default function App() {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-[10px] font-black uppercase text-slate-404 mb-1">Citicore System Workspace Title</label>
+                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Citicore System Workspace Title</label>
                 <input 
                   type="text" 
                   value={appTitle} 
                   onChange={(e) => setAppTitle(e.target.value)} 
                   className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-909'
+                    isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -3123,7 +3149,7 @@ export default function App() {
                   value={appSubtitle} 
                   onChange={(e) => setAppSubtitle(e.target.value)} 
                   className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-909'
+                    isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -3134,7 +3160,7 @@ export default function App() {
                   <button 
                     onClick={() => setIsDarkMode(!isDarkMode)}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-105 border-slate-300 text-slate-900 shadow-sm'
+                      isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-slate-100 border-slate-300 text-slate-900 shadow-sm'
                     }`}
                   >
                     {isDarkMode ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} />}
@@ -3147,7 +3173,7 @@ export default function App() {
                   <button 
                     onClick={() => setSoundEnabled(!soundEnabled)}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      soundEnabled ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-404'
+                      soundEnabled ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-400'
                     }`}
                   >
                     {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -3164,10 +3190,112 @@ export default function App() {
                     setProjectStartDate(new Date().toISOString().split('T')[0]);
                     showToast("Database reset to factory default parameters.");
                   }}
-                  className="px-4 py-2 bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                  className="px-4 py-2 bg-rose-605/10 hover:bg-rose-600 text-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-rose-500/20"
                 >
                   Reset Data
                 </button>
                 <button 
                   onClick={() => setIsSettingsOpen(false)}
-                  className="ml-auto px-5 py-2 bg-blue
+                  className="ml-auto px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold"
+                >
+                  Save & Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELETE PROJECT DIALOG */}
+      {projectToDelete && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-909'
+          }`}>
+            <h3 className="text-xs font-black uppercase tracking-wider mb-2 text-rose-500">Delete Workspace?</h3>
+            <p className="text-xs text-slate-400 mb-4">Are you sure you want to delete this workspace and erase all schedules associated with it? This action cannot be undone.</p>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setProjectToDelete(null)}
+                className="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteProject}
+                className="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SIDEBAR COMMUNICATIONS PANE */}
+      {isNotificationPaneOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationPaneOpen(false)} />
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className={`w-screen max-w-md border-l transform transition-all ease-in-out duration-300 ${isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className="h-full flex flex-col py-6 bg-transparent shadow-xl">
+                <div className="px-6 flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Bell className="text-blue-500" size={18} />
+                    <h2 className="text-sm font-black uppercase tracking-widest">Site Communications Log</h2>
+                  </div>
+                  <button onClick={() => setIsNotificationPaneOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="relative flex-1 py-6 px-6 overflow-y-auto space-y-3">
+                  {notifications.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
+                      <Bell className="w-10 h-10 text-slate-400 mb-2" />
+                      <p className="text-xs font-bold">No active site notifications.</p>
+                    </div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div key={notif.id} className={`p-4 rounded-2xl border transition-all flex gap-3 ${
+                        notif.type === 'alert' ? 'bg-rose-500/10 border-rose-500/20 text-rose-800 dark:text-rose-200 animate-pulse' :
+                        notif.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-200' :
+                        notif.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-200' :
+                        'bg-blue-500/10 border-blue-500/20 text-blue-800 dark:text-blue-200'
+                      }`}>
+                        <div className="mt-0.5">
+                          {notif.type === 'alert' ? <AlertTriangle size={15} className="text-rose-500" /> :
+                           notif.type === 'warning' ? <AlertTriangle size={15} className="text-amber-500" /> :
+                           notif.type === 'success' ? <CheckCircle2 size={15} className="text-emerald-500" /> :
+                           <Info size={15} className="text-blue-500" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold leading-relaxed">{notif.text}</p>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-1">{notif.time}</span>
+                        </div>
+                        <button 
+                          onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))} 
+                          className="text-slate-404 hover:text-slate-650"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="px-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <button 
+                    onClick={() => { setNotifications([]); showToast("Cleared communications history"); }} 
+                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-202 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-black uppercase tracking-widest transition-all"
+                  >
+                    Clear All Logs
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
