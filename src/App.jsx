@@ -32,7 +32,7 @@ try {
         authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN || "",
         projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID || "",
         storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET || "",
-        messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+        messagingSenderId: import.meta.env?.VITE_FIREAGING_SENDER_ID || "",
         appId: import.meta.env?.VITE_FIREBASE_APP_ID || ""
       };
   }
@@ -48,7 +48,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'mbv-scheduler-v1';
 
 const CiticoreLogo = ({ isDarkMode }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 w-auto">
-    <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#3b82f6" />
+    <path d="M15 10 L25 22 L15 34 L20 34 L30 22 L20 10 Z" fill="#2563eb" />
     <path d="M22 10 L32 22 L22 34 L27 34 L37 22 L27 10 Z" fill="#06b6d4" />
     <text x="50" y="24" fontFamily="'Inter', sans-serif" fontWeight="900" fontSize="13" fill={isDarkMode ? "#f8fafc" : "#0f172a"} letterSpacing="-0.03em">CITICORE</text>
     <text x="50" y="34" fontFamily="'Inter', sans-serif" fontWeight="800" fontSize="7.5" fill={isDarkMode ? "#64748b" : "#475569"} letterSpacing="0.1em">CONSTRUCTION</text>
@@ -57,16 +57,16 @@ const CiticoreLogo = ({ isDarkMode }) => (
 
 const MbvLogo = ({ isDarkMode }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" className="h-7 w-auto">
-    <rect x="10" y="5" width="35" height="35" rx="6" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5" />
+    <rect x="10" y="5" width="35" height="35" rx="6" fill="#1e293b" stroke="#2563eb" strokeWidth="1.5" />
     <path d="M27 12 L19 23 L26 23 L23 31 L32 19 L25 19 Z" fill="#06b6d4" />
-    <text x="55" y="24" fontFamily="'Inter', sans-serif" fontWeight="900" fontSize="13" fill="#3b82f6" letterSpacing="-0.03em">MBV ELECTRIC</text>
+    <text x="55" y="24" fontFamily="'Inter', sans-serif" fontWeight="900" fontSize="13" fill="#2563eb" letterSpacing="-0.03em">MBV ELECTRIC</text>
     <text x="55" y="34" fontFamily="'Inter', sans-serif" fontWeight="800" fontSize="7.5" fill={isDarkMode ? "#818cf8" : "#4338ca"} letterSpacing="0.1em">POWER SYSTEM</text>
   </svg>
 );
 
 const AssetIcons = {
   None: () => (
-    <svg className="w-4.5 h-4.5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4.5 h-4.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
     </svg>
   ),
@@ -77,34 +77,53 @@ const AssetIcons = {
       <circle cx="16" cy="19" r="2.5" />
     </svg>
   ),
+  crane: () => (
+    <svg className="w-4.5 h-4.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V6m0 0l11-3m-11 3h9m-9 5h14m-14 5h11M14 6l3 10m-3-10l4 5" />
+      <circle cx="5" cy="21" r="1.5" />
+      <circle cx="20" cy="21" r="1.5" />
+    </svg>
+  ),
+  excavator: () => (
+    <svg className="w-4.5 h-4.5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 18h11m-7-5h5l3 3h3m-12-6l5-2m2 7l4-5 3 2m-13 5a3 3 0 11-6 0v-2h6" />
+    </svg>
+  ),
   case: () => (
-    <svg className="w-4.5 h-4.5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4.5 h-4.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <rect x="3" y="7" width="18" height="12" rx="2" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M12 11v4M9 13h6" />
     </svg>
   ),
   lightning: () => (
-    <svg className="w-4.5 h-4.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4.5 h-4.5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
   ),
   tester: () => (
-    <svg className="w-4.5 h-4.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <svg className="w-4.5 h-4.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
     </svg>
   ),
-  crane: () => (
-    <svg className="w-4.5 h-4.5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V8l7-4M12 8h9M12 8l4 6" />
-      <circle cx="12" cy="17" r="2" />
+  utility: () => (
+    <svg className="w-4.5 h-4.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 17h14M5 12h14M2 17h20v2H2zM4 12V7a2 2 0 012-2h8a2 2 0 012 2v5" />
+      <circle cx="7" cy="15" r="2" />
+      <circle cx="17" cy="15" r="2" />
+    </svg>
+  ),
+  splicing: () => (
+    <svg className="w-4.5 h-4.5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M3 12h18M6 6l12 12M18 6L6 12" />
     </svg>
   )
 };
 
 const DEFAULT_SHARED_ASSETS = [
-  { key: 'PC135', label: 'PC135 Excavator', iconPreset: 'heavy', type: 'Heavy Equipment', defaultMobilizationDays: 1 },
+  { key: 'PC135', label: 'PC135 Excavator', iconPreset: 'excavator', type: 'Heavy Equipment', defaultMobilizationDays: 1 },
+  { key: 'CRN50', label: '50-Ton Crawler Crane', iconPreset: 'crane', type: 'Heavy Equipment', defaultMobilizationDays: 1 },
   { key: 'MVK01', label: 'MV Calibration Kit #1', iconPreset: 'case', type: 'Specialized Tools', defaultMobilizationDays: 0 },
-  { key: 'FSA22', label: 'Fusion Splicer Alpha', iconPreset: 'lightning', type: 'Specialized Tools', defaultMobilizationDays: 0 },
+  { key: 'FSA22', label: 'Fusion Splicer Alpha', iconPreset: 'splicing', type: 'Specialized Tools', defaultMobilizationDays: 0 },
   { key: 'PIT99', label: 'Primary Injection Tester', iconPreset: 'tester', type: 'Testing Equipment', defaultMobilizationDays: 1 }
 ];
 
@@ -146,7 +165,6 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const calendarRef = useRef(null);
 
-  // Parse current selected date
   const parsedDate = selectedDate ? new Date(selectedDate) : new Date();
   const [currentYear, setCurrentYear] = useState(parsedDate.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(parsedDate.getMonth());
@@ -158,14 +176,12 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
 
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-  // Calculate days layout
   const getDaysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
 
   const daysInCurrentMonth = getDaysInMonth(currentMonth, currentYear);
   const firstDayIndex = getFirstDayOfMonth(currentMonth, currentYear);
 
-  // Retrieve padded trailing days from previous month
   const prevMonthIndex = currentMonth === 0 ? 11 : currentMonth - 1;
   const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
   const daysInPrevMonth = getDaysInMonth(prevMonthIndex, prevMonthYear);
@@ -180,7 +196,6 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
     });
   }
 
-  // Populate active month days
   const currentMonthDays = [];
   for (let d = 1; d <= daysInCurrentMonth; d++) {
     currentMonthDays.push({
@@ -191,9 +206,8 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
     });
   }
 
-  // Padded leading days of next month
   const totalDaysSoFar = prevMonthDaysToShow.length + currentMonthDays.length;
-  const remainingSlots = 42 - totalDaysSoFar; // Standard 6-row calendar layout
+  const remainingSlots = 42 - totalDaysSoFar;
   const nextMonthDaysToShow = [];
   const nextMonthIndex = currentMonth === 11 ? 0 : currentMonth + 1;
   const nextMonthYear = currentMonth === 11 ? currentYear + 1 : currentYear;
@@ -246,7 +260,6 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
     setIsOpen(false);
   };
 
-  // Close calendar popover on click outside
   useEffect(() => {
     const clickHandler = (e) => {
       if (calendarRef.current && !calendarRef.current.contains(e.target)) {
@@ -270,7 +283,7 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold shadow-inner transition-all duration-200 outline-none ${
           isDarkMode 
-            ? 'bg-[#131c2e] hover:bg-[#1c293f] border-slate-800 text-blue-400 hover:text-blue-300' 
+            ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 text-blue-400 hover:text-blue-300' 
             : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
         }`}
       >
@@ -287,7 +300,6 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
             ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-[#020617]/80' 
             : 'bg-white border-slate-200 text-slate-900 shadow-slate-300/50'
         }`}>
-          {/* Header Controls */}
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-black uppercase tracking-wider text-blue-500">
               {months[currentMonth]} {currentYear}
@@ -314,14 +326,12 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
             </div>
           </div>
 
-          {/* Days of week header */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b pb-1 border-slate-800/40">
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b pb-1 border-slate-800/45">
             {daysOfWeek.map(d => (
               <span key={d}>{d}</span>
             ))}
           </div>
 
-          {/* Days Grid */}
           <div className="grid grid-cols-7 gap-1">
             {allCalendarDays.map((dayObj, i) => {
               const formattedMonth = String(dayObj.month + 1).padStart(2, '0');
@@ -329,7 +339,6 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
               const currentIterationStr = `${dayObj.year}-${formattedMonth}-${formattedDay}`;
               const isSelected = selectedDate === currentIterationStr;
 
-              // Check if day is today
               const todayObj = new Date();
               const isToday = todayObj.getDate() === dayObj.day && todayObj.getMonth() === dayObj.month && todayObj.getFullYear() === dayObj.year;
 
@@ -354,7 +363,6 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
             })}
           </div>
 
-          {/* Quick-select Footer buttons matching de9c32.png design context */}
           <div className="flex items-center justify-between border-t border-slate-800/40 mt-3 pt-2">
             <button
               type="button"
@@ -371,6 +379,170 @@ const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
               Today
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PremiumWeatherSelector = ({ value, onChange, isDarkMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const states = [
+    { id: 'sunny', label: 'Sunny (Normal 1.0x)', icon: '☀️', color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
+    { id: 'heavy_rain', label: 'Rain Delay (+35%)', icon: '🌧️', color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+    { id: 'typhoon', label: 'Typhoon Lock (+80%)', icon: '🌀', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' }
+  ];
+
+  const currentSelection = states.find(s => s.id === value) || states[0];
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  return (
+    <div className="relative w-full min-w-[200px]" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold transition-all duration-200 outline-none ${
+          isDarkMode 
+            ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 text-slate-200 shadow-inner' 
+            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-sm'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          <span className={`text-sm py-0.5 px-1.5 rounded-md ${currentSelection.color.split(' ')[1]}`}>
+            {currentSelection.icon}
+          </span>
+          <span className="tracking-wide">{currentSelection.label}</span>
+        </span>
+        <ChevronDown size={14} className="opacity-60 transition-transform duration-200" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }} />
+      </button>
+
+      {isOpen && (
+        <div className={`absolute right-0 left-0 mt-2 rounded-2xl shadow-2xl border p-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150 ${
+          isDarkMode 
+            ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-[#020617]/90' 
+            : 'bg-white border-slate-200 text-slate-900 shadow-slate-300/50'
+        }`}>
+          {states.map(state => {
+            const isSelected = state.id === value;
+            return (
+              <button
+                key={state.id}
+                type="button"
+                onClick={() => {
+                  onChange(state.id);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all ${
+                  isSelected 
+                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' 
+                    : isDarkMode 
+                      ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' 
+                      : 'hover:bg-slate-50 text-slate-755 border border-transparent'
+                }`}
+              >
+                <span className={`text-sm py-0.5 px-1.5 rounded-md ${state.color.split(' ')[1]} ${state.color.split(' ')[0]}`}>
+                  {state.icon}
+                </span>
+                <span className="flex-grow">{state.label}</span>
+                {isSelected && <Check size={14} className="text-blue-400 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PremiumAssetPresetSelector = ({ value, onChange, isDarkMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  const presets = [
+    { id: 'heavy', label: 'Heavy Rig / Transport', emoji: '🚚', desc: 'Bulk Transformer hauls & flatbed transit' },
+    { id: 'crane', label: 'Heavy Lift Crane / Gantry', emoji: '🏗️', desc: 'Lifting substation bays and transformers' },
+    { id: 'excavator', label: 'Excavator / earthmover', emoji: '🚜', desc: 'Grounding trenching and manual cable potholing' },
+    { id: 'case', label: 'Precision Calibration Case', emoji: '🧳', desc: 'MV test instrumentation and protection tools' },
+    { id: 'lightning', label: 'Transformer Terminal', emoji: '⚡', desc: 'Primary current / active terminal testing' },
+    { id: 'tester', label: 'Primary Injection Tester', emoji: '📊', desc: 'High voltage relay loops and loop test check' },
+    { id: 'utility', label: 'Crew Utility Service Flatbed', emoji: '🛻', desc: 'Site patrol and mobile tooling run' },
+    { id: 'splicing', label: 'Optical Splicing Hub', emoji: '🔌', desc: 'Fiber splicing, SCADA telemetry & RTU loops' }
+  ];
+
+  const currentSelection = presets.find(p => p.id === value) || presets[0];
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  return (
+    <div className="relative w-full" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between px-3 py-2 border rounded-xl text-xs font-bold transition-all duration-200 outline-none ${
+          isDarkMode 
+            ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 text-slate-100 shadow-inner' 
+            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-900 shadow-sm'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-sm">{currentSelection.emoji}</span>
+          <span className="tracking-wide text-[11px] truncate">{currentSelection.label}</span>
+        </span>
+        <ChevronDown size={14} className="opacity-60 shrink-0 transition-transform duration-200" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }} />
+      </button>
+
+      {isOpen && (
+        <div className={`absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto rounded-2xl shadow-2xl border p-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150 ${
+          isDarkMode 
+            ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-[#020617]/95' 
+            : 'bg-white border-slate-200 text-slate-900 shadow-slate-300/60'
+        }`}>
+          {presets.map(item => {
+            const isSelected = item.id === value;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  onChange(item.id);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex flex-col gap-0.5 px-3 py-2 rounded-xl text-left transition-all ${
+                  isSelected 
+                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/25' 
+                    : isDarkMode 
+                      ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' 
+                      : 'hover:bg-slate-50 text-slate-800 border border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{item.emoji}</span>
+                  <span className="text-[11px] font-black">{item.label}</span>
+                  {isSelected && <Check size={12} className="text-blue-400 ml-auto shrink-0" />}
+                </div>
+                <span className="text-[9px] opacity-70 ml-6 block truncate max-w-[200px]">{item.desc}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
@@ -405,6 +577,8 @@ export default function App() {
   const [activeForecastFilter, setActiveForecastFilter] = useState('this-week');
 
   const [isUtilityMenuOpen, setIsUtilityMenuOpen] = useState(false);
+
+  const [newChecklistItemText, setNewChecklistItemText] = useState('');
 
   const handleLeftScroll = (e) => {
     if (isSyncingRightScroll.current) {
@@ -628,7 +802,7 @@ export default function App() {
       osc1.stop(now + 0.55);
       osc2.stop(now + 0.65);
     } catch (e) {
-      console.warn("Synth audio feedback blocked by user interaction gesture rule:", e);
+      console.warn("Synth audio feedback blocked:", e);
     }
   }, [soundEnabled]);
 
@@ -1072,7 +1246,7 @@ export default function App() {
     const updatedTasks = tasks.map(t => t.id === id ? { ...t, [field]: value } : t);
     setTasks(updatedTasks);
     
-    if (db && user && (field === 'assignedAsset' || field === 'qaStatus' || field === 'duration')) {
+    if (db && user && (field === 'assignedAsset' || field === 'qaStatus' || field === 'duration' || field === 'checklist')) {
       try {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
         await setDoc(docRef, {
@@ -1159,7 +1333,7 @@ export default function App() {
   };
   
   const toggleChecklistItem = (taskId, itemName) => {
-    setTasks(tasks.map(t => {
+    const updatedTasks = tasks.map(t => {
       if (t.id === taskId) {
         const currentChecklist = { ...(t.checklist || {}) };
         currentChecklist[itemName] = !currentChecklist[itemName];
@@ -1170,7 +1344,39 @@ export default function App() {
         return { ...t, checklist: currentChecklist };
       }
       return t;
-    }));
+    });
+    setTasks(updatedTasks);
+    updateTask(taskId, 'checklist', updatedTasks.find(t => t.id === taskId).checklist);
+  };
+
+  const addChecklistItem = (taskId) => {
+    if (!newChecklistItemText.trim()) return;
+    const updatedTasks = tasks.map(t => {
+      if (t.id === taskId) {
+        const currentChecklist = { ...(t.checklist || {}) };
+        currentChecklist[newChecklistItemText.trim()] = false;
+        return { ...t, checklist: currentChecklist };
+      }
+      return t;
+    });
+    setTasks(updatedTasks);
+    updateTask(taskId, 'checklist', updatedTasks.find(t => t.id === taskId).checklist);
+    logActivityToCloud(`Checklist: Added new parameter "${newChecklistItemText.trim()}"`, 'info');
+    setNewChecklistItemText('');
+  };
+
+  const deleteChecklistItem = (taskId, itemName) => {
+    const updatedTasks = tasks.map(t => {
+      if (t.id === taskId) {
+        const currentChecklist = { ...(t.checklist || {}) };
+        delete currentChecklist[itemName];
+        return { ...t, checklist: currentChecklist };
+      }
+      return t;
+    });
+    setTasks(updatedTasks);
+    updateTask(taskId, 'checklist', updatedTasks.find(t => t.id === taskId).checklist);
+    logActivityToCloud(`Checklist: Removed parameter "${itemName}"`, 'alert');
   };
 
   const checkAssetConflict = (taskToCheck) => {
@@ -1219,10 +1425,10 @@ export default function App() {
     const hasConflict = checkAssetConflict(task);
     
     if (isDarkMode) {
-      if (hasConflict) return 'bg-amber-950/20 border-amber-500/30 hover:bg-amber-950/40 text-amber-200';
+      if (hasConflict) return 'bg-amber-955/20 border-amber-500/30 hover:bg-amber-955/40 text-amber-200';
       if (isHold) return 'bg-rose-950/20 border-rose-500/30 hover:bg-rose-950/40 text-rose-200';
       if (isApproved) return 'bg-emerald-950/20 border-emerald-500/30 hover:bg-emerald-950/40 text-emerald-200';
-      return index % 2 === 0 ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-800/20' : 'bg-slate-950/20 border-slate-800 hover:bg-slate-800/10';
+      return index % 2 === 0 ? 'bg-slate-900/40 border-slate-800/60 hover:bg-slate-800/20' : 'bg-[#0b0f19] border-slate-800/40 hover:bg-slate-800/10';
     } else {
       if (hasConflict) return 'bg-amber-50/80 border-amber-300 hover:bg-amber-100/80 text-amber-900';
       if (isHold) return 'bg-rose-50/80 border-rose-300 hover:bg-rose-100/80 text-rose-900';
@@ -1292,7 +1498,6 @@ export default function App() {
   return (
     <div className={`flex flex-col h-screen font-sans overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-[#080d1a] text-slate-100' : 'bg-[#f8fafc] text-[#0f172a]'}`}>
       
-      {}
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
@@ -1308,20 +1513,20 @@ export default function App() {
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: ${isDarkMode ? 'rgba(15, 23, 42, 0.1)' : 'rgba(241, 245, 249, 0.5)'}; }
         ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#1e293b' : '#cbd5e1'}; border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
         
         .gantt-grid-light {
           background-image: 
             linear-gradient(to right, rgba(203, 213, 225, 0.3) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(203, 213, 225, 0.3) 1px, transparent 1px);
-          background-size: 44px 100%, 100% 54px;
+          background-size: 56px 100%, 100% 68px;
         }
         
         .gantt-grid-dark {
           background-image: 
             linear-gradient(to right, rgba(30, 41, 59, 0.4) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(30, 41, 59, 0.4) 1px, transparent 1px);
-          background-size: 44px 100%, 100% 54px;
+          background-size: 56px 100%, 100% 68px;
         }
 
         @media print {
@@ -1332,8 +1537,7 @@ export default function App() {
         }
       `}} />
 
-      {}
-      <header className={`border-b z-20 shrink-0 transition-colors ${isDarkMode ? 'bg-[#0f172a]/90 border-slate-800/80 backdrop-blur-md' : 'bg-white/90 border-slate-200/80 backdrop-blur-md'}`}>
+      <header className={`border-b z-20 shrink-0 transition-colors ${isDarkMode ? 'bg-[#0f172a]/95 border-slate-800/80 backdrop-blur-md' : 'bg-white/95 border-slate-200/80 backdrop-blur-md'}`}>
         <div className="px-4 py-2 sm:px-6 sm:py-3 flex flex-col gap-2 sm:gap-3">
           
           <div className="flex items-center justify-between gap-3">
@@ -1362,9 +1566,9 @@ export default function App() {
 
                   {isProjectDropdownOpen && (
                     <div className={`absolute left-0 top-10 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200 ${
-                      isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-250' : 'bg-white border-slate-200 text-slate-800'
+                      isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-200 shadow-2xl' : 'bg-white border-slate-200 text-slate-800'
                     }`}>
-                      <div className="px-3 py-2 text-[10px] font-black tracking-widest text-slate-500 border-b border-slate-800 uppercase mb-2">
+                      <div className="px-3 py-2 text-[10px] font-black tracking-widest text-slate-500 border-b border-slate-850 uppercase mb-2">
                         Schedules Directory
                       </div>
                       <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
@@ -1377,8 +1581,8 @@ export default function App() {
                             }}
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
-                                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-md' 
-                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-50 text-slate-700 border border-slate-200')
+                                ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-md' 
+                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-50 text-slate-750 border border-slate-200')
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
@@ -1401,7 +1605,7 @@ export default function App() {
                         ))}
                       </div>
                       
-                      <div className="border-t border-slate-800 mt-2 pt-2">
+                      <div className="border-t border-slate-850 mt-2 pt-2">
                         <button 
                           onClick={() => {
                             setShowCreateProjectModal(true);
@@ -1422,26 +1626,34 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex items-center justify-center flex-1 max-w-md mx-2">
-              <div className={`flex items-center gap-1 border p-1 rounded-2xl w-full justify-between transition-colors ${isDarkMode ? 'bg-[#090d16] border-slate-800/80' : 'bg-slate-100 border-slate-200/80'}`}>
+            {/* UPGRADED NAVIGATION TABS (Ref: image_df054e.png) */}
+            <div className="flex items-center justify-center flex-1 max-w-lg mx-2">
+              <div className={`flex items-center gap-1 border p-1 rounded-2xl w-full justify-between transition-colors shadow-inner ${
+                isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-slate-100 border-slate-200/80'
+              }`}>
                 {[
-                  { id: 'gantt', label: '📊 Gantt' },
-                  { id: 'weekly', label: '📅 Outlook' },
-                  { id: 'qa', label: '🛡️ QA' },
-                  { id: 'logistics', label: '🚚 Logistics' }
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActivePerspective(tab.id)}
-                    className={`flex-1 px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-center transition-all ${
-                      activePerspective === tab.id 
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10' 
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+                  { id: 'gantt', label: 'Gantt Workspace', icon: LayoutDashboard },
+                  { id: 'weekly', label: 'Outlook', icon: CalendarDays },
+                  { id: 'qa', label: 'QA Ledger', icon: ShieldCheck },
+                  { id: 'logistics', label: 'Logistics', icon: Truck }
+                ].map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activePerspective === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActivePerspective(tab.id)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider text-center transition-all ${
+                        isActive 
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10 scale-105' 
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
+                      }`}
+                    >
+                      <Icon size={12} className={isActive ? 'text-white' : 'text-slate-500'} />
+                      <span className="hidden xs:inline">{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1471,7 +1683,7 @@ export default function App() {
                 
                 {isUtilityMenuOpen && (
                   <div className={`absolute right-0 top-10 w-48 rounded-2xl shadow-2xl border p-2 z-50 flex flex-col gap-1 ${
-                    isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
                   }`}>
                     <button 
                       onClick={() => { setSoundEnabled(!soundEnabled); setIsUtilityMenuOpen(false); }} 
@@ -1482,7 +1694,7 @@ export default function App() {
                     </button>
                     <button 
                       onClick={() => { shareToGroupChat(); setIsUtilityMenuOpen(false); }} 
-                      className="flex items-center gap-2 px-3 py-2 text-xs font-bold hover:bg-slate-800/50 rounded-xl w-full text-left text-indigo-400"
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-bold hover:bg-slate-800/50 rounded-xl w-full text-left text-blue-400"
                     >
                       <MessageSquareShare size={14}/>
                       <span>Share Workspace</span>
@@ -1510,7 +1722,6 @@ export default function App() {
 
         </div>
 
-        {}
         {isControlPanelOpen && (
           <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/95 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
             <div className="flex flex-col gap-1">
@@ -1531,28 +1742,19 @@ export default function App() {
               </div>
             </div>
 
+            {/* UPGRADED WEATHER STATE POPULAR IN image_df05aa.png */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Weather State</span>
-              <div className="relative">
-                <select 
-                  value={weatherFactor} 
-                  onChange={(e) => {
-                    setWeatherFactor(e.target.value);
-                    logActivityToCloud(`Weather state updated to ${e.target.value.toUpperCase()}`, 'warning');
-                  }} 
-                  className={`text-xs px-3 py-2 border rounded-xl font-bold outline-none cursor-pointer pr-8 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-blue-400 [&_option]:bg-[#131c2e]' : 'bg-white border-slate-200 text-slate-800 [&_option]:bg-white'}`}
-                >
-                  <option value="sunny">☀️ Sunny (Normal 1.0x)</option>
-                  <option value="heavy_rain">🌧️ Rain Delay (+35%)</option>
-                  <option value="typhoon">🌀 Typhoon Lock (+80%)</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                  <ChevronDown size={14}/>
-                </div>
-              </div>
+              <PremiumWeatherSelector 
+                value={weatherFactor} 
+                onChange={(newVal) => {
+                  setWeatherFactor(newVal);
+                  logActivityToCloud(`Weather state updated to ${newVal.toUpperCase()}`, 'warning');
+                }} 
+                isDarkMode={isDarkMode} 
+              />
             </div>
 
-            {/* UPGRADED CALENDAR SELECTOR: Beautiful custom slate picker replaces cheap browser input date element */}
             <div className="flex flex-col gap-1 w-48">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Launch Target</span>
               <PremiumCalendarWidget 
@@ -1569,7 +1771,7 @@ export default function App() {
               <button 
                 onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
                 className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-800 hover:bg-slate-800' : 'bg-white border-slate-200 hover:bg-slate-100'
+                  isDarkMode ? 'bg-[#0f172a] border-slate-800 hover:bg-slate-800' : 'bg-white border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 {isMetadataCollapsed ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}
@@ -1589,13 +1791,12 @@ export default function App() {
         )}
       </header>
 
-      {}
       <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
           {!isMetadataCollapsed && (
             <div id="gantt-export-zone" className={`rounded-2xl border p-4 flex flex-col gap-4 shadow-sm shrink-0 transition-all duration-300 animate-in slide-in-from-top-1 ${
-              isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'
+              isDarkMode ? 'bg-[#0f172a] border-slate-800/60' : 'bg-white border-slate-200'
             }`}>
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="w-full md:w-1/4 flex justify-start items-center">
@@ -1620,16 +1821,16 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
-                <div className="flex flex-col gap-1 border-r border-slate-800">
+              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200'}`}>
+                <div className="flex flex-col gap-1 border-r border-slate-800/40">
                   <span>Document No:</span>
                   <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`} />
                 </div>
-                <div className="flex flex-col gap-1 border-r border-slate-800 px-1">
+                <div className="flex flex-col gap-1 border-r border-slate-800/40 px-1">
                   <span>Revision:</span>
                   <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`} />
                 </div>
-                <div className="flex flex-col gap-1 border-r border-slate-800 px-1">
+                <div className="flex flex-col gap-1 border-r border-slate-800/40 px-1">
                   <span>Effective Date:</span>
                   <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`} />
                 </div>
@@ -1641,12 +1842,11 @@ export default function App() {
             </div>
           )}
 
-          {/* GANTT PERSPECTIVE VIEWPORT */}
           {activePerspective === 'gantt' && (
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
               <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 ${
-                isDarkMode ? 'bg-[#131c2e]/60 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+                isDarkMode ? 'bg-[#0f172a]/60 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
               }`}>
                 <div className="flex items-center gap-3 flex-1 justify-between sm:justify-start">
                   <input 
@@ -1656,7 +1856,7 @@ export default function App() {
                     onChange={(e) => setFilterSearchQuery(e.target.value)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
                       isDarkMode 
-                        ? 'bg-[#0f172a] border-slate-800 text-white focus:border-blue-500' 
+                        ? 'bg-[#080d1a] border-slate-800 text-white focus:border-blue-500' 
                         : 'bg-slate-100 border-slate-200 text-slate-800 focus:border-blue-500'
                     }`}
                   />
@@ -1683,7 +1883,7 @@ export default function App() {
                       className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100')
+                          : (isDarkMode ? 'bg-[#080d1a] border-slate-800 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1692,16 +1892,15 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Gantt Scroll Sync Container */}
-              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#0b0f19] border-slate-805' : 'bg-white border-slate-205'}`}>
+              <div className={`flex border rounded-3xl overflow-hidden flex-grow shadow-sm transition-colors ${isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-white border-slate-200'}`}>
                 
                 {isGanttSidebarVisible && (
                   <div className={`flex w-[55%] sm:w-[45%] md:w-[35%] lg:w-[40%] flex-col shrink-0 z-10 border-r relative transition-all duration-300 ${
-                    isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-205'
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-white border-slate-200'
                   }`}>
                     
                     <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-black text-[9px] flex items-center uppercase tracking-widest border-b transition-colors ${
-                      isDarkMode ? 'bg-slate-950/60 border-slate-800 text-slate-400' : 'bg-slate-100 border-slate-205 text-slate-800'
+                      isDarkMode ? 'bg-slate-950/60 border-slate-800/80 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-800'
                     }`}>
                       <span className="w-8 text-center font-bold">Ref</span>
                       <span className="flex-grow px-2 truncate font-bold">Description</span>
@@ -1717,13 +1916,13 @@ export default function App() {
                         <div 
                           key={task.id} 
                           onClick={() => setActiveTaskModal(task.id)}
-                          className={`h-[54px] min-h-[54px] max-h-[54px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
+                          className={`h-[68px] min-h-[68px] max-h-[68px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
                         >
                           <div className="w-8 text-center flex items-center justify-center shrink-0 font-bold font-mono text-[10px] text-blue-500">
                             {task.ref}
                           </div>
                           
-                          <div className={`flex-grow h-full flex flex-col justify-center px-2 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-205'}`}>
+                          <div className={`flex-grow h-full flex flex-col justify-center px-2 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="font-bold text-[8px] text-blue-400 uppercase tracking-wider block truncate">
                                 {task.desc}
@@ -1737,15 +1936,15 @@ export default function App() {
                             </span>
                           </div>
                           
-                          <div className={`w-10 h-full border-l flex items-center justify-center font-bold text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40' : 'border-slate-205'}`}>
+                          <div className={`w-10 h-full border-l flex items-center justify-center font-bold text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                             {task.duration}d
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="h-[64px] p-2 flex items-center border-t border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-800 w-full justify-center text-blue-400 hover:text-blue-300">
+                    <div className="h-[64px] p-2 flex items-center border-t border-slate-800/80 sticky bottom-0 z-20 shrink-0">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-800/80 w-full justify-center text-blue-400 hover:text-blue-300">
                          <Plus size={12}/> Add Parameter
                        </button>
                     </div>
@@ -1755,16 +1954,16 @@ export default function App() {
                 <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin">
                   
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-25 border-b transition-colors ${
-                    isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-205'
+                    isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-slate-100 border-slate-200'
                   }`}
-                  style={{ width: `${headerDays.length * 44}px` }}>
+                  style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
                       const isWeekendDay = new Date(projectStartDate).getTime() + day * 86400000;
                       const isSatSun = new Date(isWeekendDay).getDay() === 0 || new Date(isWeekendDay).getDay() === 6;
                       return (
-                        <div key={day} className={`w-[44px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center transition-colors ${
+                        <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center transition-colors ${
                           isDarkMode 
-                            ? `border-slate-800/60 ${isSatSun ? 'bg-slate-950/40' : ''}` 
+                            ? `border-slate-800/40 ${isSatSun ? 'bg-slate-950/40' : ''}` 
                             : `border-slate-200 ${isSatSun ? 'bg-slate-200' : ''}`
                         }`}>
                           <span className="text-[9px] font-bold leading-tight text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
@@ -1783,7 +1982,7 @@ export default function App() {
                     style={{ 
                       scrollbarWidth: 'none', 
                       msOverflowStyle: 'none',
-                      width: `${headerDays.length * 44}px`
+                      width: `${headerDays.length * 56}px`
                     }}
                   >
                     {filteredTasks.map((task) => {
@@ -1791,25 +1990,25 @@ export default function App() {
                       return (
                         <div 
                           key={task.id} 
-                          className={`h-[54px] min-h-[54px] max-h-[54px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-205'}`}
-                          style={{ width: `${headerDays.length * 44}px` }}
+                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}
+                          style={{ width: `${headerDays.length * 56}px` }}
                         >
                           <div 
                             onClick={() => setActiveTaskModal(task.id)}
-                            className={`absolute h-[24px] rounded-lg shadow-sm transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.015] z-10 ${
+                            className={`absolute h-[38px] rounded-xl shadow-lg transition-all flex items-center justify-between overflow-hidden text-xs font-black border cursor-pointer hover:scale-[1.025] hover:shadow-xl z-10 ${
                               conflict 
-                                ? 'bg-amber-600 border-amber-600 text-white'
+                                ? 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-400 text-white animate-pulse shadow-amber-500/20'
                                 : task.qaStatus === 'HOLD' 
-                                  ? 'bg-rose-650 border-rose-650 text-white font-black animate-pulse' 
+                                  ? 'bg-gradient-to-r from-rose-600 to-red-650 border-rose-500 text-white font-black animate-pulse shadow-rose-500/20' 
                                   : task.qaStatus === 'APPROVED' 
-                                    ? 'bg-emerald-600 border-emerald-600 text-white font-black' 
-                                    : 'bg-blue-600 border-blue-600 text-white font-black'
+                                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-500 text-white font-black shadow-emerald-500/20' 
+                                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-500 text-white font-black shadow-blue-500/20'
                             }`}
-                            style={{ left: `${(task.startDays) * 44 + 2}px`, width: `${(task.adjustedDuration * 44) - 4}px` }}
+                            style={{ left: `${(task.startDays) * 56 + 4}px`, width: `${(task.adjustedDuration * 56) - 8}px` }}
                           >
-                            <div className="absolute top-0 left-0 h-full bg-slate-950/20" style={{ width: `${task.progress || 0}%` }} />
-                            <span className="truncate px-2 font-black text-[9px] relative z-10 flex items-center gap-1.5 text-white">
-                              <span>{task.ref}</span>
+                            <div className="absolute top-0 left-0 h-full bg-black/15" style={{ width: `${task.progress || 0}%` }} />
+                            <span className="truncate px-3 font-black text-[10px] tracking-wide relative z-10 flex items-center gap-2 text-white">
+                              <span className="opacity-90">{task.ref}</span>
                               <span className="opacity-100 font-extrabold">{task.task}</span>
                             </span>
                           </div>
@@ -1819,9 +2018,9 @@ export default function App() {
                   </div>
 
                   <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-25 transition-colors ${
-                    isDarkMode ? 'bg-[#0b0f19] border-slate-800' : 'bg-slate-200 border-slate-200'
+                    isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-200 border-slate-200'
                   }`}
-                  style={{ width: `${headerDays.length * 44}px` }}>
+                  style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
                       const dayManpower = activeFlowTasks.reduce((sum, task) => {
                         if (day >= task.startDays && day < task.startDays + task.adjustedDuration) return sum + task.totalManpower;
@@ -1830,10 +2029,10 @@ export default function App() {
                       0);
                       const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
                       return (
-                        <div key={`hist-${day}`} className={`w-[44px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
+                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-200'}`}>
                           {dayManpower > 0 && (
                             <div 
-                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-600' : 'bg-blue-600'}`}
+                              className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-rose-600 shadow-md shadow-rose-500/10' : 'bg-blue-600 shadow-md shadow-blue-500/10'}`}
                               style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
@@ -1851,11 +2050,10 @@ export default function App() {
             </div>
           )}
 
-          {}
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-5 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
-                isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
               }`}>
                 <div>
                   <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-400">
@@ -1885,7 +2083,7 @@ export default function App() {
               </div>
 
               {thisWeeksForecastList.length === 0 ? (
-                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-800 text-center">
+                <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-850 text-center">
                   <CalendarDays size={40} className="text-slate-500 mb-2"/>
                   <h4 className="text-xs font-black uppercase text-slate-300">No Operations Scheduled Inside this Forecast cycle</h4>
                   <p className="text-xs text-slate-500 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
@@ -1907,11 +2105,11 @@ export default function App() {
                             }
                           }}
                           className={`p-5 rounded-2xl border shadow-lg cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between gap-4 ${
-                            isDarkMode ? 'bg-[#111827] hover:bg-[#152033] border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
+                            isDarkMode ? 'bg-[#0f172a] hover:bg-[#1e293b] border-slate-800 hover:border-slate-700 shadow-[#01040a]' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                           }`}
                         >
                           <div>
-                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                            <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800/80' : 'border-slate-200'}`}>
                               <div className="min-w-0 flex-1">
                                 <span className="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName || "SUBSTATION SCHEDULER"}
@@ -1943,7 +2141,7 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                          <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800/80' : 'border-slate-200'}`}>
                             <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-400">
                               <span>PROGRESS COMPLETE</span>
                               <span className="text-slate-200">{item.progress || 0}%</span>
@@ -1968,11 +2166,10 @@ export default function App() {
             </div>
           )}
 
-          {}
           {activePerspective === 'qa' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-5 rounded-3xl border flex items-center justify-between ${
-                isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-white border-slate-200'
+                isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'
               }`}>
                 <div>
                   <h3 className="text-sm font-black tracking-widest uppercase text-emerald-450 flex items-center gap-1.5">
@@ -1988,7 +2185,7 @@ export default function App() {
                     key={`qa-${task.id}`}
                     onClick={() => setActiveTaskModal(task.id)}
                     className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      isDarkMode ? 'bg-[#111827]/80 hover:bg-[#1c293f] border-slate-800 text-slate-200' : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm text-slate-800'
+                      isDarkMode ? 'bg-[#0f172a]/80 hover:bg-[#1e293b] border-slate-800/80 text-slate-200' : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm text-slate-805'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -2000,7 +2197,7 @@ export default function App() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-slate-500 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className="text-xs font-bold text-slate-505 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
                       <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
@@ -2011,11 +2208,10 @@ export default function App() {
             </div>
           )}
 
-          {}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-5 rounded-3xl border flex items-center justify-between ${
-                isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
               }`}>
                 <div>
                   <h3 className="text-sm font-black tracking-widest uppercase text-purple-400 flex items-center gap-1.5">
@@ -2037,11 +2233,11 @@ export default function App() {
                     const isAllocated = activeFlowTasks.filter(t => t.assignedAsset === asset.key);
                     return (
                       <div key={asset.key} className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 ${
-                        isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-white border-slate-200'
+                        isDarkMode ? 'bg-[#0f172a] border-slate-800/80' : 'bg-white border-slate-200'
                       }`}>
                         <div className="flex items-center gap-3 justify-between">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 shrink-0">
+                            <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-805 shrink-0">
                               {renderAssetIcon(asset.key)}
                             </div>
                             <div className="min-w-0">
@@ -2058,7 +2254,7 @@ export default function App() {
                           </button>
                         </div>
 
-                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-400 ${isDarkMode ? 'border-slate-800/60' : 'border-slate-200'}`}>
+                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-450 ${isDarkMode ? 'border-slate-805' : 'border-slate-202'}`}>
                           <div className="flex justify-between font-bold">
                             <span>CLASS:</span>
                             <span className="font-black text-slate-300">{asset.type}</span>
@@ -2102,11 +2298,10 @@ export default function App() {
         </div>
       </main>
 
-      {}
       {customConfirmConfig && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl border p-6 w-full max-w-sm flex flex-col gap-4 shadow-2xl transition-all ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-2xl' : 'bg-white border-slate-200 text-slate-900'
           }`}>
             <div className="flex items-center gap-3 text-rose-500">
               <AlertCircle size={24}/>
@@ -2117,7 +2312,7 @@ export default function App() {
               <button 
                 onClick={() => setCustomConfirmConfig(null)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold ${
-                  isDarkMode ? 'bg-[#0f172a] text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-600'
+                  isDarkMode ? 'bg-[#080d1a] text-slate-300 border border-slate-800' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 Cancel
@@ -2126,7 +2321,7 @@ export default function App() {
                 onClick={() => {
                   customConfirmConfig.onConfirm();
                 }}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-505 text-white rounded-xl text-xs font-bold"
               >
                 Confirm Action
               </button>
@@ -2135,13 +2330,12 @@ export default function App() {
         </div>
       )}
 
-      {/* LOGISTICS ASSET MODAL */}
       {isAssetModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
           }`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-[#090d16]' : 'border-slate-200 bg-slate-50'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2"><Truck className="text-blue-500" size={14}/> Logistics Pool Registry</h3>
               </div>
@@ -2149,7 +2343,7 @@ export default function App() {
             </div>
 
             <div className="p-5 overflow-y-auto space-y-6">
-              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#090d16] border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-4`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Asset Code (Unique Key)</label>
@@ -2181,7 +2375,7 @@ export default function App() {
                         value={newAssetType}
                         onChange={(e) => setNewAssetType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-800 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-900 border-slate-200 [&_option]:bg-white'
+                          isDarkMode ? 'bg-[#0f172a] text-white border-slate-800 [&_option]:bg-[#0f172a]' : 'bg-white text-slate-900 border-slate-200 [&_option]:bg-white'
                         }`}
                       >
                         <option value="Heavy Equipment">Heavy Equipment</option>
@@ -2193,38 +2387,30 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* UPGRADED DYNAMIC POPULAR PRESET DROPDOWN AS DETAILED IN image_df628c.png */}
                   <div>
                     <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Preset Design</label>
-                    <div className="relative">
-                      <select 
-                        value={newAssetIconPreset}
-                        onChange={(e) => setNewAssetIconPreset(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-800 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-900 border-slate-200 [&_option]:bg-white'
-                        }`}
-                      >
-                        <option value="heavy">🚚 Heavy Rig</option>
-                        <option value="case">🧳 Calibration Case</option>
-                        <option value="lightning">⚡ Electrical Terminal</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                        <ChevronDown size={14}/>
-                      </div>
-                    </div>
+                    <PremiumAssetPresetSelector 
+                      value={newAssetIconPreset}
+                      onChange={(val) => setNewAssetIconPreset(val)}
+                      isDarkMode={isDarkMode}
+                    />
                   </div>
+                  
                   <div>
                     <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Mob Buffer</label>
                     <input 
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#131c2e] text-white border-slate-800' : 'bg-white text-slate-900 border-slate-200'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-[#0f172a] text-white border-slate-800' : 'bg-white text-slate-900 border-slate-200'}`}
                     />
                   </div>
                 </div>
 
                 {assetValidationWarning && (
-                  <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-600 text-rose-400 text-[10px] font-black">
+                  <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-650 text-rose-450 text-[10px] font-black">
                     {assetValidationWarning}
                   </div>
                 )}
@@ -2241,21 +2427,20 @@ export default function App() {
         </div>
       )}
 
-      {/* SITE FIELD INSPECTOR CARD MODAL */}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
         return (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
+          <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
             <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[90vh] transition-all duration-300 ${
               isDarkMode 
-                ? 'bg-[#131c2e] border-slate-800 text-white' 
+                ? 'bg-[#0f172a] border-slate-800 text-white shadow-[#01040a]' 
                 : 'bg-white border-slate-200 text-slate-900'
             }`}>
               
-              <div className={`p-5 border-b flex justify-between items-center ${
+              <div className={`p-5 border-b flex justify-between items-center shrink-0 ${
                 isDarkMode 
-                  ? 'border-slate-800 bg-[#090d16]' 
+                  ? 'border-slate-800 bg-[#080d1a]/80' 
                   : 'border-slate-200 bg-slate-50'
               }`}>
                 <div className="text-left">
@@ -2264,7 +2449,7 @@ export default function App() {
                     <span>Site Field Inspector Card</span>
                   </h3>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-white bg-blue-650 border border-blue-500/20 px-2 py-0.5 rounded-lg text-xs font-black tracking-wide">
+                    <span className="text-white bg-blue-600 border border-blue-500/20 px-2 py-0.5 rounded-lg text-xs font-black tracking-wide">
                       {currentTaskEditing.ref}
                     </span>
                     <span className="text-xs font-bold text-slate-400">
@@ -2275,7 +2460,7 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
                   className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-700 text-slate-400' : 'border-slate-200 hover:bg-slate-100 text-slate-700'
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-750 text-slate-400' : 'border-slate-200 hover:bg-slate-100 text-slate-700'
                   }`}
                 >
                   <X size={16}/>
@@ -2285,7 +2470,7 @@ export default function App() {
               <div className="p-6 overflow-y-auto flex-grow space-y-6">
                 
                 <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#090d16] border-slate-800' : 'bg-slate-50 border-slate-200'
+                  isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
                     Configure Base Days & Percent Complete
@@ -2305,7 +2490,7 @@ export default function App() {
                           className={`w-9 h-9 rounded-xl border flex items-center justify-center font-black text-lg transition-colors ${
                             isDarkMode 
                               ? 'bg-[#1e293b] border-slate-800 hover:bg-slate-800 text-slate-200' 
-                              : 'bg-white border-slate-200 hover:bg-slate-200 text-slate-900'
+                              : 'bg-white border-slate-200 hover:bg-slate-202 text-slate-900'
                           }`}
                         >
                           -
@@ -2321,7 +2506,7 @@ export default function App() {
                           className={`w-9 h-9 rounded-xl border flex items-center justify-center font-black text-lg transition-colors ${
                             isDarkMode 
                               ? 'bg-[#1e293b] border-slate-800 hover:bg-slate-800 text-slate-200' 
-                              : 'bg-white border-slate-200 hover:bg-slate-200 text-slate-900'
+                              : 'bg-white border-slate-200 hover:bg-slate-202 text-slate-900'
                           }`}
                         >
                           +
@@ -2356,8 +2541,8 @@ export default function App() {
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                     Co-Sign Inspector Status
                   </h4>
-                  <div className={`grid grid-cols-3 gap-2 p-1.5 rounded-2xl ${
-                    isDarkMode ? 'bg-[#090d16] border border-slate-800/80' : 'bg-slate-100 border border-slate-200'
+                  <div className={`grid grid-cols-3 gap-2 p-1.5 rounded-2xl border ${
+                    isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-100 border-slate-202'
                   }`}>
                     {[
                       { status: 'PENDING', label: 'Active Work', desc: 'In development', activeBg: 'bg-blue-600 text-white shadow-lg border-blue-500' },
@@ -2376,7 +2561,7 @@ export default function App() {
                             isActive
                               ? `${card.activeBg}`
                               : isDarkMode 
-                                ? 'border-transparent bg-transparent text-slate-400 hover:text-white' 
+                                ? 'border-transparent bg-transparent text-slate-400 hover:text-white hover:bg-slate-800/40' 
                                 : 'border-transparent bg-transparent text-slate-600 hover:bg-slate-200'
                           }`}
                         >
@@ -2393,12 +2578,12 @@ export default function App() {
                     Shared Asset Allocation
                   </h4>
                   <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 ${
-                    isDarkMode ? 'bg-[#090d16] border-slate-800' : 'bg-slate-50 border-slate-200'
+                    isDarkMode ? 'bg-[#080d1a] border-slate-800/80' : 'bg-slate-50 border-slate-202'
                   }`}>
                     <div className="flex items-center gap-2">
                       <Truck className="text-blue-500" size={18}/>
                       <div className="text-left">
-                        <p className="text-xs font-black text-slate-400">Assign Equipment/Specialized Tooling</p>
+                        <p className="text-xs font-black text-slate-450">Assign Equipment/Specialized Tooling</p>
                       </div>
                     </div>
                     <div className="relative min-w-[200px] w-full sm:w-auto">
@@ -2407,8 +2592,8 @@ export default function App() {
                         onChange={(e) => updateTask(currentTaskEditing.id, 'assignedAsset', e.target.value)}
                         className={`pl-3 pr-8 py-2 rounded-xl border text-xs font-black outline-none cursor-pointer w-full transition-colors ${
                           isDarkMode 
-                            ? 'bg-[#131c2e] text-white border-slate-800 [&_option]:bg-[#131c2e] [&_option]:text-white' 
-                            : 'bg-white text-slate-900 border-slate-200 [&_option]:bg-white [&_option]:text-slate-900'
+                            ? 'bg-[#0f172a] text-white border-slate-800 [&_option]:bg-[#0f172a] [&_option]:text-white' 
+                            : 'bg-white text-slate-900 border-slate-202 [&_option]:bg-white [&_option]:text-slate-900'
                         }`}
                       >
                         <option value="None">None</option>
@@ -2425,36 +2610,84 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`p-5 rounded-2xl border ${
-                  isDarkMode ? 'bg-[#090d16] border-slate-800' : 'bg-slate-50 border-slate-200'
+                {/* UPGRADED CHECKLIST COMPLIANCE SECTION WITH DYNAMIC INLINE INPUT (Ref: image_df04e9.png) */}
+                <div className={`p-5 rounded-3xl border ${
+                  isDarkMode ? 'bg-[#080d1a] border-slate-800/85' : 'bg-slate-55 border-slate-202'
                 }`}>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5">
-                    <ListTodo className="text-blue-500" size={14}/> 
-                    <span>Engineering Checklist Compliance</span>
-                  </h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                      <ListTodo className="text-blue-500" size={14}/> 
+                      <span>Engineering Checklist Compliance</span>
+                    </h4>
+                  </div>
+
+                  <div className="flex gap-2 mb-4">
+                    <input 
+                      type="text"
+                      placeholder="Add custom engineering compliance item..."
+                      value={newChecklistItemText}
+                      onChange={(e) => setNewChecklistItemText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addChecklistItem(currentTaskEditing.id);
+                        }
+                      }}
+                      className={`flex-grow px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
+                        isDarkMode 
+                          ? 'bg-[#0f172a] border-slate-800 text-white placeholder-slate-600 focus:border-blue-500' 
+                          : 'bg-white border-slate-202 text-slate-900 placeholder-slate-400 focus:border-blue-500'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addChecklistItem(currentTaskEditing.id)}
+                      className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1 transition-all"
+                    >
+                      <Plus size={14}/> Add
+                    </button>
+                  </div>
+
                   {Object.keys(currentTaskEditing.checklist || {}).length === 0 ? (
-                    <p className="text-xs text-slate-500 italic font-bold">No checklist parameters set.</p>
+                    <p className="text-xs text-slate-500 italic font-bold text-center py-4">No checklist parameters registered.</p>
                   ) : (
                     <div className="space-y-2">
                       {Object.entries(currentTaskEditing.checklist).map(([name, completed]) => (
-                        <label 
+                        <div 
                           key={name}
-                          className={`flex items-center justify-between p-3 rounded-xl border text-xs cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-3 rounded-xl border text-xs transition-all ${
                             completed 
-                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-extrabold' 
+                              ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 font-extrabold' 
                               : isDarkMode 
-                                ? 'bg-[#131c2e] border-slate-800 text-slate-300 hover:bg-slate-800' 
-                                : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100'
+                                ? 'bg-[#0f172a] border-slate-800/80 text-slate-200 hover:bg-slate-800/40' 
+                                : 'bg-white border-slate-202 text-slate-805 hover:bg-slate-100'
                           }`}
                         >
-                          <span className="font-extrabold">{name}</span>
-                          <input 
-                            type="checkbox" 
-                            checked={completed} 
-                            onChange={() => toggleChecklistItem(currentTaskEditing.id, name)}
-                            className="rounded text-emerald-600 h-4.5 w-4.5 bg-slate-900 border-slate-750 accent-emerald-500 cursor-pointer"
-                          />
-                        </label>
+                          <div 
+                            onClick={() => toggleChecklistItem(currentTaskEditing.id, name)}
+                            className="flex items-center gap-3 flex-grow cursor-pointer select-none"
+                          >
+                            <div className={`w-4.5 h-4.5 rounded-md flex items-center justify-center transition-all border ${
+                              completed 
+                                ? 'bg-emerald-500 border-emerald-400 text-white shadow-md shadow-emerald-500/10' 
+                                : isDarkMode 
+                                  ? 'bg-[#080d1a] border-slate-700' 
+                                  : 'bg-slate-100 border-slate-300'
+                            }`}>
+                              {completed && <Check size={11} strokeWidth={3} />}
+                            </div>
+                            <span className="font-extrabold tracking-wide">{name}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteChecklistItem(currentTaskEditing.id, name)}
+                            className="p-1 text-slate-500 hover:text-rose-550 rounded-lg transition-colors ml-2"
+                            title="Remove Parameter"
+                          >
+                            <Trash2 size={13}/>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -2467,9 +2700,9 @@ export default function App() {
                       const countVal = parseInt(currentTaskEditing[r.key]);
                       const count = isNaN(countVal) ? 0 : countVal;
                       return (
-                        <div key={r.key} className={`flex items-center gap-2 border rounded-xl p-1.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#090d16] border-slate-800 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400')}`}>
+                        <div key={r.key} className={`flex items-center gap-2 border rounded-xl p-1.5 transition-colors ${count > 0 ? r.bg : (isDarkMode ? 'bg-[#080d1a] border-slate-800/80 text-slate-505' : 'bg-slate-50 border-slate-202 text-slate-400')}`}>
                           <span className="text-xs pl-0.5">{r.icon} <span className="text-[9px] font-bold uppercase ml-0.5">{r.label}</span></span>
-                          <div className={`flex items-center rounded-lg border text-slate-800 overflow-hidden shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
+                          <div className={`flex items-center rounded-lg border text-slate-800 overflow-hidden shadow-sm ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-202'}`}>
                             <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, -1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100'}`}><Minus size={10}/></button>
                             <span className={`text-[10px] font-bold w-4 text-center ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{count}</span>
                             <button onClick={() => adjustWorkerCount(currentTaskEditing.id, r.key, 1)} className={`px-1.5 py-0.5 transition ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-100'}`}><Plus size={10}/></button>
@@ -2480,7 +2713,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`space-y-3 pt-3 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                <div className={`space-y-3 pt-3 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                   {activeRoles.filter(r => (parseInt(currentTaskEditing[r.key]) || 0) > 0).map(r => {
                     const inputs = [];
                     const countVal = parseInt(currentTaskEditing[r.key]);
@@ -2492,7 +2725,7 @@ export default function App() {
                           onChange={(e) => assignWorkerName(currentTaskEditing.id, r.key, i, e.target.value)}
                           placeholder={`Enter name for ${r.fullName} #${i+1}...`}
                           className={`px-3 py-2 border rounded-xl text-xs font-semibold w-full outline-none ${
-                            isDarkMode ? 'bg-[#090d16] border-slate-800 text-white placeholder-slate-600' : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400'
+                            isDarkMode ? 'bg-[#080d1a] border-slate-800 text-white placeholder-slate-600' : 'bg-slate-55 border-slate-202 text-slate-800 placeholder-slate-400'
                           }`}
                         />
                       );
@@ -2509,7 +2742,7 @@ export default function App() {
                 <div className="flex gap-2 justify-end pt-4 border-t border-slate-800">
                   <button 
                     onClick={() => triggerTaskRemove(currentTaskEditing.id)}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-xl text-xs font-bold transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-rose-600/10 hover:bg-rose-650/20 text-rose-450 rounded-xl text-xs font-bold transition-all"
                   >
                     <Trash2 size={13}/>
                     <span>Delete Sequence</span>
@@ -2522,11 +2755,10 @@ export default function App() {
         );
       })()}
 
-      {/* SETTINGS PANEL MODAL */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#131c2e] text-slate-100 border-slate-800' : 'bg-white text-slate-900 border-slate-200'}`}>
-            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#0f172a] text-slate-100 border-slate-800' : 'bg-white text-slate-900 border-slate-202'}`}>
+            <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-202'}`}>
               <span className="font-bold flex items-center gap-2"><Settings size={14}/> Settings</span>
               <button onClick={() => setIsSettingsOpen(false)} className="p-1 rounded-lg hover:bg-slate-700/40"><X size={14}/></button>
             </div>
@@ -2543,10 +2775,9 @@ export default function App() {
         </div>
       )}
 
-      {}
       {isNotificationPaneOpen && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex justify-end">
-          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white text-slate-900 border-slate-200'}`}>
+          <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#0f172a] border-slate-800 text-slate-100' : 'bg-white text-slate-900 border-slate-202'}`}>
             <div className="space-y-4 overflow-y-auto">
               <div className="flex justify-between items-center border-b pb-3 border-slate-800">
                 <div className="flex items-center gap-2">
@@ -2560,7 +2791,7 @@ export default function App() {
 
               <div className="space-y-2 animate-fade-in">
                 {notifications.map((notif) => (
-                  <div key={notif.id} className={`p-3 rounded-xl border text-xs font-bold ${isDarkMode ? 'bg-[#090d16] border-slate-800 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-800'}`}>
+                  <div key={notif.id} className={`p-3 rounded-xl border text-xs font-bold ${isDarkMode ? 'bg-slate-950/45 border-slate-800 text-slate-300' : 'bg-slate-100 border-slate-202 text-slate-805'}`}>
                     <span className="font-bold block">{notif.text}</span>
                   </div>
                 ))}
@@ -2570,10 +2801,9 @@ export default function App() {
         </div>
       )}
 
-      {/* CREATE NEW PROJECT MODAL */}
       {showCreateProjectModal && (
-        <div className="fixed inset-0 bg-slate-955/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#131c2e] border-slate-800' : 'bg-white border-slate-200'}`}>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-202'}`}>
             <div className="p-6">
               <h3 className="text-xs font-bold uppercase tracking-wider mb-2">Create New Project</h3>
               <input 
@@ -2582,7 +2812,7 @@ export default function App() {
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 className={`w-full px-4 py-3 rounded-xl border text-xs font-bold outline-none mb-4 ${
-                  isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-100 border-slate-200 text-slate-900'
+                  isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-100 border-slate-202 text-slate-900'
                 }`}
               />
               <div className="flex justify-end gap-2">
