@@ -297,6 +297,7 @@ export default function App() {
       const currentFormattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       setLiveSystemTime(currentFormattedTime);
 
+      // Force 4 PM notification directly on boot
       if (now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() === 0) {
         playAlertSound();
         triggerPhoneNotification("🚨 4:00 PM Automatic Field Review: Please submit updated sequence progress metrics!");
@@ -449,6 +450,26 @@ export default function App() {
 
   const allAllocations = compileAllProjectAllocations();
 
+  const findNextFreeSlot = useCallback((assetKey, startAbsDateStr) => {
+    let checkDate = new Date(startAbsDateStr);
+    for (let offset = 1; offset <= 21; offset++) {
+      let nextDate = new Date(checkDate);
+      nextDate.setDate(nextDate.getDate() + offset);
+      const nextDateStr = nextDate.toISOString().split('T')[0];
+
+      // Scan all allocations across all projects to ensure absolute silence
+      const clashes = allAllocations.filter(a => a.assetKey === assetKey && a.absDateStr === nextDateStr);
+      if (clashes.length === 0) {
+        return {
+          dateStr: nextDateStr,
+          dayOffsetDiff: offset,
+          label: nextDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })
+        };
+      }
+    }
+    return null;
+  }, [allAllocations]);
+
   const checkLogisticalConflictForAllocation = useCallback((alloc) => {
     if (!alloc.assetKey || alloc.assetKey === 'None') return null;
 
@@ -466,7 +487,6 @@ export default function App() {
         const valBStart = shB * 60 + smB;
         const valBEnd = ehB * 60 + emB;
 
-        // Overlap verification math
         if (valAStart < valBEnd && valAEnd > valBStart) {
           const assetName = customAssets.find(a => a.key === alloc.assetKey)?.label || alloc.assetKey;
           return {
@@ -513,6 +533,42 @@ export default function App() {
       if (conflict) return conflict;
     }
     return null;
+  };
+
+  const handleIntelligentReschedule = (taskId, allocId, recommendedDateStr) => {
+    const projectStartDayObj = new Date(projectStartDate);
+    const recommendedDayObj = new Date(recommendedDateStr);
+    const targetAbsDayOffset = Math.round((recommendedDayObj - projectStartDayObj) / 86400000);
+
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const targetTaskWithFlow = activeFlowTasks.find(flowT => flowT.id === taskId);
+        const taskStartDays = targetTaskWithFlow ? targetTaskWithFlow.startDays : 0;
+        const newLocalDayOffset = Math.max(0, targetAbsDayOffset - taskStartDays);
+
+        const updatedAllocs = (t.assetAllocations || []).map(alloc => {
+          if (alloc.id === allocId) {
+            return { ...alloc, dayOffset: newLocalDayOffset, startTime: "08:00", endTime: "12:00" };
+          }
+          return alloc;
+        });
+
+        // Automatically extend sequence timeline to encompass the new intelligent reservation day
+        const neededDuration = newLocalDayOffset + 1;
+        const updatedDuration = Math.max(t.duration, neededDuration);
+
+        return { 
+          ...t, 
+          duration: updatedDuration,
+          assetAllocations: updatedAllocs 
+        };
+      }
+      return t;
+    }));
+
+    playAlertSound();
+    triggerPhoneNotification(`Smart Allocation Auto-Corrected: Shunted booking directly to next free slot on ${recommendedDateStr}.`);
+    showToast(`Smart Reschedule Applied: Relocated to ${recommendedDateStr}.`);
   };
 
   const handleRescheduleLaterThatDay = (taskId, allocId) => {
@@ -691,7 +747,6 @@ export default function App() {
       }
       return t;
     }));
-    // Crucial: Fire immediate cloud sync/log alert to notify other concurrent projects/users!
     logActivityToCloud(`⚠️ Booking Release Notice: [${canceledKey}] reservation for Day ${canceledDay} has been CANCELED / RELEASED.`, "alert");
     showToast(`Shared tool reservation removed.`);
   };
@@ -1419,7 +1474,7 @@ export default function App() {
       if (hasConflict) return 'bg-amber-50 border-amber-300 hover:bg-amber-100/60';
       if (isHold) return 'bg-rose-50 border-rose-300 hover:bg-rose-100/60';
       if (isApproved) return 'bg-emerald-50/70 border-emerald-300 hover:bg-emerald-50';
-      return index % 2 === 0 ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-slate-50/50 border-slate-202 hover:bg-slate-50';
+      return index % 2 === 0 ? 'bg-white border-slate-202 hover:bg-slate-50' : 'bg-slate-50/50 border-slate-202 hover:bg-slate-50';
     }
   };
 
@@ -1562,6 +1617,24 @@ export default function App() {
       `}} />
 
       {}
+      <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-white px-4 py-2.5 flex items-center justify-between text-xs font-black tracking-wide border-b border-amber-500/30 shrink-0 shadow-md">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
+          <Clock size={15} className="shrink-0" />
+          <span>🕒 4:00 PM FIELD AUDIT NOTICE: Field report review sequence is currently active. Please verify sequence milestones!</span>
+        </div>
+        <button 
+          onClick={() => {
+            setActivePerspective('qa');
+            showToast("Opening compliance inspector logs for review.");
+          }}
+          className="bg-slate-950/80 hover:bg-slate-950 text-amber-300 text-[10px] uppercase font-black tracking-widest px-3 py-1 rounded-xl shadow border border-amber-400/20 whitespace-nowrap active:scale-95 transition-transform"
+        >
+          Review Milestones
+        </button>
+      </div>
+
+      {}
       <header className={`border-b z-30 shrink-0 transition-colors relative ${isDarkMode ? 'bg-[#090d16] border-slate-900' : 'bg-white border-slate-202'}`}>
         <div className="px-3 py-2 sm:px-6 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative">
           <div className="flex items-center gap-2 sm:gap-3 justify-between md:justify-start z-10 w-full md:w-auto">
@@ -1580,7 +1653,7 @@ export default function App() {
                     <span className="truncate max-w-[80px] sm:max-w-[200px]">
                       {projectList.find(p => p.id === activeProjectId)?.title || 'Switch...'}
                     </span>
-                    <ChevronDown className="text-slate-404 shrink-0" size={11}/>
+                    <ChevronDown className="text-slate-400 shrink-0" size={11}/>
                   </button>
 
                   <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111827] border border-slate-202 dark:border-slate-800 px-2.5 py-1 sm:py-1.5 rounded-xl font-bold text-xs select-none shadow-sm shrink-0 live-clock-badge">
@@ -1623,7 +1696,7 @@ export default function App() {
                                   handleDeleteProject(proj.id);
                                   setIsProjectDropdownOpen(false);
                                 }}
-                                className={`p-1 rounded transition-colors shrink-0 ${activeProjectId === proj.id ? 'text-white/80 hover:text-red-200' : 'text-slate-400 hover:text-rose-500'}`}
+                                className={`p-1 rounded transition-colors shrink-0 ${activeProjectId === proj.id ? 'text-white/80 hover:text-red-200' : 'text-slate-404 hover:text-rose-500'}`}
                               >
                                 <Trash2 size={12}/>
                               </button>
@@ -1682,7 +1755,6 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 shrink-0 justify-end md:justify-start z-20 relative items-center">
-            {}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={`p-2.5 rounded-xl transition border shadow-sm ${
@@ -1833,7 +1905,7 @@ export default function App() {
                     </div>
 
                     <div className="p-2 flex items-center border-t border-slate-202 dark:border-slate-900 sticky bottom-0 z-20 shrink-0 bg-transparent task-body-row h-[52px] min-h-[52px]">
-                       <button onClick={addTask} className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-404 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
+                       <button onClick={addTask} className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest flex items-center gap-1 px-2 py-2 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 w-full justify-center text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-500 transition-colors">
                          <Plus size={11}/> Add Task Parameter
                        </button>
                     </div>
@@ -1861,10 +1933,10 @@ export default function App() {
                         <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
                           isDarkMode 
                             ? `border-slate-900/60 ${isSatSun ? 'bg-slate-950/20' : ''}` 
-                            : `border-slate-202 ${isSatSun ? 'bg-slate-202' : ''}`
+                            : `border-slate-202 ${isSatSun ? 'bg-slate-200' : ''}`
                         }`}>
                           <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                          <span className="text-[8px] font-bold text-slate-404 dark:text-slate-500 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
                           
                           {activeAllocationsOnDay.length > 0 && (
                             <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-500/10 px-1 py-0.5 rounded-full border border-blue-500/20">
@@ -1984,7 +2056,7 @@ export default function App() {
                               style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
-                          <span className={`text-[8.5px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-404'}`}>
+                          <span className={`text-[8.5px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-500' : 'text-slate-400'}`}>
                             {dayManpower > 0 ? dayManpower : '-'}
                           </span>
                         </div>
@@ -2007,14 +2079,14 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase flex items-center gap-2 text-blue-500">
                     <CalendarDays size={16} /> 7-Day Cross-Project Outlook Forecast
                   </h3>
-                  <p className="text-xs text-slate-404 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
+                  <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
                 </div>
                 
                 <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-[#111827] border-slate-800' : 'bg-slate-100 border-slate-300'}`}>
                   <button
                     onClick={() => setActiveForecastFilter('this-week')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-404 hover:text-white'
+                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
                     }`}
                   >
                     📅 This Week
@@ -2022,7 +2094,7 @@ export default function App() {
                   <button
                     onClick={() => setActiveForecastFilter('all-active')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-404 hover:text-white'
+                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
                     }`}
                   >
                     ⚠️ All Unfinished Tasks
@@ -2032,8 +2104,8 @@ export default function App() {
 
               {thisWeeksForecastList.length === 0 ? (
                 <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-800 text-center">
-                  <CalendarDays size={40} className="text-slate-650 mb-2"/>
-                  <h4 className="text-xs font-black uppercase text-slate-404">No Operations Scheduled Inside this Forecast cycle</h4>
+                  <CalendarDays size={40} className="text-slate-600 mb-2"/>
+                  <h4 className="text-xs font-black uppercase text-slate-400">No Operations Scheduled Inside this Forecast cycle</h4>
                   <p className="text-xs text-slate-500 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
                 </div>
               ) : (
@@ -2079,9 +2151,9 @@ export default function App() {
                               </span>
                             </div>
 
-                            <div className="space-y-2 mt-4 text-xs font-bold text-slate-404">
+                            <div className="space-y-2 mt-4 text-xs font-bold text-slate-400">
                               <div className="flex justify-between items-center text-[10px] bg-[#111827] p-2 rounded-lg border border-slate-800/80">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-404"><Clock size={11} className="text-amber-500" /> DATES</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-400"><Clock size={11} className="text-amber-500" /> DATES</span>
                                 <span className="font-mono text-white text-[11px] font-black">
                                   {formattedStart} - {formattedEnd}
                                 </span>
@@ -2132,7 +2204,7 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase text-emerald-500 flex items-center gap-1.5">
                     <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
                   </h3>
-                  <p className="text-xs text-slate-404 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
+                  <p className="text-xs text-slate-400 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
               </div>
 
@@ -2151,13 +2223,13 @@ export default function App() {
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="font-black font-mono text-xs text-blue-500">{task.ref}</span>
                       <div className="min-w-0 text-left">
-                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-404 block"> {task.desc}</span>
+                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-400 block"> {task.desc}</span>
                         <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{task.task}</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-black text-slate-440 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className="text-xs font-black text-slate-400 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
                       <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
@@ -2168,7 +2240,7 @@ export default function App() {
             </div>
           )}
 
-          {/* LOGISTICS PERSPECTIVE */}
+          {}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-6 rounded-3xl border flex flex-col lg:flex-row lg:items-center justify-between gap-4 ${
@@ -2178,7 +2250,7 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase text-purple-500 flex items-center gap-1.5">
                     <Truck size={16}/> Daily Equipment Dispatch Ledger
                   </h3>
-                  <p className="text-xs text-slate-404 mt-1">Review granular tool allocations daily. Reschedule bookings easily or shift day schedules forward.</p>
+                  <p className="text-xs text-slate-400 mt-1">Review granular tool allocations daily. Reschedule bookings easily or shift day schedules forward.</p>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
@@ -2232,7 +2304,7 @@ export default function App() {
                   <div className="flex items-center justify-between border-b border-slate-900 pb-3 mb-4 shrink-0">
                     <div className="text-left">
                       <h4 className="text-xs font-black text-slate-100 uppercase">Day {selectedLedgerDay + 1} Dispatch Schedule</h4>
-                      <p className="text-[10px] text-slate-404">Manage conflicting tools scheduled on this exact index.</p>
+                      <p className="text-[10px] text-slate-400">Manage conflicting tools scheduled on this exact index.</p>
                     </div>
                     <button
                       onClick={() => advanceAllLedgerToolsBy3Days(selectedLedgerDay)}
@@ -2261,40 +2333,69 @@ export default function App() {
 
                       return dayBookings.map((alloc, idx) => {
                         const conflict = checkLogisticalConflictForAllocation(alloc);
+                        const recommendation = conflict ? findNextFreeSlot(alloc.assetKey, targetDateStr) : null;
+                        
                         return (
-                          <div key={idx} className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 text-left ${
+                          <div key={idx} className={`p-4 rounded-xl border flex flex-col justify-between gap-3 text-left ${
                             conflict 
                               ? 'bg-amber-950/20 border-amber-500/50' 
                               : 'bg-[#111827] border-slate-900'
                           }`}>
-                            <div>
+                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <span className="font-mono text-xs font-black text-blue-404">[{alloc.assetKey}]</span>
                                 <span className="text-xs font-bold text-slate-100">{alloc.taskName} ({alloc.projectTitle})</span>
                               </div>
-                              <span className="text-[10px] text-slate-400 block mt-1">🕒 Planned Slot: {alloc.startTime} - {alloc.endTime}</span>
                               
-                              {conflict && (
-                                <span className="text-[9px] bg-red-500/15 text-red-500 px-2 py-0.5 rounded font-bold inline-block mt-2">
+                              {/* Release / Cancel Booking Trigger (Now prominently integrated!) */}
+                              <button
+                                onClick={() => removeAssetAllocation(alloc.taskId, alloc.id)}
+                                className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 p-1.5 rounded-lg transition-colors flex items-center gap-1 text-[10px] font-black uppercase tracking-wider"
+                                title="Release shared vehicle allocation"
+                              >
+                                <Trash2 size={13} />
+                                <span>Release</span>
+                              </button>
+                            </div>
+                            
+                            <span className="text-[10px] text-slate-400 block mt-1">🕒 Planned Slot: {alloc.startTime} - {alloc.endTime}</span>
+                            
+                            {conflict && (
+                              <div className="mt-2 p-3 bg-red-950/40 border border-red-500/30 rounded-xl space-y-3">
+                                <span className="text-[10px] text-red-400 font-bold block">
                                   ⚠️ Overlaps with "{conflict.conflictProject}" Sequence ({conflict.conflictTime})
                                 </span>
-                              )}
-                            </div>
+                                
+                                {recommendation ? (
+                                  <div className="p-2 bg-emerald-950/50 border border-emerald-500/20 rounded-lg flex items-center justify-between flex-wrap gap-2">
+                                    <div className="text-[10px] text-emerald-400 font-medium">
+                                      👉 Suggestion: Equipment is next free on <span className="font-black text-white">{recommendation.label}</span>.
+                                    </div>
+                                    <button
+                                      onClick={() => handleIntelligentReschedule(alloc.taskId, alloc.id, recommendation.dateStr)}
+                                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-wide shadow"
+                                    >
+                                      Move to {recommendation.label}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="text-[9px] text-slate-400 italic">Calculating alternative equipment windows...</div>
+                                )}
 
-                            {conflict && (
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <button
-                                  onClick={() => handleRescheduleLaterThatDay(alloc.taskId, alloc.id)}
-                                  className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
-                                >
-                                  Shift to Afternoon
-                                </button>
-                                <button
-                                  onClick={() => handleRescheduleTomorrow(alloc.taskId, alloc.id, true)}
-                                  className="bg-slate-850 hover:bg-slate-800 text-slate-200 text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
-                                >
-                                  Shift Tomorrow + Extend
-                                </button>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <button
+                                    onClick={() => handleRescheduleLaterThatDay(alloc.taskId, alloc.id)}
+                                    className="bg-amber-600 hover:bg-amber-500 text-white text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
+                                  >
+                                    Shift to Afternoon
+                                  </button>
+                                  <button
+                                    onClick={() => handleRescheduleTomorrow(alloc.taskId, alloc.id, true)}
+                                    className="bg-slate-850 hover:bg-slate-800 text-slate-200 text-[10px] px-2.5 py-1.5 rounded-lg font-black uppercase"
+                                  >
+                                    Shift Tomorrow + Extend
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -2329,7 +2430,7 @@ export default function App() {
               
               <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-slate-400 uppercase hidden sm:inline">Filter:</span>
+                  <span className="text-[10px] font-black text-slate-404 uppercase hidden sm:inline">Filter:</span>
                   <div className="relative">
                     <select 
                       value={alertCenterAssetFilter} 
@@ -2351,7 +2452,7 @@ export default function App() {
 
                 <button 
                   onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
-                  className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400"
+                  className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-404"
                 >
                   {isAlertCenterExpanded ? <ChevronDown size={15} /> : <ChevronUp size={15} />}
                 </button>
@@ -2562,10 +2663,9 @@ export default function App() {
                     </div>
                   </div>
 
-                  {}
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mt-4">
                     
-                    {/* BASELINE DAYS - HIGH CONTRAST EASY NUMERIC CHANGE */}
+                    {/* BASELINE DAYS - HIGH CONTRAST EASY NUMERIC CHANGE BUTTONS Flanking input */}
                     <div className="sm:col-span-5 flex flex-col justify-start">
                       <label className="block text-[9px] font-black text-slate-404 uppercase mb-1.5">Baseline Days</label>
                       <div className="flex items-center gap-2 bg-[#0d1424] p-1 rounded-xl border border-slate-700">
@@ -2589,7 +2689,7 @@ export default function App() {
                             updateTask(currentTaskEditing.id, 'duration', val);
                             setSelectedDayIndex(0);
                           }}
-                          className="w-full text-center bg-transparent border-none text-white text-sm font-black outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-full text-center bg-slate-950 border-none text-white text-sm font-black outline-none focus:ring-0 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
 
                         <button
@@ -2664,17 +2764,17 @@ export default function App() {
                                 <button
                                   type="button"
                                   onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, -1, selectedDayIndex)}
-                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-400 hover:text-white transition-all"
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-404 hover:text-white transition-all"
                                 >
                                   -
                                 </button>
                                 <span className="w-8 text-center text-xs font-black font-mono text-white">
                                   {count}
-                                tap</span>
+                                </span>
                                 <button
                                   type="button"
                                   onClick={() => adjustWorkerCount(currentTaskEditing.id, role.key, 1, selectedDayIndex)}
-                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-400 hover:text-white transition-all"
+                                  className="w-6 h-6 rounded-lg bg-slate-900 hover:bg-slate-850 flex items-center justify-center text-xs font-black text-slate-404 hover:text-white transition-all"
                                 >
                                   +
                                 </button>
@@ -2726,7 +2826,7 @@ export default function App() {
                       />
                     </div>
                     <div className="w-full sm:w-24">
-                      <label className="block text-[8px] font-black text-slate-400 uppercase mb-1 text-left">Weight (%)</label>
+                      <label className="block text-[8px] font-black text-slate-404 uppercase mb-1 text-left">Weight (%)</label>
                       <input 
                         type="number" min="10" max="100"
                         value={newSubtaskWeight} 
@@ -2750,7 +2850,7 @@ export default function App() {
                             type="checkbox" 
                             checked={sub.status === 'COMPLETED'} 
                             onChange={() => handleToggleSubtaskStatus(currentTaskEditing.id, sub.id)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-750 bg-slate-950 rounded cursor-pointer shrink-0"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-700 bg-slate-955 rounded cursor-pointer shrink-0"
                           />
                           <span className={`text-xs font-bold truncate ${sub.status === 'COMPLETED' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                             {sub.name}
@@ -2805,7 +2905,6 @@ export default function App() {
                         );
                       }} className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                         
-                        {/* HIGH CONTRAST SELECTS / INPUTS FOR BOOKINGS (Fixing visibility issue from image_21cc61.png) */}
                         <div>
                           <label className="block text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1 text-left">Active Day</label>
                           <select name="dayOffset" className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-bold cursor-pointer outline-none focus:border-blue-500">
@@ -2829,7 +2928,7 @@ export default function App() {
                             name="startTime" 
                             type="time" 
                             defaultValue="08:00" 
-                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-850 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
+                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
                             required 
                           />
                         </div>
@@ -2839,7 +2938,7 @@ export default function App() {
                             name="endTime" 
                             type="time" 
                             defaultValue="17:00" 
-                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-855 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
+                            className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-slate-400 dark:border-slate-700 font-mono font-bold outline-none shadow-sm focus:border-blue-500" 
                             required 
                           />
                         </div>
@@ -2850,10 +2949,14 @@ export default function App() {
                     </div>
                   )}
 
-                  {}
                   <div className="space-y-1.5">
                     {allAllocations.filter(a => a.taskId === currentTaskEditing.id && a.projectId === activeProjectId).map((alloc, i) => {
                       const conflict = checkLogisticalConflictForAllocation(alloc);
+                      const targetDate = new Date(projectStartDate);
+                      targetDate.setDate(targetDate.getDate() + currentTaskEditing.startDays + alloc.dayOffset);
+                      const targetDateStr = targetDate.toISOString().split('T')[0];
+                      const recommendation = conflict ? findNextFreeSlot(alloc.assetKey, targetDateStr) : null;
+
                       return (
                         <div key={i} className={`p-3 sm:p-4 rounded-xl border flex flex-col justify-between text-xs font-bold gap-3 ${
                           conflict 
@@ -2866,7 +2969,6 @@ export default function App() {
                               <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-400">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
                             </div>
                             
-                            {/* ROBUST DELETION TRIGGER (Fixing remove booking issue from image_21cc64.png) */}
                             <button 
                               type="button" 
                               onClick={() => removeAssetAllocation(currentTaskEditing.id, alloc.id)} 
@@ -2879,10 +2981,28 @@ export default function App() {
 
                           {conflict && (
                             <div className="p-3 bg-slate-950 rounded-xl border border-rose-900/40 flex flex-col gap-2">
-                              <div className="flex items-center gap-1.5 text-[10px] text-rose-400">
+                              <div className="flex items-center gap-1.5 text-[10px] text-rose-404">
                                 <AlertTriangle size={12} />
                                 <span>Overlap CLASH Detected with "{conflict.conflictProject}" sequence</span>
                               </div>
+
+                              {recommendation ? (
+                                <div className="p-2 bg-emerald-950/60 border border-emerald-500/20 rounded-lg flex items-center justify-between flex-wrap gap-2">
+                                  <span className="text-[10px] text-emerald-400">
+                                    👉 Next available free window: <span className="font-bold text-white">{recommendation.label}</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleIntelligentReschedule(currentTaskEditing.id, alloc.id, recommendation.dateStr)}
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] px-2.5 py-1 rounded font-black uppercase active:scale-95 transition-transform"
+                                  >
+                                    Shift to {recommendation.label}
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="text-[9px] text-slate-500 italic">Calculating alternative equipment windows...</div>
+                              )}
+
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 <button
                                   type="button"
@@ -3046,7 +3166,6 @@ export default function App() {
         </div>
       )}
 
-      {}
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
