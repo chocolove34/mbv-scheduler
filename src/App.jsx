@@ -7,7 +7,7 @@ import {
   AlertTriangle, Eye, ArrowRight, ClipboardCheck, ChevronDown, ChevronUp, Folder,
   CloudLightning, Droplets, ShieldCheck, ListTodo, HelpCircle, Truck, Bell, Wrench,
   Menu, MessageSquareShare, Volume2, VolumeX, Sparkles, FileText, Settings2, Hammer,
-  SlidersHorizontal, EyeOff, Check, AlertCircle, RefreshCw, Layers
+  SlidersHorizontal, EyeOff, Check, AlertCircle, RefreshCw, Layers, ChevronLeft
 } from 'lucide-react';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -142,6 +142,241 @@ const INITIAL_TASKS = [
   { id: 'T10', ref: '6.0', desc: 'Commissioning', task: 'Substation Transformer Energization & Testing', duration: 2, progress: 0, pm: 1, se: 1, ee: 2, so: 1, st: 0, cp: 0, ms: 0, el: 4, lm: 1, cs: 1, hl: 1, assigned: {}, qaStatus: 'PENDING', checklist: { 'Transformer Insulation Test OK': false, 'Trip Relays Verified': false }, assignedAsset: 'PIT99' },
 ];
 
+const PremiumCalendarWidget = ({ selectedDate, onChange, isDarkMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const calendarRef = useRef(null);
+
+  // Parse current selected date
+  const parsedDate = selectedDate ? new Date(selectedDate) : new Date();
+  const [currentYear, setCurrentYear] = useState(parsedDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(parsedDate.getMonth());
+
+  const months = [
+    "January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+  // Calculate days layout
+  const getDaysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
+
+  const daysInCurrentMonth = getDaysInMonth(currentMonth, currentYear);
+  const firstDayIndex = getFirstDayOfMonth(currentMonth, currentYear);
+
+  // Retrieve padded trailing days from previous month
+  const prevMonthIndex = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const daysInPrevMonth = getDaysInMonth(prevMonthIndex, prevMonthYear);
+
+  const prevMonthDaysToShow = [];
+  for (let i = firstDayIndex - 1; i >= 0; i--) {
+    prevMonthDaysToShow.push({
+      day: daysInPrevMonth - i,
+      month: prevMonthIndex,
+      year: prevMonthYear,
+      isCurrentMonth: false
+    });
+  }
+
+  // Populate active month days
+  const currentMonthDays = [];
+  for (let d = 1; d <= daysInCurrentMonth; d++) {
+    currentMonthDays.push({
+      day: d,
+      month: currentMonth,
+      year: currentYear,
+      isCurrentMonth: true
+    });
+  }
+
+  // Padded leading days of next month
+  const totalDaysSoFar = prevMonthDaysToShow.length + currentMonthDays.length;
+  const remainingSlots = 42 - totalDaysSoFar; // Standard 6-row calendar layout
+  const nextMonthDaysToShow = [];
+  const nextMonthIndex = currentMonth === 11 ? 0 : currentMonth + 1;
+  const nextMonthYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+
+  for (let n = 1; n <= remainingSlots; n++) {
+    nextMonthDaysToShow.push({
+      day: n,
+      month: nextMonthIndex,
+      year: nextMonthYear,
+      isCurrentMonth: false
+    });
+  }
+
+  const allCalendarDays = [...prevMonthDaysToShow, ...currentMonthDays, ...nextMonthDaysToShow];
+
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(prev => prev - 1);
+    } else {
+      setCurrentMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(prev => prev + 1);
+    } else {
+      setCurrentMonth(prev => prev + 1);
+    }
+  };
+
+  const selectDay = (dayObj) => {
+    const formattedMonth = String(dayObj.month + 1).padStart(2, '0');
+    const formattedDay = String(dayObj.day).padStart(2, '0');
+    const dateStr = `${dayObj.year}-${formattedMonth}-${formattedDay}`;
+    onChange(dateStr);
+    setIsOpen(false);
+  };
+
+  const setToday = () => {
+    const today = new Date();
+    const formattedMonth = String(today.getMonth() + 1).padStart(2, '0');
+    const formattedDay = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${today.getFullYear()}-${formattedMonth}-${formattedDay}`;
+    setCurrentYear(today.getFullYear());
+    setCurrentMonth(today.getMonth());
+    onChange(dateStr);
+    setIsOpen(false);
+  };
+
+  // Close calendar popover on click outside
+  useEffect(() => {
+    const clickHandler = (e) => {
+      if (calendarRef.current && !calendarRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", clickHandler);
+    return () => document.removeEventListener("mousedown", clickHandler);
+  }, []);
+
+  const formatDateDisplay = (dateString) => {
+    if (!dateString) return "Select Date";
+    const d = new Date(dateString);
+    return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  };
+
+  return (
+    <div className="relative inline-block w-full" ref={calendarRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold shadow-inner transition-all duration-200 outline-none ${
+          isDarkMode 
+            ? 'bg-[#131c2e] hover:bg-[#1c293f] border-slate-800 text-blue-400 hover:text-blue-300' 
+            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          <CalendarDays size={14} className="text-blue-500 shrink-0" />
+          <span>{formatDateDisplay(selectedDate)}</span>
+        </span>
+        <ChevronDown size={14} className="opacity-60" />
+      </button>
+
+      {isOpen && (
+        <div className={`absolute left-0 mt-2 w-72 rounded-2xl shadow-2xl border p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200 ${
+          isDarkMode 
+            ? 'bg-[#0f172a] border-slate-800 text-slate-100 shadow-[#020617]/80' 
+            : 'bg-white border-slate-200 text-slate-900 shadow-slate-300/50'
+        }`}>
+          {/* Header Controls */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-blue-500">
+              {months[currentMonth]} {currentYear}
+            </span>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className={`p-1.5 rounded-lg border transition-all ${
+                  isDarkMode ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <ChevronLeft size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className={`p-1.5 rounded-lg border transition-all ${
+                  isDarkMode ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <ChevronRight size={13} />
+              </button>
+            </div>
+          </div>
+
+          {/* Days of week header */}
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b pb-1 border-slate-800/40">
+            {daysOfWeek.map(d => (
+              <span key={d}>{d}</span>
+            ))}
+          </div>
+
+          {/* Days Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {allCalendarDays.map((dayObj, i) => {
+              const formattedMonth = String(dayObj.month + 1).padStart(2, '0');
+              const formattedDay = String(dayObj.day).padStart(2, '0');
+              const currentIterationStr = `${dayObj.year}-${formattedMonth}-${formattedDay}`;
+              const isSelected = selectedDate === currentIterationStr;
+
+              // Check if day is today
+              const todayObj = new Date();
+              const isToday = todayObj.getDate() === dayObj.day && todayObj.getMonth() === dayObj.month && todayObj.getFullYear() === dayObj.year;
+
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => selectDay(dayObj)}
+                  className={`h-7 w-7 rounded-lg text-[11px] font-bold flex items-center justify-center transition-all ${
+                    isSelected
+                      ? 'bg-blue-600 text-white font-black scale-105 shadow-md shadow-blue-500/20'
+                      : !dayObj.isCurrentMonth
+                        ? 'opacity-25 hover:opacity-50'
+                        : isDarkMode
+                          ? 'hover:bg-slate-800/80 text-slate-200'
+                          : 'hover:bg-slate-100 text-slate-700'
+                  } ${isToday && !isSelected ? 'ring-1 ring-blue-500 text-blue-500' : ''}`}
+                >
+                  {dayObj.day}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick-select Footer buttons matching de9c32.png design context */}
+          <div className="flex items-center justify-between border-t border-slate-800/40 mt-3 pt-2">
+            <button
+              type="button"
+              onClick={() => { onChange(''); setIsOpen(false); }}
+              className="text-[10px] font-black uppercase text-rose-500 tracking-wider hover:opacity-80"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={setToday}
+              className="text-[10px] font-black uppercase text-blue-500 tracking-wider hover:opacity-80"
+            >
+              Today
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading');
@@ -244,7 +479,6 @@ export default function App() {
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filterStatusTag, setFilterStatusTag] = useState('ALL');
 
-  // Custom Confirmation Dialog replacing native confirm()
   const [customConfirmConfig, setCustomConfirmConfig] = useState(null);
 
   useEffect(() => {
@@ -698,45 +932,6 @@ export default function App() {
     });
   };
 
-  const handleShareToCloud = async () => {
-    if (!db) {
-      showToast("Cloud configuration missing.");
-      return;
-    }
-    setIsSavingCloud(true);
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', activeProjectId);
-      await setDoc(docRef, {
-        tasks,
-        customAssets,
-        docMetadata,
-        projectStartDate,
-        appTitle,
-        appSubtitle,
-        logos,
-        updatedAt: new Date().toISOString()
-      });
-
-      const freshRegistry = projectList.map(p => 
-        p.id === activeProjectId ? { ...p, title: appTitle, lastModified: new Date().toISOString() } : p
-      );
-      setProjectList(freshRegistry);
-      localStorage.setItem('mbv_cloud_registry', JSON.stringify(freshRegistry));
-
-      const url = new URL(window.location.href);
-      url.searchParams.set('project', activeProjectId);
-      copyToClipboard(url.toString());
-
-      showToast("Sync Successful! URL copied to clipboard.");
-      logActivityToCloud(`Global database synced successfully`, 'success');
-    } catch (e) {
-      console.error(e);
-      showToast("Error synchronizing project data to cloud.");
-    } finally {
-      setIsSavingCloud(false);
-    }
-  };
-
   const handleAddCustomAsset = () => {
     setAssetValidationWarning('');
     if (!newAssetCode.trim() || !newAssetName.trim()) {
@@ -1110,11 +1305,6 @@ export default function App() {
           -webkit-overflow-scrolling: touch;
         }
 
-        select, input {
-          -webkit-appearance: none;
-          appearance: none;
-        }
-
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: ${isDarkMode ? 'rgba(15, 23, 42, 0.1)' : 'rgba(241, 245, 249, 0.5)'}; }
         ::-webkit-scrollbar-thumb { background: ${isDarkMode ? '#1e293b' : '#cbd5e1'}; border-radius: 99px; }
@@ -1146,10 +1336,8 @@ export default function App() {
       <header className={`border-b z-20 shrink-0 transition-colors ${isDarkMode ? 'bg-[#0f172a]/90 border-slate-800/80 backdrop-blur-md' : 'bg-white/90 border-slate-200/80 backdrop-blur-md'}`}>
         <div className="px-4 py-2 sm:px-6 sm:py-3 flex flex-col gap-2 sm:gap-3">
           
-          {/* Main Top Control Row */}
           <div className="flex items-center justify-between gap-3">
             
-            {/* Logos & Workspace Selector */}
             <div className="flex items-center gap-3 min-w-0">
               <div className="bg-[#1e293b]/60 p-1.5 sm:p-2 rounded-xl border border-slate-700/50 text-white shrink-0 shadow-lg hidden xs:block">
                 <Layers size={16} className="text-blue-400"/>
@@ -1234,7 +1422,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Navigation Tabs - Primary View Controllers */}
             <div className="flex items-center justify-center flex-1 max-w-md mx-2">
               <div className={`flex items-center gap-1 border p-1 rounded-2xl w-full justify-between transition-colors ${isDarkMode ? 'bg-[#090d16] border-slate-800/80' : 'bg-slate-100 border-slate-200/80'}`}>
                 {[
@@ -1258,7 +1445,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Utility / Controls Segment (Aggregated to prevent Landscape squishing) */}
             <div className="flex items-center gap-1.5 shrink-0">
               <button 
                 onClick={() => setIsControlPanelOpen(!isControlPanelOpen)}
@@ -1273,7 +1459,6 @@ export default function App() {
                 <span className="hidden sm:inline">Settings</span>
               </button>
 
-              {/* Utility Dropdown Trigger for Mobile Landscape Viewports */}
               <div className="relative">
                 <button
                   onClick={() => setIsUtilityMenuOpen(!isUtilityMenuOpen)}
@@ -1325,7 +1510,7 @@ export default function App() {
 
         </div>
 
-        {/* Dynamic Controls Sub-Panel Grid */}
+        {}
         {isControlPanelOpen && (
           <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/95 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
             <div className="flex flex-col gap-1">
@@ -1367,11 +1552,16 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
+            {/* UPGRADED CALENDAR SELECTOR: Beautiful custom slate picker replaces cheap browser input date element */}
+            <div className="flex flex-col gap-1 w-48">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Launch Target</span>
-              <div className={`flex items-center border rounded-xl px-3 py-1.5 text-xs font-bold ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-blue-400' : 'bg-white border-slate-200 text-slate-800'}`}>
-                <input type="date" value={projectStartDate} onChange={(e) => setProjectStartDate(e.target.value)} className="outline-none bg-transparent cursor-pointer font-bold text-slate-800 dark:text-blue-400" />
-              </div>
+              <PremiumCalendarWidget 
+                selectedDate={projectStartDate} 
+                onChange={(newVal) => {
+                  if (newVal) setProjectStartDate(newVal);
+                }} 
+                isDarkMode={isDarkMode} 
+              />
             </div>
 
             <div className="flex flex-col gap-1">
@@ -1661,7 +1851,7 @@ export default function App() {
             </div>
           )}
 
-          {/* OUTLOOK PERSPECTIVE VIEWPORT (Restructured for Ultra-Premium Contrast) */}
+          {}
           {activePerspective === 'weekly' && (
             <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-5 rounded-3xl border flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 ${
@@ -1724,7 +1914,7 @@ export default function App() {
                             <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
                               <div className="min-w-0 flex-1">
                                 <span className="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
-                                  {item.parentProjectName || "DLDLD"}
+                                  {item.parentProjectName || "SUBSTATION SCHEDULER"}
                                 </span>
                                 <h4 className={`text-sm font-extrabold truncate mt-2 ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>
                                   {item.task}
@@ -1778,7 +1968,7 @@ export default function App() {
             </div>
           )}
 
-          {/* QA PERSPECTIVE VIEWPORT */}
+          {}
           {activePerspective === 'qa' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-5 rounded-3xl border flex items-center justify-between ${
@@ -1821,7 +2011,7 @@ export default function App() {
             </div>
           )}
 
-          {/* LOGISTICS PERSPECTIVE VIEWPORT */}
+          {}
           {activePerspective === 'logistics' && (
             <div className="flex-grow flex flex-col gap-4 overflow-hidden min-h-0 animate-in fade-in duration-200">
               <div className={`p-5 rounded-3xl border flex items-center justify-between ${
@@ -1912,7 +2102,7 @@ export default function App() {
         </div>
       </main>
 
-      {/* CUSTOM CONFIRMATION DIALOG (iOS Spec / Primavera grade replacement) */}
+      {}
       {customConfirmConfig && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl border p-6 w-full max-w-sm flex flex-col gap-4 shadow-2xl transition-all ${
@@ -2353,7 +2543,7 @@ export default function App() {
         </div>
       )}
 
-      {/* NOTIFICATION SATELLITE PANE */}
+      {}
       {isNotificationPaneOpen && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex justify-end">
           <div className={`w-full max-w-sm h-full p-6 flex flex-col justify-between border-l shadow-2xl transition-all duration-300 ${isDarkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white text-slate-900 border-slate-200'}`}>
