@@ -124,7 +124,7 @@ const LABOR_PROFILES = {
     { key: 'pm', label: 'PM', fullName: 'Project Manager', bg: 'bg-blue-100 border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-500/25 dark:text-blue-300', icon: '👔' },
     { key: 'se', label: 'SE', fullName: 'Site Engineer', bg: 'bg-amber-100 border-amber-400 text-amber-900 dark:bg-amber-900/30 dark:border-amber-500/25 dark:text-amber-300', icon: '📐' },
     { key: 'so', label: 'SO', fullName: 'Safety Officer', bg: 'bg-emerald-100 border-emerald-400 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-500/25 dark:text-emerald-300', icon: '🛡️' },
-    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-200', icon: '⛓️' },
+    { key: 'st', label: 'ST', fullName: 'Steelman', bg: 'bg-slate-200 border-slate-400 text-slate-900 dark:bg-slate-800 dark:border-slate-700/55 dark:text-slate-202', icon: '⛓️' },
     { key: 'cp', label: 'CP', fullName: 'Carpenter', bg: 'bg-yellow-100 border-yellow-400 text-yellow-900 dark:bg-yellow-900/30 dark:border-yellow-500/25 dark:text-yellow-300', icon: '🪚' },
     { key: 'ms', label: 'MS', fullName: 'Mason', bg: 'bg-rose-100 border-rose-400 text-rose-900 dark:bg-rose-900/30 dark:border-rose-500/25 dark:text-rose-300', icon: '🧱' },
     { key: 'hl', label: 'HL', fullName: 'Helper', bg: 'bg-teal-100 border-teal-400 text-teal-900 dark:bg-teal-900/30 dark:border-teal-500/25 dark:text-teal-300', icon: '🧹' }
@@ -1403,25 +1403,25 @@ export default function App() {
 
     return (
       <div className={`absolute left-0 mt-2 p-4 rounded-3xl shadow-2xl z-50 w-72 border backdrop-blur-xl transition-all ${
-        isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-200 text-slate-900'
+        isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-202 text-slate-900'
       }`}>
         <div className="flex items-center justify-between mb-4">
           <button 
             onClick={() => handleMonthChange(-1)} 
-            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-black transition-all"
+            className="p-1.5 rounded-lg hover:bg-slate-202 dark:hover:bg-slate-800 text-xs font-black transition-all"
           >
             ←
           </button>
           <span className="text-xs font-extrabold uppercase tracking-widest">{monthNames[currentMonth]} {currentYear}</span>
           <button 
             onClick={() => handleMonthChange(1)} 
-            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-black transition-all"
+            className="p-1.5 rounded-lg hover:bg-slate-202 dark:hover:bg-slate-800 text-xs font-black transition-all"
           >
             →
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-[9px] font-black uppercase text-center mb-2 text-slate-500">
+        <div className="grid grid-cols-7 gap-1 text-[9px] font-black uppercase text-center mb-2 text-slate-505">
           <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
         </div>
 
@@ -1519,7 +1519,7 @@ export default function App() {
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black select-none ${
                       isDarkMode 
                         ? 'bg-[#131c2e] hover:bg-[#1e293b] text-white border-slate-700' 
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300 shadow-sm'
+                        : 'bg-slate-100 hover:bg-slate-202 text-slate-800 border-slate-300 shadow-sm'
                     }`}
                   >
                     <Folder className="text-blue-600 shrink-0" size={13}/>
@@ -1561,11 +1561,11 @@ export default function App() {
                             className={`flex items-center justify-between p-2 rounded-xl text-xs font-bold cursor-pointer transition-all ${
                               activeProjectId === proj.id 
                                 ? 'bg-blue-600/15 text-blue-900 dark:text-blue-400 border border-blue-500 shadow-md' 
-                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-300 border border-transparent' : 'hover:bg-slate-100 text-slate-800 border border-slate-200')
+                                : (isDarkMode ? 'hover:bg-slate-800/80 text-slate-303 border border-transparent' : 'hover:bg-slate-100 text-slate-800 border border-slate-200')
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-500'} size={12}/>
+                              <Folder className={activeProjectId === proj.id ? 'text-blue-600' : 'text-slate-505'} size={12}/>
                               <span className="truncate">{proj.title}</span>
                             </div>
                             {proj.id !== 'master-schedule' && (
@@ -1603,8 +1603,8 @@ export default function App() {
                       onClick={() => setShowWeatherDropdown(!showWeatherDropdown)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-black ${
                         isDarkMode 
-                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-400 border-slate-700' 
-                          : 'bg-slate-100 hover:bg-slate-200 text-blue-800 border-slate-300'
+                          ? 'bg-[#131c2e] hover:bg-[#1e293b] text-blue-404 border-slate-700' 
+                          : 'bg-slate-100 hover:bg-slate-202 text-blue-800 border-slate-300'
                       }`}
                     >
                       <span>
@@ -1615,9 +1615,9 @@ export default function App() {
 
                     {showWeatherDropdown && (
                       <div className={`absolute left-0 top-10 w-64 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150 ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-202 text-slate-950'
+                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200' : 'bg-white border-slate-202 text-slate-955'
                       }`}>
-                        <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 mb-2">
+                        <div className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-404 border-b border-slate-800 mb-2">
                           Stochastic Weather State
                         </div>
                         {[
@@ -1634,8 +1634,8 @@ export default function App() {
                             }}
                             className={`w-full text-left p-2 rounded-xl flex items-center justify-between text-xs transition-all ${
                               weatherFactor === weather.key 
-                                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
-                                : 'hover:bg-slate-800 text-slate-300'
+                                ? 'bg-blue-600/15 text-blue-404 border border-blue-500/30' 
+                                : 'hover:bg-slate-800 text-slate-303'
                             }`}
                           >
                             <div>
@@ -1654,7 +1654,7 @@ export default function App() {
             
             <button 
               onClick={() => setIsDarkMode(!isDarkMode)} 
-              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-slate-100 text-slate-900 border-slate-300'}`}
+              className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-slate-100 text-slate-900 border-slate-303'}`}
             >
               {isDarkMode ? <Sun size={15}/> : <Moon size={15}/>}
             </button>
@@ -1679,10 +1679,10 @@ export default function App() {
                     className={`flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 group ${
                       isSelected 
                         ? `bg-gradient-to-r ${tab.color} text-white shadow-lg ${tab.shadow} scale-[1.03]` 
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                        : 'text-slate-500 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
                     }`}
                   >
-                    <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-400 group-hover:scale-110 transition-transform'}`} />
+                    <IconComponent size={14} className={`${isSelected ? 'text-white' : 'text-slate-404 group-hover:scale-110 transition-transform'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -1709,16 +1709,16 @@ export default function App() {
                 setSoundEnabled(!soundEnabled);
                 showToast(soundEnabled ? "Audio alerts muted" : "Audio alerts enabled 🔊");
               }} 
-              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-600' : 'text-slate-500'}`} 
+              className={`p-2 rounded-xl transition border shadow-sm ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-303 text-slate-800 hover:bg-slate-100'} ${soundEnabled ? 'text-blue-600' : 'text-slate-505'}`} 
             >
               {soundEnabled ? <Volume2 size={14}/> : <VolumeX size={14}/>}
             </button>
 
-            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
+            <button onClick={shareToGroupChat} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-100'}`}>
               <MessageSquareShare size={14}/>
             </button>
 
-            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-300 text-blue-900 hover:bg-slate-100'}`}>
+            <button onClick={() => setIsNotificationPaneOpen(!isNotificationPaneOpen)} className={`p-2 rounded-xl transition border shadow-sm relative ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404 hover:bg-slate-800' : 'bg-white border-slate-303 text-blue-900 hover:bg-slate-100'}`}>
               <Bell size={14}/>
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
@@ -1727,10 +1727,10 @@ export default function App() {
             
             <button 
               onClick={() => setIsSettingsOpen(true)} 
-              className={`p-2 rounded-xl transition border shadow-sm cursor-pointer z-30 hover:scale-105 active:scale-95 ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'}`}
+              className={`p-2 rounded-xl transition border shadow-sm cursor-pointer z-30 hover:scale-105 active:scale-95 ${isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-303 text-slate-800 hover:bg-slate-100'}`}
               title="Interactive Project Settings"
             >
-              <Settings size={14} className="animate-spin-slow text-slate-600 dark:text-slate-400" />
+              <Settings size={14} className="animate-spin-slow text-slate-600 dark:text-slate-404" />
             </button>
           </div>
         </div>
@@ -1739,13 +1739,13 @@ export default function App() {
           <div className={`px-4 py-3 sm:px-6 sm:py-4 border-t flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200 ${isDarkMode ? 'bg-[#0b0f19]/90' : 'bg-slate-100/95 border-slate-202'}`}>
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Crew Structuring Profile</span>
-              <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-200 border-slate-300'}`}>
+              <div className={`flex border rounded-xl p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-202 border-slate-300'}`}>
                 <button 
                   onClick={() => { setLaborProfile('civil'); showToast("Switched to Civil Crew"); }}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
                     laborProfile === 'civil' 
                       ? 'bg-amber-600 text-white shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   Civil 🏗️
@@ -1755,7 +1755,7 @@ export default function App() {
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
                     laborProfile === 'electrical' 
                       ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                      : 'text-slate-600 dark:text-slate-404 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   Electrical ⚡
@@ -1768,7 +1768,7 @@ export default function App() {
               <button
                 onClick={() => setShowCalendar(!showCalendar)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-400' : 'bg-white border-slate-300 text-blue-800'
+                  isDarkMode ? 'bg-[#131c2e] border-slate-700 text-blue-404' : 'bg-white border-slate-303 text-blue-800'
                 }`}
               >
                 <Calendar size={14} />
@@ -1783,7 +1783,7 @@ export default function App() {
               <button 
                 onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
                 className={`px-3 py-2 rounded-xl border text-xs font-black flex items-center gap-1.5 ${
-                  isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-300 hover:bg-slate-100'
+                  isDarkMode ? 'bg-[#131c2e] border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-303 hover:bg-slate-100'
                 }`}
               >
                 {isMetadataCollapsed ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}
@@ -1792,10 +1792,10 @@ export default function App() {
             </div>
 
             <div className="flex gap-2 ml-auto">
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-white text-slate-800 border-slate-300 shadow-sm'}`}>
+              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-xl border ${isDarkMode ? 'bg-slate-800 text-amber-400 border-slate-707' : 'bg-white text-slate-850 border-slate-303 shadow-sm'}`}>
                 {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
               </button>
-              <button onClick={triggerSystemPrint} className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+              <button onClick={triggerSystemPrint} className="bg-slate-800 hover:bg-slate-705 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
                 <Printer size={13}/> Print
               </button>
             </div>
@@ -1803,7 +1803,6 @@ export default function App() {
         )}
       </header>
 
-      {}
       <main className="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 relative flex flex-col min-h-0">
         <div className="max-w-[1700px] w-full mx-auto flex flex-col gap-4 flex-1 min-h-0">
 
@@ -1835,26 +1834,27 @@ export default function App() {
               </div>
 
               <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] font-black uppercase tracking-wider border-t pt-4 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
-                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800">
+                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 font-bold">
                   <span>Document No:</span>
-                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
+                  <input value={docMetadata.docNo} onChange={(e) => setDocMetadata({...docMetadata, docNo: e.target.value})} className={`font-mono bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`} />
                 </div>
-                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1">
+                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1 font-bold">
                   <span>Revision:</span>
-                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
+                  <input value={docMetadata.revision} onChange={(e) => setDocMetadata({...docMetadata, revision: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`} />
                 </div>
-                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1">
+                <div className="flex flex-col gap-1 border-r border-slate-400 dark:border-slate-800 px-1 font-bold">
                   <span>Effective Date:</span>
-                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} />
+                  <input value={docMetadata.date} onChange={(e) => setDocMetadata({...docMetadata, date: e.target.value})} className={`bg-transparent outline-none w-full font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`} />
                 </div>
-                <div className="flex flex-col gap-1 pl-1">
+                <div className="flex flex-col gap-1 pl-1 font-bold">
                   <span>Base Launch:</span>
-                  <span className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{projectStartDate}</span>
+                  <span className={`font-black ${isDarkMode ? 'text-slate-202' : 'text-slate-805'}`}>{projectStartDate}</span>
                 </div>
               </div>
             </div>
           )}
 
+          {}
           {activePerspective === 'gantt' && (
             <div className="flex-1 flex flex-col min-h-0 relative gap-3 animate-in fade-in duration-200">
               
@@ -1870,7 +1870,7 @@ export default function App() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none w-full max-w-xs sm:max-w-sm transition-colors ${
                       isDarkMode 
                         ? 'bg-[#0f172a] border-slate-700 text-white focus:border-blue-500' 
-                        : 'bg-slate-100 border-slate-300 text-slate-800 focus:border-blue-600'
+                        : 'bg-slate-100 border-slate-303 text-slate-800 focus:border-blue-600'
                     }`}
                   />
                   
@@ -1879,7 +1879,7 @@ export default function App() {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                       isGanttSidebarVisible 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                        : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-blue-800 dark:text-blue-400 hover:bg-slate-300'
+                        : 'bg-slate-202 dark:bg-slate-800 border-slate-303 dark:border-slate-707 text-blue-800 dark:text-blue-404 hover:bg-slate-300'
                     }`}
                     style={{ minWidth: '105px' }}
                   >
@@ -1896,7 +1896,7 @@ export default function App() {
                       className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border ${
                         filterStatusTag === tag
                           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100')
+                          : (isDarkMode ? 'bg-[#0f172a] border-slate-700 text-slate-404 hover:text-white' : 'bg-white border-slate-303 text-slate-800 hover:bg-slate-100')
                       }`}
                     >
                       {tag}
@@ -1913,7 +1913,7 @@ export default function App() {
                   }`}>
                     
                     <div className={`h-[48px] min-h-[48px] max-h-[48px] p-2 font-black text-[9px] flex items-center uppercase tracking-widest border-b transition-colors ${
-                      isDarkMode ? 'bg-slate-950/60 border-slate-800 text-slate-400' : 'bg-slate-200 border-slate-300 text-slate-800'
+                      isDarkMode ? 'bg-slate-950/60 border-slate-800 text-slate-404' : 'bg-slate-202 border-slate-303 text-slate-805'
                     }`}>
                       <span className="w-8 text-center font-black">Ref</span>
                       <span className="flex-grow px-2 truncate font-black">Work Description</span>
@@ -1935,33 +1935,33 @@ export default function App() {
                           }}
                           className={`h-[68px] min-h-[68px] max-h-[68px] flex items-center text-xs group transition-all border-b cursor-pointer ${getRowBgColor(task, index)}`}
                         >
-                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-700 dark:text-blue-400">
+                          <div className="w-8 text-center flex items-center justify-center shrink-0 font-black font-mono text-[10px] text-blue-700 dark:text-blue-404">
                             {task.ref}
                           </div>
                           
-                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-300'}`}>
+                          <div className={`flex-grow h-full flex flex-col justify-center px-3 border-l min-w-0 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="font-black text-[8px] text-blue-700 dark:text-blue-400 uppercase tracking-wider block truncate">
+                              <span className="font-black text-[8px] text-blue-700 dark:text-blue-404 uppercase tracking-wider block truncate">
                                 {task.desc}
                               </span>
                               <span className={`px-1 rounded text-[7px] font-black uppercase tracking-wider shrink-0 ${getBadgeStyle(task.qaStatus)}`}>
                                 {task.qaStatus}
                               </span>
                             </div>
-                            <span className={`font-black text-xs truncate leading-tight mt-1 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                            <span className={`font-black text-xs truncate leading-tight mt-1 ${isDarkMode ? 'text-slate-100' : 'text-slate-805'}`}>
                               {task.task}
                             </span>
                           </div>
                           
-                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40 text-slate-100' : 'border-slate-300 text-slate-800'}`}>
+                          <div className={`w-10 h-full border-l flex items-center justify-center font-black text-center shrink-0 font-mono ${isDarkMode ? 'border-slate-800/40 text-slate-100' : 'border-slate-303 text-slate-805'}`}>
                             {task.duration}d
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="h-[64px] p-2 flex items-center border-t border-slate-300 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
-                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-700 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-800">
+                    <div className="h-[64px] p-2 flex items-center border-t border-slate-303 dark:border-slate-800 sticky bottom-0 z-20 shrink-0">
+                       <button onClick={addTask} className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all px-2 py-2.5 rounded-xl border border-dashed border-slate-400 dark:border-slate-707 w-full justify-center text-blue-700 dark:text-blue-404 hover:text-blue-808">
                          <Plus size={12}/> Add Task Parameter
                        </button>
                     </div>
@@ -1971,7 +1971,7 @@ export default function App() {
                 <div className="flex-1 flex flex-col relative overflow-x-auto scrollbar-thin z-10">
                   
                   <div className={`h-[48px] min-h-[48px] max-h-[48px] flex min-w-max sticky top-0 z-20 border-b transition-colors ${
-                    isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-200 border-slate-300'
+                    isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-202 border-slate-303'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
@@ -1988,10 +1988,10 @@ export default function App() {
                         <div key={day} className={`w-[56px] h-full flex-shrink-0 text-center border-r flex flex-col justify-center relative transition-colors ${
                           isDarkMode 
                             ? `border-slate-800/60 ${isSatSun ? 'bg-slate-950/40' : ''}` 
-                            : `border-slate-300 ${isSatSun ? 'bg-slate-200' : ''}`
+                            : `border-slate-303 ${isSatSun ? 'bg-slate-202' : ''}`
                         }`}>
-                          <span className="text-[9px] font-black leading-tight text-slate-800 dark:text-slate-300">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
-                          <span className="text-[8px] font-bold text-slate-505 dark:text-slate-400 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
+                          <span className="text-[9px] font-black leading-tight text-slate-805 dark:text-slate-303">{generateDateHeaderStr(projectStartDate, day).split(' ')[0]}</span>
+                          <span className="text-[8px] font-bold text-slate-500 dark:text-slate-404 leading-tight uppercase">{generateDateHeaderStr(projectStartDate, day).split(' ')[1]}</span>
                           
                           {activeAllocationsOnDay.length > 0 && (
                             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[48px] overflow-hidden bg-blue-600/25 px-1 py-0.5 rounded-full border border-blue-500/20">
@@ -2026,7 +2026,7 @@ export default function App() {
                       return (
                         <div 
                           key={task.id} 
-                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-300'}`}
+                          className={`h-[68px] min-h-[68px] max-h-[68px] border-b relative flex items-center ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}
                           style={{ width: `${headerDays.length * 56}px` }}
                         >
                           {headerDays.map(day => {
@@ -2039,7 +2039,7 @@ export default function App() {
                               return (
                                 <div 
                                   key={`bg-day-${day}`}
-                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10 dark:bg-blue-400/5 dark:border-blue-400/10"
+                                  className="absolute top-0 bottom-0 w-[56px] pointer-events-none bg-blue-500/5 border-r border-blue-500/10 dark:bg-blue-404/5 dark:border-blue-404/10"
                                   style={{ left: `${day * 56}px` }}
                                 />
                               );
@@ -2075,7 +2075,7 @@ export default function App() {
                   </div>
 
                   <div className={`h-[120px] border-t flex min-w-max items-end relative sticky bottom-0 z-20 transition-colors ${
-                    isDarkMode ? 'bg-[#0b0f19] border-slate-800' : 'bg-slate-200 border-slate-300'
+                    isDarkMode ? 'bg-[#0b0f19] border-slate-800' : 'bg-slate-202 border-slate-303'
                   }`}
                   style={{ width: `${headerDays.length * 56}px` }}>
                     {headerDays.map(day => {
@@ -2094,14 +2094,14 @@ export default function App() {
                       }, 0);
                       const heightPercentage = (dayManpower / Math.max(maxManpowerVal, 16)) * 60;
                       return (
-                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-300'}`}>
+                        <div key={`hist-${day}`} className={`w-[56px] h-full flex-shrink-0 border-r flex flex-col justify-end items-center pb-4 ${isDarkMode ? 'border-slate-800/40' : 'border-slate-303'}`}>
                           {dayManpower > 0 && (
                             <div 
                               className={`w-4 rounded-t-md transition-all ${dayManpower > 12 ? 'bg-red-500 animate-pulse' : 'bg-blue-600'}`}
                               style={{ height: `${Math.max(4, heightPercentage)}%` }}
                             />
                           )}
-                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-700 dark:text-rose-400' : 'text-slate-800 dark:text-slate-400'}`}>
+                          <span className={`text-[9px] font-black font-mono mt-1 ${dayManpower > 12 ? 'text-rose-700 dark:text-rose-404' : 'text-slate-800 dark:text-slate-404'}`}>
                             {dayManpower > 0 ? dayManpower : '-'}
                           </span>
                         </div>
@@ -2127,11 +2127,11 @@ export default function App() {
                   <p className="text-xs text-slate-400 mt-1">Aggregates ongoing operational sequences across all active databases matching today's timeline.</p>
                 </div>
                 
-                <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-200 border-slate-300'}`}>
+                <div className={`flex items-center gap-1 border p-1 rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-202 border-slate-303'}`}>
                   <button
                     onClick={() => setActiveForecastFilter('this-week')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'
+                      activeForecastFilter === 'this-week' ? 'bg-blue-600 text-white' : 'text-slate-505 dark:text-slate-404 hover:text-slate-202'
                     }`}
                   >
                     📅 This Week
@@ -2139,7 +2139,7 @@ export default function App() {
                   <button
                     onClick={() => setActiveForecastFilter('all-active')}
                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-505 dark:text-slate-400 hover:text-slate-200'
+                      activeForecastFilter === 'all-active' ? 'bg-blue-600 text-white' : 'text-slate-505 dark:text-slate-404 hover:text-slate-202'
                     }`}
                   >
                     ⚠️ All Unfinished Tasks
@@ -2149,9 +2149,9 @@ export default function App() {
 
               {thisWeeksForecastList.length === 0 ? (
                 <div className="flex-grow flex flex-col items-center justify-center p-8 rounded-3xl border border-dashed border-slate-400 dark:border-slate-800 text-center">
-                  <CalendarDays size={40} className="text-slate-500 mb-2"/>
+                  <CalendarDays size={40} className="text-slate-505 mb-2"/>
                   <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-400">No Operations Scheduled Inside this Forecast cycle</h4>
-                  <p className="text-xs text-slate-500 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
+                  <p className="text-xs text-slate-505 max-w-sm mt-1">Try adding task rows, adjusting base dates, or shifting the timeline offsets.</p>
                 </div>
               ) : (
                 <div className="flex-grow overflow-y-auto pr-1">
@@ -2174,16 +2174,16 @@ export default function App() {
                             }
                           }}
                           className={`p-6 rounded-3xl border shadow-sm cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between gap-4 ${
-                            isDarkMode ? 'bg-[#131c2e] border-slate-800 hover:border-slate-700' : 'bg-white border-slate-300 hover:border-slate-400 shadow-md'
+                            isDarkMode ? 'bg-[#131c2e] border-slate-800 hover:border-slate-707' : 'bg-white border-slate-303 hover:border-slate-400 shadow-md'
                           }`}
                         >
                           <div>
                             <div className={`flex justify-between items-start gap-2 border-b pb-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                               <div className="min-w-0 flex-1">
-                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-400 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
+                                <span className="bg-blue-600/15 text-blue-900 dark:text-blue-404 px-2.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase block truncate">
                                   {item.parentProjectName}
                                 </span>
-                                <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                <h4 className={`text-sm font-black truncate mt-2 ${isDarkMode ? 'text-white' : 'text-slate-805'}`}>
                                   {item.task}
                                 </h4>
                               </div>
@@ -2192,28 +2192,28 @@ export default function App() {
                               </span>
                             </div>
 
-                            <div className="space-y-2 mt-4 text-xs font-bold text-slate-400">
+                            <div className="space-y-2 mt-4 text-xs font-bold text-slate-404">
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Clock size={11}/> Dates</span>
-                                <span className="font-mono text-slate-800 dark:text-slate-300">
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Clock size={11}/> Dates</span>
+                                <span className="font-mono text-slate-850 dark:text-slate-303">
                                   {item.absoluteStartDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - {item.absoluteEndDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Truck size={11}/> Primary Asset</span>
-                                <span className="font-black text-blue-800 dark:text-blue-400">{item.assignedAsset || 'None'}</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Truck size={11}/> Primary Asset</span>
+                                <span className="font-black text-blue-808 dark:text-blue-404">{item.assignedAsset || 'None'}</span>
                               </div>
                               <div className="flex justify-between items-center text-[10px]">
-                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-500"><Users size={11}/> Average Workforce</span>
-                                <span className="font-black text-slate-800 dark:text-slate-300">{item.totalManpower || 0} Workers</span>
+                                <span className="flex items-center gap-1 uppercase tracking-wide text-slate-505"><Users size={11}/> Average Workforce</span>
+                                <span className="font-black text-slate-850 dark:text-slate-303">{item.totalManpower || 0} Workers</span>
                               </div>
                             </div>
                           </div>
 
                           <div className={`space-y-1.5 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
-                            <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-400">
+                            <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-404">
                               <span>PROGRESS COMPLETE</span>
-                              <span className="text-slate-800 dark:text-slate-200">{item.progress || 0}%</span>
+                              <span className="text-slate-850 dark:text-slate-202">{item.progress || 0}%</span>
                             </div>
                             <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-slate-300'}`}>
                               <div className="h-full bg-blue-600 rounded-full" style={{width: `${item.progress || 0}%`}}></div>
@@ -2221,7 +2221,7 @@ export default function App() {
                           </div>
 
                           {isOverdue && (
-                            <div className="mt-1 p-2 bg-rose-500/15 border border-rose-600 rounded-xl text-rose-500 text-[10px] font-black flex items-center gap-1.5 animate-pulse">
+                            <div className="mt-1 p-2 bg-rose-500/15 border border-rose-600 rounded-xl text-rose-505 text-[10px] font-black flex items-center gap-1.5 animate-pulse">
                               <AlertTriangle size={12} />
                               <span>OVERDUE BY COMPLIANCE BUFFER LIMITS</span>
                             </div>
@@ -2244,7 +2244,7 @@ export default function App() {
                   <h3 className="text-sm font-black tracking-widest uppercase text-emerald-700 dark:text-emerald-404 flex items-center gap-1.5">
                     <ShieldCheck size={16}/> Engineering Compliance Inspection Ledger
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
+                  <p className="text-xs text-slate-505 mt-1">Audit-ready verification list of all critical sequence hold points and requirements.</p>
                 </div>
               </div>
 
@@ -2257,19 +2257,19 @@ export default function App() {
                       setSelectedDayIndex(0);
                     }}
                     className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-200' : 'bg-white border-slate-300 hover:border-slate-500 shadow-sm'
+                      isDarkMode ? 'bg-[#131c2e]/60 border-slate-800 text-slate-202' : 'bg-white border-slate-303 hover:border-slate-500 shadow-sm'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="font-black font-mono text-xs text-blue-600 dark:text-blue-500">{task.ref}</span>
                       <div className="min-w-0">
-                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-400 block"> {task.desc}</span>
-                        <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{task.task}</span>
+                        <span className="text-[9px] uppercase tracking-wider font-black text-slate-404 block"> {task.desc}</span>
+                        <span className={`font-black text-xs block ${isDarkMode ? 'text-white' : 'text-slate-805'}`}>{task.task}</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-black text-slate-500 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
+                      <span className="text-xs font-black text-slate-505 hidden sm:inline">{Object.keys(task.checklist || {}).length} Parameters</span>
                       <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(task.qaStatus)}`}>
                         {task.qaStatus}
                       </span>
@@ -2293,7 +2293,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setIsAssetModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                  className="bg-blue-600 hover:bg-blue-505 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
                 >
                   <Plus size={14}/> Add Asset
                 </button>
@@ -2313,31 +2313,31 @@ export default function App() {
                               {renderAssetIcon(asset.key)}
                             </div>
                             <div className="min-w-0">
-                              <span className="font-mono text-xs font-black text-blue-800 dark:text-blue-404 block">{asset.key}</span>
+                              <span className="font-mono text-xs font-black text-blue-808 dark:text-blue-404 block">{asset.key}</span>
                               <span className="text-xs font-black truncate block">{asset.label}</span>
                             </div>
                           </div>
                           
                           <button
                             onClick={() => handleRemoveCustomAsset(asset.key)}
-                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg shrink-0 transition-all"
+                            className="p-1 text-slate-404 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg shrink-0 transition-all"
                           >
                             <Trash2 size={13}/>
                           </button>
                         </div>
 
-                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-400 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
+                        <div className={`space-y-1.5 pt-3 border-t text-[10px] text-slate-404 ${isDarkMode ? 'border-slate-800' : 'border-slate-202'}`}>
                           <div className="flex justify-between font-bold">
                             <span>CLASS:</span>
-                            <span className="font-black text-slate-800 dark:text-slate-300">{asset.type}</span>
+                            <span className="font-black text-slate-850 dark:text-slate-303">{asset.type}</span>
                           </div>
                           <div className="flex justify-between font-bold">
                             <span>TRANSIT BUFFER:</span>
-                            <span className="font-black text-slate-800 dark:text-slate-300">{asset.defaultMobilizationDays} Days</span>
+                            <span className="font-black text-slate-850 dark:text-slate-303">{asset.defaultMobilizationDays} Days</span>
                           </div>
                           <div className="flex justify-between font-bold">
                             <span>DAILY RESERVATIONS:</span>
-                            <span className="font-black text-blue-800 dark:text-blue-404">{isAllocated.length} Slots</span>
+                            <span className="font-black text-blue-808 dark:text-blue-404">{isAllocated.length} Slots</span>
                           </div>
                         </div>
                       </div>
@@ -2348,7 +2348,6 @@ export default function App() {
             </div>
           )}
 
-          {}
           <div className={`rounded-3xl border flex flex-col shadow-lg transition-all duration-300 overflow-hidden relative shrink-0 ${
             isDarkMode ? 'bg-[#131c2e]/90 border-blue-500/20' : 'bg-blue-50 border-blue-200'
           }`}>
@@ -2368,13 +2367,13 @@ export default function App() {
               
               <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-slate-400 uppercase hidden sm:inline">Filter Asset:</span>
+                  <span className="text-[10px] font-black text-slate-404 uppercase hidden sm:inline">Filter Asset:</span>
                   <div className="relative">
                     <select 
                       value={alertCenterAssetFilter} 
                       onChange={(e) => setAlertCenterAssetFilter(e.target.value)}
                       className={`pl-3 pr-8 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none border cursor-pointer ${
-                        isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-404' : 'bg-white border-slate-300 text-blue-800 shadow-sm'
+                        isDarkMode ? 'bg-[#0f172a] border-slate-700 text-blue-404' : 'bg-white border-slate-303 text-blue-808 shadow-sm'
                       }`}
                     >
                       <option value="ALL">ALL VEHICLES / TOOLS</option>
@@ -2382,7 +2381,7 @@ export default function App() {
                         <option key={a.key} value={a.key}>{a.key} - {a.label}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-505">
                       <ChevronDown size={11} />
                     </div>
                   </div>
@@ -2390,7 +2389,7 @@ export default function App() {
 
                 <button 
                   onClick={() => setIsAlertCenterExpanded(!isAlertCenterExpanded)}
-                  className={`p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-400`}
+                  className={`p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-slate-404`}
                 >
                   {isAlertCenterExpanded ? <ChevronDown size={15} /> : <ChevronUp size={15} />}
                 </button>
@@ -2404,7 +2403,7 @@ export default function App() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Active Dispatches Today
                   </span>
                   {todayAllocations.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">No tool dispatches scheduled for today.</p>
+                    <p className="text-xs text-slate-505 italic">No tool dispatches scheduled for today.</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {todayAllocations.map((alloc, idx) => {
@@ -2420,7 +2419,7 @@ export default function App() {
                           >
                             {renderAssetIcon(alloc.assetKey)}
                             <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) dispatch for {alloc.taskRef} ({alloc.taskName})</span>
-                            {conflict && <AlertTriangle size={11} className="text-rose-500 ml-1" />}
+                            {conflict && <AlertTriangle size={11} className="text-rose-505 ml-1" />}
                           </span>
                         );
                       })}
@@ -2433,7 +2432,7 @@ export default function App() {
                     <Clock size={11}/> Scheduled Mobilizations Tomorrow
                   </span>
                   {tomorrowAllocations.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">No tool dispatches scheduled for tomorrow.</p>
+                    <p className="text-xs text-slate-505 italic">No tool dispatches scheduled for tomorrow.</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {tomorrowAllocations.map((alloc, idx) => {
@@ -2449,7 +2448,7 @@ export default function App() {
                           >
                             {renderAssetIcon(alloc.assetKey)}
                             <span>{alloc.assetKey} ({alloc.startTime}-{alloc.endTime}) ready for {alloc.taskRef} ({alloc.taskName})</span>
-                            {conflict && <AlertTriangle size={11} className="text-rose-500 ml-1" />}
+                            {conflict && <AlertTriangle size={11} className="text-rose-505 ml-1" />}
                           </span>
                         );
                       })}
@@ -2463,10 +2462,11 @@ export default function App() {
         </div>
       </main>
 
+      {}
       {isAssetModalOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border flex flex-col max-h-[85vh] transition-all duration-300 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-303 text-slate-900'
           }`}>
             <div className={`p-5 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-800 bg-slate-950/40' : 'border-slate-202 bg-slate-100'}`}>
               <div>
@@ -2485,7 +2485,7 @@ export default function App() {
                       placeholder="e.g. CRN50, HVBT1"
                       value={newAssetCode}
                       onChange={(e) => setNewAssetCode(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'}`}
                     />
                   </div>
                   <div>
@@ -2495,7 +2495,7 @@ export default function App() {
                       placeholder="e.g. 50-Ton Crawler Crane"
                       value={newAssetName}
                       onChange={(e) => setNewAssetName(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'}`}
                     />
                   </div>
                 </div>
@@ -2508,14 +2508,14 @@ export default function App() {
                         value={newAssetType}
                         onChange={(e) => setNewAssetType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
-                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-700 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-900 border-slate-300 [&_option]:bg-white'
+                          isDarkMode ? 'bg-[#131c2e] text-white border-slate-707 [&_option]:bg-[#131c2e]' : 'bg-white text-slate-900 border-slate-303 [&_option]:bg-white'
                         }`}
                       >
                         <option value="Heavy Equipment">Heavy Equipment</option>
                         <option value="Specialized Tools">Specialized Tools</option>
                         <option value="Testing Equipment">Testing Equipment</option>
                       </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-505">
                         <ChevronDown size={14}/>
                       </div>
                     </div>
@@ -2527,7 +2527,7 @@ export default function App() {
                       type="button"
                       onClick={() => setShowAssetIconDropdown(!showAssetIconDropdown)}
                       className={`w-full text-left px-3 py-2 border rounded-xl text-xs font-bold flex items-center justify-between ${
-                        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+                        isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
                       }`}
                     >
                       <span>
@@ -2539,7 +2539,7 @@ export default function App() {
 
                     {showAssetIconDropdown && (
                       <div className={`absolute left-0 mt-1 w-72 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in max-h-60 overflow-y-auto ${
-                        isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
+                        isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-202 text-slate-900'
                       }`}>
                         {LOGISTICAL_ASSET_PRESETS.map(preset => (
                           <button
@@ -2551,8 +2551,8 @@ export default function App() {
                             }}
                             className={`w-full text-left p-2 rounded-xl flex items-center gap-3 text-xs transition-all ${
                               newAssetIconPreset === preset.key 
-                                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
-                                : 'hover:bg-slate-800 text-slate-300'
+                                ? 'bg-blue-600/15 text-blue-404 border border-blue-500/30' 
+                                : 'hover:bg-slate-800 text-slate-303'
                             }`}
                           >
                             <span className="text-lg">{preset.emoji}</span>
@@ -2572,13 +2572,13 @@ export default function App() {
                       type="number" min="0" max="7"
                       value={newAssetMobDays}
                       onChange={(e) => setNewAssetMobDays(parseInt(e.target.value) || 0)}
-                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}
+                      className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-303'}`}
                     />
                   </div>
                 </div>
 
                 {assetValidationWarning && (
-                  <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-650 text-red-500 text-[10px] font-black">
+                  <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-650 text-red-505 text-[10px] font-black">
                     {assetValidationWarning}
                   </div>
                 )}
@@ -2595,7 +2595,6 @@ export default function App() {
         </div>
       )}
 
-      {}
       {activeTaskModal && (() => {
         const currentTaskEditing = activeFlowTasks.find(t => t.id === activeTaskModal);
         if (!currentTaskEditing) return null;
@@ -2604,11 +2603,11 @@ export default function App() {
         const dayLaborObj = currentDailyLabor[selectedDayIndex] || currentDailyLabor[0];
 
         return (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300 animate-fade-in">
             <div className={`rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border flex flex-col max-h-[92vh] transition-all duration-300 ${
               isDarkMode 
                 ? 'bg-[#0f172a]/95 border-slate-800 text-white' 
-                : 'bg-white border-slate-300 text-slate-900'
+                : 'bg-white border-slate-303 text-slate-900'
             }`}>
               
               <div className={`p-5 border-b flex justify-between items-center ${
@@ -2633,7 +2632,7 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTaskModal(null)} 
                   className={`p-1.5 rounded-full border transition-colors ${
-                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-300 hover:bg-slate-202 text-slate-700'
+                    isDarkMode ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-303 hover:bg-slate-202 text-slate-700'
                   }`}
                 >
                   <X size={16}/>
@@ -2654,7 +2653,7 @@ export default function App() {
                         triggerTaskRemove(currentTaskEditing.id);
                         setActiveTaskModal(null);
                       }}
-                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-rose-400 transition-colors"
+                      className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-505 hover:text-rose-400 transition-colors"
                     >
                       <Trash2 size={12} />
                       <span>Delete Sequence</span>
@@ -2669,7 +2668,7 @@ export default function App() {
                         value={currentTaskEditing.ref || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'ref', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2680,7 +2679,7 @@ export default function App() {
                         value={currentTaskEditing.desc || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'desc', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2694,7 +2693,7 @@ export default function App() {
                         value={currentTaskEditing.task || ''} 
                         onChange={(e) => updateTask(currentTaskEditing.id, 'task', e.target.value)}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600'
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600'
                         }`}
                       />
                     </div>
@@ -2706,8 +2705,8 @@ export default function App() {
                           onChange={(e) => updateTask(currentTaskEditing.id, 'qaStatus', e.target.value)}
                           className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none cursor-pointer pr-8 ${
                             isDarkMode 
-                              ? 'bg-[#131c2e] text-white border-slate-700 [&_option]:bg-[#131c2e]' 
-                              : 'bg-white text-slate-900 border-slate-300 [&_option]:bg-white'
+                              ? 'bg-[#131c2e] text-white border-slate-707 [&_option]:bg-[#131c2e]' 
+                              : 'bg-white text-slate-900 border-slate-303 [&_option]:bg-white'
                           }`}
                         >
                           <option value="PENDING">PENDING</option>
@@ -2733,7 +2732,7 @@ export default function App() {
                           setSelectedDayIndex(0);
                         }}
                         className={`w-full px-3 py-1.5 border rounded-xl text-xs font-bold outline-none ${
-                          isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300'
+                          isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303'
                         }`}
                       />
                     </div>
@@ -2784,7 +2783,7 @@ export default function App() {
                       }} className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-end">
                         <div>
                           <label className="block text-[8px] font-black text-slate-400 uppercase mb-1">Active Day</label>
-                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                          <select name="dayOffset" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
                             {Array.from({ length: currentTaskEditing.adjustedDuration }).map((_, idx) => (
                               <option key={idx} value={idx}>Day {idx + 1}</option>
                             ))}
@@ -2792,7 +2791,7 @@ export default function App() {
                         </div>
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Tool / Vehicle</label>
-                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 cursor-pointer">
+                          <select name="assetKey" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 cursor-pointer">
                             {customAssets.map(a => (
                               <option key={a.key} value={a.key}>{a.label} ({a.key})</option>
                             ))}
@@ -2800,11 +2799,11 @@ export default function App() {
                         </div>
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">Start Time</label>
-                          <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono" required />
+                          <input name="startTime" type="time" defaultValue="08:00" className="w-full text-xs p-1 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
                         </div>
                         <div>
                           <label className="block text-[8px] font-black text-slate-404 uppercase mb-1">End Time</label>
-                          <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700 font-mono" required />
+                          <input name="endTime" type="time" defaultValue="17:00" className="w-full text-xs p-1.5 rounded-lg border bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-303 dark:border-slate-707 font-mono" required />
                         </div>
                         <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider">
                           Add dispatch
@@ -2824,7 +2823,7 @@ export default function App() {
                         }`}>
                           <div className="flex items-center gap-2">
                             {renderAssetIcon(alloc.assetKey)}
-                            <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-400">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
+                            <span>Day {alloc.dayOffset + 1} - <span className="font-mono text-blue-600 dark:text-blue-404">[{alloc.assetKey}]</span> from {alloc.startTime} to {alloc.endTime}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             {conflict && (
@@ -2870,8 +2869,8 @@ export default function App() {
                       }}
                       className={`flex-grow px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
                         isDarkMode 
-                          ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' 
-                          : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600 shadow-inner'
+                          ? 'bg-slate-900 border-slate-707 text-white focus:border-blue-500' 
+                          : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600 shadow-inner'
                       }`}
                     />
                     <button 
@@ -2898,7 +2897,7 @@ export default function App() {
                             type="checkbox" 
                             checked={checked} 
                             onChange={() => toggleChecklistItem(currentTaskEditing.id, name)}
-                            className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            className="h-5 w-5 rounded border-slate-303 text-blue-600 focus:ring-blue-500 cursor-pointer"
                           />
                           <span className="text-xs font-bold leading-none">{name}</span>
                         </div>
@@ -2925,7 +2924,7 @@ export default function App() {
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-404">
                       Day-by-Day Manpower Allocations
                     </h4>
-                    <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-lg border border-blue-500/20 font-mono">
+                    <span className="text-[10px] bg-blue-500/10 text-blue-404 px-2 py-0.5 rounded-lg border border-blue-505/20 font-mono">
                       Active: Day {selectedDayIndex + 1} of {currentTaskEditing.adjustedDuration}
                     </span>
                   </div>
@@ -2945,14 +2944,14 @@ export default function App() {
                           onClick={() => setSelectedDayIndex(idx)}
                           className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all border shrink-0 flex flex-col items-center gap-1 min-w-[70px] ${
                             selectedDayIndex === idx
-                              ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/10'
+                              ? 'bg-blue-600 text-white border-blue-505 shadow-md shadow-blue-500/10'
                               : isDarkMode 
                                 ? 'bg-slate-900 border-slate-800 text-slate-404 hover:bg-slate-800 hover:text-white' 
-                                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                                : 'bg-white border-slate-303 text-slate-700 hover:bg-slate-100'
                           }`}
                         >
                           <span>Day {idx + 1}</span>
-                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-300'}`}>
+                          <span className={`text-[9px] font-mono px-1 rounded ${selectedDayIndex === idx ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-303'}`}>
                             {dayCrewCount} Pax
                           </span>
                         </button>
@@ -2974,7 +2973,7 @@ export default function App() {
                           }`}>
                             <div className="flex justify-between items-center">
                               <span className="text-xs">{role.icon} {role.label}</span>
-                              <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+                              <span className="text-xs font-black text-blue-600 dark:text-blue-404">
                                 {count}
                               </span>
                             </div>
@@ -3025,7 +3024,7 @@ export default function App() {
                                       className={`w-full px-3 py-2 border rounded-xl text-xs font-semibold outline-none ${
                                         isDarkMode 
                                           ? 'bg-slate-900 border-slate-800 text-white focus:border-blue-500' 
-                                          : 'bg-white border-slate-300 text-slate-900 focus:border-blue-600 shadow-inner'
+                                          : 'bg-white border-slate-303 text-slate-900 focus:border-blue-600 shadow-inner'
                                       }`}
                                     />
                                   );
@@ -3048,7 +3047,7 @@ export default function App() {
       {showCreateProjectModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
           }`}>
             <h3 className="text-xs font-black uppercase tracking-wider mb-4">Initialize Sub-Project Workspace</h3>
             <div className="space-y-4">
@@ -3059,7 +3058,7 @@ export default function App() {
                   placeholder="e.g. Quezon Substation Phase 3B"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-300'}`}
+                  className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${isDarkMode ? 'bg-slate-900 border-slate-707' : 'bg-white border-slate-303'}`}
                 />
               </div>
               <div className="flex gap-2">
@@ -3084,7 +3083,7 @@ export default function App() {
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className={`rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border p-6 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-slate-202' : 'bg-white border-slate-300 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-slate-202' : 'bg-white border-slate-303 text-slate-900'
           }`}>
             <div className="flex justify-between items-center mb-6 pb-2 border-b dark:border-slate-800">
               <div className="flex items-center gap-2 text-blue-600 dark:text-blue-404">
@@ -3107,7 +3106,7 @@ export default function App() {
                   value={appTitle} 
                   onChange={(e) => setAppTitle(e.target.value)} 
                   className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'
+                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
                   }`}
                 />
               </div>
@@ -3119,7 +3118,7 @@ export default function App() {
                   value={appSubtitle} 
                   onChange={(e) => setAppSubtitle(e.target.value)} 
                   className={`w-full px-3 py-2 border rounded-xl text-xs font-bold outline-none ${
-                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-300 text-slate-900'
+                    isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
                   }`}
                 />
               </div>
@@ -3130,7 +3129,7 @@ export default function App() {
                   <button 
                     onClick={() => setIsDarkMode(!isDarkMode)}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-slate-100 border-slate-300 text-slate-900 shadow-sm'
+                      isDarkMode ? 'bg-slate-900 border-slate-707 text-white' : 'bg-slate-100 border-slate-303 text-slate-900 shadow-sm'
                     }`}
                   >
                     {isDarkMode ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} />}
@@ -3143,7 +3142,7 @@ export default function App() {
                   <button 
                     onClick={() => setSoundEnabled(!soundEnabled)}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold ${
-                      soundEnabled ? 'bg-blue-600 border-blue-505 text-white' : 'bg-slate-900 border-slate-707 text-slate-400'
+                      soundEnabled ? 'bg-blue-600 border-blue-505 text-white' : 'bg-slate-900 border-slate-707 text-slate-404'
                     }`}
                   >
                     {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -3179,9 +3178,9 @@ export default function App() {
       {projectToDelete && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border p-5 ${
-            isDarkMode ? 'bg-[#131c2e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+            isDarkMode ? 'bg-[#131c2e] border-slate-707 text-white' : 'bg-white border-slate-303 text-slate-900'
           }`}>
-            <h3 className="text-xs font-black uppercase tracking-wider mb-2 text-rose-500">Delete Workspace?</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider mb-2 text-rose-505">Delete Workspace?</h3>
             <p className="text-xs text-slate-400 mb-4">Are you sure you want to delete this workspace and erase all schedules associated with it? This action cannot be undone.</p>
             <div className="flex gap-2">
               <button 
@@ -3202,7 +3201,7 @@ export default function App() {
       )}
 
       {isNotificationPaneOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
+        <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationPaneOpen(false)} />
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
             <div className={`w-screen max-w-md border-l transform transition-all ease-in-out duration-300 ${isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-202 text-slate-900'}`}>
@@ -3219,7 +3218,7 @@ export default function App() {
                 <div className="relative flex-1 py-6 px-6 overflow-y-auto space-y-3">
                   {notifications.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
-                      <Bell className="w-10 h-10 text-slate-400 mb-2" />
+                      <Bell className="w-10 h-10 text-slate-404 mb-2" />
                       <p className="text-xs font-bold">No active site notifications.</p>
                     </div>
                   ) : (
@@ -3231,7 +3230,7 @@ export default function App() {
                         'bg-blue-500/10 border-blue-500/20 text-blue-800 dark:text-blue-200'
                       }`}>
                         <div className="mt-0.5">
-                          {notif.type === 'alert' ? <AlertTriangle size={15} className="text-rose-500" /> :
+                          {notif.type === 'alert' ? <AlertTriangle size={15} className="text-rose-505" /> :
                            notif.type === 'warning' ? <AlertTriangle size={15} className="text-amber-500" /> :
                            notif.type === 'success' ? <CheckCircle2 size={15} className="text-emerald-500" /> :
                            <Info size={15} className="text-blue-500" />}
@@ -3242,7 +3241,7 @@ export default function App() {
                         </div>
                         <button 
                           onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))} 
-                          className="text-slate-400 hover:text-slate-600"
+                          className="text-slate-404 hover:text-slate-600"
                         >
                           <X size={12} />
                         </button>
